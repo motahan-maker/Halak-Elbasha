@@ -119,10 +119,6 @@ function RootComponent() {
       (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
     document.documentElement.classList.toggle("dark", dark);
 
-    // Register service worker for PWA
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    }
   }, []);
 
   return (
