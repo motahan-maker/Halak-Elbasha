@@ -25,6 +25,13 @@ export function BarberApp() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const notifiedBookings = useRef<Set<string>>(new Set());
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Preload audio
+    audioRef.current = new Audio("/notification.mp3");
+    audioRef.current.load();
+  }, []);
 
   const myBarber = useQuery({
     queryKey: ["my-barber", auth.user?.id],
@@ -102,8 +109,15 @@ export function BarberApp() {
           notifiedBookings.current.add(bookingId);
 
           // Play premium notification sound
-          const audio = new Audio("/notification.mp3");
-          audio.play().catch((e) => console.error("Error playing sound:", e));
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play().catch((e) => {
+              console.error("Error playing sound:", e);
+              // Fallback: try creating a new instance if preloaded fails
+              const fallbackAudio = new Audio("/notification.mp3");
+              fallbackAudio.play().catch(err => console.error("Fallback audio failed:", err));
+            });
+          }
 
           // Show toast notification
           toast.success("تم استلام حجز جديد! 🛎️", {
@@ -169,6 +183,16 @@ export function BarberApp() {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={() => audioRef.current?.play().then(() => {
+                audioRef.current?.pause();
+                toast.info("تم تفعيل صوت الإشعارات");
+              })}
+              className="grid h-9 w-9 place-items-center rounded-full border border-border text-primary"
+              title="تفعيل الصوت"
+            >
+              <Scissors className="h-4 w-4" />
+            </button>
             <ThemeToggle />
             <button
               onClick={signOut}
