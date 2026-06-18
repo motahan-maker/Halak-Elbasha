@@ -6,7 +6,8 @@ import { SUPABASE_CONFIG } from "./config";
 function createSupabaseAdminClient() {
   const SUPABASE_URL =
     process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || SUPABASE_CONFIG.url;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const SUPABASE_SERVICE_ROLE_KEY =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_CONFIG.serviceRoleKey;
 
   if (!SUPABASE_SERVICE_ROLE_KEY) {
     console.warn(
