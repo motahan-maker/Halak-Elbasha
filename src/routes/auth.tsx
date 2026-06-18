@@ -53,16 +53,29 @@ function AuthPage() {
     try {
       const email = customerEmail(cPhone);
       const password = customerPassword(cPhone);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        const { error: e2 } = await supabase.auth.signUp({
+      
+      // Try sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (signInError) {
+        // If sign in fails, try sign up
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: cName.trim(), phone: cPhone.trim(), role: "customer" } },
+          options: { 
+            data: { 
+              full_name: cName.trim(), 
+              phone: cPhone.trim(), 
+              role: "customer" 
+            } 
+          },
         });
-        if (e2) throw e2;
-        const { error: e3 } = await supabase.auth.signInWithPassword({ email, password });
-        if (e3) throw e3;
+        
+        if (signUpError) throw signUpError;
+        
+        // After signup, sign in again to be sure
+        const { error: secondSignInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (secondSignInError) throw secondSignInError;
       }
       navigate({ to: "/", replace: true });
     } catch (err) {
