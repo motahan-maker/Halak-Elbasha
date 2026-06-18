@@ -127,7 +127,7 @@ function Overview() {
   const stats = useQuery({
     queryKey: ["admin-overview"],
     queryFn: async () => {
-      const [b, c, s, r] = await Promise.all([
+      const [b, c, s, barbersRes] = await Promise.all([
         supabase
           .from("bookings")
           .select("status, booking_date, service_price, service_name, barber_id"),
@@ -169,7 +169,7 @@ function Overview() {
         const a = v.s / v.c;
         if (a > topAvg) {
           topAvg = a;
-          topBarber = (r.data ?? []).find((x: any) => x.id === id)?.name ?? "—";
+          topBarber = (barbersRes.data ?? []).find((x: any) => x.id === id)?.name ?? "—";
         }
       });
       return {
@@ -178,7 +178,7 @@ function Overview() {
         cancelledCount: cancelled.length,
         customers: c.count ?? 0,
         services: s.count ?? 0,
-        barbers: (r.data ?? []).length,
+        barbers: (barbersRes.data ?? []).length,
         revDay,
         revWeek,
         revMonth,
@@ -497,7 +497,7 @@ function BarberRow({
             value={pwd}
             onChange={(e) => setPwd(e.target.value)}
             placeholder="كلمة المرور الجديدة"
-            type="text"
+            type="password"
             className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-sm"
           />
           <button
