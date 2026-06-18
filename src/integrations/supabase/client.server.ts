@@ -9,12 +9,15 @@ function createSupabaseAdminClient() {
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!SUPABASE_SERVICE_ROLE_KEY) {
-    console.error(
-      "[Supabase Admin] SUPABASE_SERVICE_ROLE_KEY is not set. Go to Vercel → Settings → Environment Variables and add it.",
+    console.warn(
+      "[Supabase Admin] SUPABASE_SERVICE_ROLE_KEY is not set. Server functions requiring admin privileges will fail.",
     );
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY is not set. Add it in Vercel → Settings → Environment Variables.",
-    );
+    // Return a dummy client that throws on actual use instead of crashing at initialization/import
+    return new Proxy({} as any, {
+      get() {
+        throw new Error("SUPABASE_SERVICE_ROLE_KEY is missing. Please configure it in Vercel environment variables.");
+      }
+    });
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {

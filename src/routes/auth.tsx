@@ -35,7 +35,7 @@ function AuthPage() {
   const auth = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("customer");
-  const ensureAdmin = useServerFn(ensureDefaultAdmin);
+  // const ensureAdmin = useServerFn(ensureDefaultAdmin);
 
   useEffect(() => {
     if (!auth.loading && auth.user) navigate({ to: "/", replace: true });
@@ -96,7 +96,7 @@ function AuthPage() {
     e.preventDefault();
     setALoading(true);
     try {
-      await ensureAdmin();
+      // await ensureAdmin();
       if (aUser.trim().toLowerCase() !== "admin") throw new Error("اسم المستخدم غير صحيح");
       const { error } = await supabase.auth.signInWithPassword({
         email: ADMIN_EMAIL,
