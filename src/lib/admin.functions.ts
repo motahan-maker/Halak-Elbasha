@@ -6,14 +6,13 @@ const phoneOnly = (p: string) => p.replace(/[^\d]/g, "");
 const staffEmail = (phone: string) => `${phoneOnly(phone)}@staff.bashapp.com`;
 
 export const ADMIN_EMAIL = "admin@bashapp.com";
-export const ADMIN_DEFAULT_PASSWORD = "admin@123456";
+export const ADMIN_DEFAULT_PASSWORD = "admin123456";
 
-/** Public: ensure built-in admin account exists with the default credentials. Idempotent. */
+/** Public: ensure built-in admin account exists. Only creates if missing — never resets password. */
 export const ensureDefaultAdmin = createServerFn({ method: "POST" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  // Find existing
   const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-  let user = list?.users.find((u) => u.email === ADMIN_EMAIL) ?? null;
+  const user = list?.users.find((u) => u.email === ADMIN_EMAIL) ?? null;
   if (!user) {
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email: ADMIN_EMAIL,
@@ -22,19 +21,13 @@ export const ensureDefaultAdmin = createServerFn({ method: "POST" }).handler(asy
       user_metadata: { full_name: "المدير", phone: "admin", role: "admin" },
     });
     if (error || !created.user) throw new Error(error?.message ?? "ADMIN_CREATE_FAILED");
-    user = created.user;
-  } else {
-    // reset password to default to keep credentials in sync
-    await supabaseAdmin.auth.admin.updateUserById(user.id, { password: ADMIN_DEFAULT_PASSWORD });
+    await supabaseAdmin
+      .from("profiles")
+      .upsert({ id: created.user.id, full_name: "المدير", phone: "admin" }, { onConflict: "id" });
+    await supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: created.user.id, role: "admin" }, { onConflict: "user_id,role" });
   }
-  // Ensure profile + admin role
-  await supabaseAdmin
-    .from("profiles")
-    .upsert({ id: user.id, full_name: "المدير", phone: "admin" }, { onConflict: "id" });
-  await supabaseAdmin
-    .from("user_roles")
-    .upsert({ user_id: user.id, role: "admin" }, { onConflict: "user_id,role" });
-  await supabaseAdmin.from("user_roles").delete().eq("user_id", user.id).eq("role", "customer");
   return { ok: true };
 });
 
@@ -52,7 +45,6 @@ export const claimAdminIfFirst = createServerFn({ method: "POST" })
       .from("user_roles")
       .upsert({ user_id: context.userId, role: "admin" }, { onConflict: "user_id,role" });
     if (error) throw new Error(error.message);
-    // remove customer role if any
     await supabaseAdmin
       .from("user_roles")
       .delete()
@@ -76,7 +68,6 @@ export const createBarberAccount = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // verify caller is admin
     const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
       _user_id: context.userId,
       _role: "admin",
@@ -93,16 +84,13 @@ export const createBarberAccount = createServerFn({ method: "POST" })
     if (createErr || !created.user) throw new Error(createErr?.message ?? "CREATE_FAILED");
 
     const uid = created.user.id;
-    // ensure role row
     await supabaseAdmin
       .from("user_roles")
       .upsert({ user_id: uid, role: "barber" }, { onConflict: "user_id,role" });
     await supabaseAdmin.from("user_roles").delete().eq("user_id", uid).eq("role", "customer");
-    // ensure profile exists (trigger may have done it)
     await supabaseAdmin
       .from("profiles")
       .upsert({ id: uid, full_name: data.name, phone: data.phone }, { onConflict: "id" });
-    // create barber row
     const { error: bErr } = await supabaseAdmin.from("barbers").insert({
       user_id: uid,
       name: data.name,

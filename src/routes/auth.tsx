@@ -53,36 +53,16 @@ function AuthPage() {
     try {
       const email = customerEmail(cPhone);
       const password = customerPassword(cPhone);
-      
-      // Try signing in first
-      const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (signInErr) {
-        // If sign in fails, it might be a new user. Try signing up.
-        const { error: signUpErr } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        const { error: e2 } = await supabase.auth.signUp({
           email,
           password,
-          options: { 
-            data: { 
-              full_name: cName.trim(), 
-              phone: cPhone.trim(), 
-              role: "customer" 
-            } 
-          },
+          options: { data: { full_name: cName.trim(), phone: cPhone.trim(), role: "customer" } },
         });
-        
-        if (signUpErr) {
-          // If signup fails too, it might be that the user exists but password doesn't match
-          // or some other error. Let's report the original sign in error if it's "Invalid login credentials"
-          if (signInErr.message.includes("Invalid login credentials")) {
-            throw new Error("رقم الجوال مسجل مسبقاً ببيانات مختلفة أو حدث خطأ في الدخول.");
-          }
-          throw signUpErr;
-        }
-        
-        // After successful signup, sign in again to establish session
-        const { error: finalSignInErr } = await supabase.auth.signInWithPassword({ email, password });
-        if (finalSignInErr) throw finalSignInErr;
+        if (e2) throw e2;
+        const { error: e3 } = await supabase.auth.signInWithPassword({ email, password });
+        if (e3) throw e3;
       }
       navigate({ to: "/", replace: true });
     } catch (err) {
@@ -116,7 +96,7 @@ function AuthPage() {
     e.preventDefault();
     setALoading(true);
     try {
-      await ensureAdmin().catch(err => console.error("Admin check failed, proceeding anyway:", err));
+      try { await ensureAdmin(); } catch { /* ignore if service_role not set */ }
       if (aUser.trim().toLowerCase() !== "admin") throw new Error("اسم المستخدم غير صحيح");
       const { error } = await supabase.auth.signInWithPassword({
         email: ADMIN_EMAIL,
