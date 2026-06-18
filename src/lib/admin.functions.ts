@@ -11,7 +11,11 @@ export const ADMIN_DEFAULT_PASSWORD = "admin123456";
 /** Public: ensure built-in admin account exists. Only creates if missing — never resets password. */
 export const ensureDefaultAdmin = createServerFn({ method: "POST" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+  const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({
+    page: 1,
+    perPage: 200,
+  });
+  if (listErr) throw new Error("Failed to list users: " + listErr.message);
   const user = list?.users.find((u: { email?: string }) => u.email === ADMIN_EMAIL) ?? null;
   if (!user) {
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({

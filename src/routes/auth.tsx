@@ -96,13 +96,35 @@ function AuthPage() {
     e.preventDefault();
     setALoading(true);
     try {
-      try { await ensureAdmin(); } catch { /* ignore if service_role not set */ }
       if (aUser.trim().toLowerCase() !== "admin") throw new Error("اسم المستخدم غير صحيح");
-      const { error } = await supabase.auth.signInWithPassword({
+
+      // First try to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: ADMIN_EMAIL,
         password: aPwd,
       });
-      if (error) throw new Error("كلمة المرور غير صحيحة");
+
+      if (!signInError) {
+        navigate({ to: "/", replace: true });
+        return;
+      }
+
+      // If sign-in failed, ensure admin account exists then retry
+      try {
+        await ensureAdmin();
+      } catch (ensureErr) {
+        console.error("ensureDefaultAdmin failed:", ensureErr);
+        throw new Error(
+          "لم يتم إنشاء حساب المدير. تأكد من إعداد SUPABASE_SERVICE_ROLE_KEY في Vercel.",
+        );
+      }
+
+      // Retry sign-in after ensuring admin exists
+      const { error: retryError } = await supabase.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: aPwd,
+      });
+      if (retryError) throw new Error("كلمة المرور غير صحيحة");
       navigate({ to: "/", replace: true });
     } catch (err) {
       toast.error(msg(err));
