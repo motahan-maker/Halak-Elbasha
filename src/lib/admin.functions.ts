@@ -64,7 +64,7 @@ export const claimAdminIfFirst = createServerFn({ method: "POST" })
 /** Admin-only: create a barber auth account + barbers row. */
 export const createBarberAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         name: z.string().trim().min(2).max(80),
@@ -115,7 +115,7 @@ export const createBarberAccount = createServerFn({ method: "POST" })
 
 export const resetBarberPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z.object({ user_id: z.string().uuid(), password: z.string().min(6).max(60) }).parse(d),
   )
   .handler(async ({ context, data }) => {
@@ -134,7 +134,7 @@ export const resetBarberPassword = createServerFn({ method: "POST" })
 
 export const deleteBarberAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ barber_id: z.string().uuid() }).parse(d))
+  .validator((d) => z.object({ barber_id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
