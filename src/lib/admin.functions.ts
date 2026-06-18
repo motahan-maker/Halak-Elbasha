@@ -1,0 +1,157 @@
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
+
+const phoneOnly = (p: string) => p.replace(/[^\d]/g, "");
+const staffEmail = (phone: string) => `${phoneOnly(phone)}@staff.bashapp.local`;
+
+export const ADMIN_EMAIL = "admin@bashapp.local";
+export const ADMIN_DEFAULT_PASSWORD = "admin@123456";
+
+/** Public: ensure built-in admin account exists with the default credentials. Idempotent. */
+export const ensureDefaultAdmin = createServerFn({ method: "POST" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // Find existing
+  const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+  let user = list?.users.find((u) => u.email === ADMIN_EMAIL) ?? null;
+  if (!user) {
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email: ADMIN_EMAIL,
+      password: ADMIN_DEFAULT_PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: "المدير", phone: "admin", role: "admin" },
+    });
+    if (error || !created.user) throw new Error(error?.message ?? "ADMIN_CREATE_FAILED");
+    user = created.user;
+  } else {
+    // reset password to default to keep credentials in sync
+    await supabaseAdmin.auth.admin.updateUserById(user.id, { password: ADMIN_DEFAULT_PASSWORD });
+  }
+  // Ensure profile + admin role
+  await supabaseAdmin
+    .from("profiles")
+    .upsert({ id: user.id, full_name: "المدير", phone: "admin" }, { onConflict: "id" });
+  await supabaseAdmin
+    .from("user_roles")
+    .upsert({ user_id: user.id, role: "admin" }, { onConflict: "user_id,role" });
+  await supabaseAdmin.from("user_roles").delete().eq("user_id", user.id).eq("role", "customer");
+  return { ok: true };
+});
+
+/** Claim admin role: first staff user to call this becomes admin if no admin exists. */
+export const claimAdminIfFirst = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count } = await supabaseAdmin
+      .from("user_roles")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "admin");
+    if ((count ?? 0) > 0) return { ok: false, reason: "ADMIN_EXISTS" };
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: context.userId, role: "admin" }, { onConflict: "user_id,role" });
+    if (error) throw new Error(error.message);
+    // remove customer role if any
+    await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", context.userId)
+      .eq("role", "customer");
+    return { ok: true };
+  });
+
+/** Admin-only: create a barber auth account + barbers row. */
+export const createBarberAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        name: z.string().trim().min(2).max(80),
+        phone: z.string().trim().min(6).max(20),
+        password: z.string().min(6).max(60),
+        specialization: z.string().trim().max(120).optional().nullable(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // verify caller is admin
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("FORBIDDEN");
+
+    const email = staffEmail(data.phone);
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.name, phone: data.phone, role: "barber" },
+    });
+    if (createErr || !created.user) throw new Error(createErr?.message ?? "CREATE_FAILED");
+
+    const uid = created.user.id;
+    // ensure role row
+    await supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: uid, role: "barber" }, { onConflict: "user_id,role" });
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", uid).eq("role", "customer");
+    // ensure profile exists (trigger may have done it)
+    await supabaseAdmin
+      .from("profiles")
+      .upsert({ id: uid, full_name: data.name, phone: data.phone }, { onConflict: "id" });
+    // create barber row
+    const { error: bErr } = await supabaseAdmin.from("barbers").insert({
+      user_id: uid,
+      name: data.name,
+      phone: data.phone,
+      specialization: data.specialization ?? null,
+    });
+    if (bErr) throw new Error(bErr.message);
+    return { ok: true, user_id: uid };
+  });
+
+export const resetBarberPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ user_id: z.string().uuid(), password: z.string().min(6).max(60) }).parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("FORBIDDEN");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+      password: data.password,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteBarberAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ barber_id: z.string().uuid() }).parse(d))
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("FORBIDDEN");
+    const { data: row } = await supabaseAdmin
+      .from("barbers")
+      .select("user_id")
+      .eq("id", data.barber_id)
+      .maybeSingle();
+    await supabaseAdmin.from("barbers").delete().eq("id", data.barber_id);
+    if (row?.user_id) {
+      await supabaseAdmin.auth.admin.deleteUser(row.user_id).catch(() => {});
+    }
+    return { ok: true };
+  });
+
+export const staffEmailFor = staffEmail;
