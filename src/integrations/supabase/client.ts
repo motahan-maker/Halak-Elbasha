@@ -1,22 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
+import { SUPABASE_CONFIG } from "./config";
 
 function createSupabaseClient() {
   const SUPABASE_URL =
-    import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || SUPABASE_CONFIG.url;
   const SUPABASE_PUBLISHABLE_KEY =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    process.env.SUPABASE_PUBLISHABLE_KEY;
-
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    const missing = [
-      ...(!SUPABASE_URL ? ["VITE_SUPABASE_URL"] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ["VITE_SUPABASE_PUBLISHABLE_KEY"] : []),
-    ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(", ")}. Set them in your hosting dashboard (e.g. Vercel → Settings → Environment Variables).`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
-  }
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    SUPABASE_CONFIG.anonKey;
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {

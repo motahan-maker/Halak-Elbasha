@@ -1,19 +1,20 @@
 // Server-side Supabase client with service role key - bypasses RLS.
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
+import { SUPABASE_CONFIG } from "./config";
 
 function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const SUPABASE_URL =
+    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || SUPABASE_CONFIG.url;
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    const missing = [
-      ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
-      ...(!SUPABASE_SERVICE_ROLE_KEY ? ["SUPABASE_SERVICE_ROLE_KEY"] : []),
-    ];
-    const message = `Missing Supabase env var(s): ${missing.join(", ")}. Set them in your hosting dashboard (e.g. Vercel → Settings → Environment Variables).`;
-    console.error(`[Supabase Admin] ${message}`);
-    throw new Error(message);
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    console.error(
+      "[Supabase Admin] SUPABASE_SERVICE_ROLE_KEY is not set. Go to Vercel → Settings → Environment Variables and add it.",
+    );
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is not set. Add it in Vercel → Settings → Environment Variables.",
+    );
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
