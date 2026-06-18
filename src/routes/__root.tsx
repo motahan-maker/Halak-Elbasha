@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
+import { PwaInstallBanner } from "../components/pwa-install-banner";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
@@ -117,12 +118,18 @@ function RootComponent() {
       stored === "dark" ||
       (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
     document.documentElement.classList.toggle("dark", dark);
+
+    // Register service worker for PWA
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster position="top-center" richColors closeButton dir="rtl" />
+      <PwaInstallBanner />
     </QueryClientProvider>
   );
 }
