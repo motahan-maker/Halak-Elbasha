@@ -147,3 +147,32 @@ export const deleteBarberAccount = createServerFn({ method: "POST" })
   });
 
 export const staffEmailFor = staffEmail;
+
+/** Public: sign up a customer via admin API (bypasses email confirmation). */
+export const signUpCustomer = createServerFn({ method: "POST" })
+  .validator((d) =>
+    z
+      .object({
+        name: z.string().trim().min(1),
+        phone: z.string().trim().min(6),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const email = `${phoneOnly(data.phone)}@customer.bashapp.com`;
+    const password = `cust${phoneOnly(data.phone)}`;
+
+    const { data: existing } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const alreadyExists = existing?.users.some((u: { email?: string }) => u.email === email);
+    if (alreadyExists) return { ok: true, email, password };
+
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: data.name, phone: data.phone, role: "customer" },
+    });
+    if (error || !created.user) throw new Error(error?.message ?? "SIGNUP_FAILED");
+    return { ok: true, email, password };
+  });

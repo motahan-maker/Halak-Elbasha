@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, customerEmail, customerPassword, staffEmail } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ensureDefaultAdmin, ADMIN_EMAIL, ADMIN_DEFAULT_PASSWORD } from "@/lib/admin.functions";
+import { ensureDefaultAdmin, signUpCustomer, ADMIN_EMAIL, ADMIN_DEFAULT_PASSWORD } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import { Scissors, User, Lock, Phone, ShieldCheck } from "lucide-react";
 
@@ -51,19 +51,13 @@ function AuthPage() {
     if (cPhone.replace(/[^\d]/g, "").length < 6) return toast.error("رقم جوال غير صالح");
     setCLoading(true);
     try {
-      const email = customerEmail(cPhone);
-      const password = customerPassword(cPhone);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        const { error: e2 } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: cName.trim(), phone: cPhone.trim(), role: "customer" } },
-        });
-        if (e2) throw e2;
-        const { error: e3 } = await supabase.auth.signInWithPassword({ email, password });
-        if (e3) throw e3;
-      }
+      // Use server function to create customer via admin API (bypasses email confirmation)
+      const result = await signUpCustomer({ data: { name: cName.trim(), phone: cPhone.trim() } });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: result.email,
+        password: result.password,
+      });
+      if (error) throw error;
       navigate({ to: "/", replace: true });
     } catch (err) {
       toast.error(msg(err));
