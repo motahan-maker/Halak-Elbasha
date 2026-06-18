@@ -73,6 +73,6 @@ export function useAuth(): AuthState & { refresh: () => Promise<void> } {
 }
 
 export const customerEmail = (phone: string) =>
-  `${phone.replace(/[^\d]/g, "")}@customer.bashapp.local`;
-export const staffEmail = (phone: string) => `${phone.replace(/[^\d]/g, "")}@staff.bashapp.local`;
+  `${phone.replace(/[^\d]/g, "")}@bashapp.com`;
+export const staffEmail = (phone: string) => `${phone.replace(/[^\d]/g, "")}@staff.bashapp.com`;
 export const customerPassword = (phone: string) => `pwd_${phone.replace(/[^\d]/g, "")}_bashapp`;

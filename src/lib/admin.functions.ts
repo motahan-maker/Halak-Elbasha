@@ -3,9 +3,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 const phoneOnly = (p: string) => p.replace(/[^\d]/g, "");
-const staffEmail = (phone: string) => `${phoneOnly(phone)}@staff.bashapp.local`;
+const staffEmail = (phone: string) => `${phoneOnly(phone)}@staff.bashapp.com`;
 
-export const ADMIN_EMAIL = "admin@bashapp.local";
+export const ADMIN_EMAIL = "admin@bashapp.com";
 export const ADMIN_DEFAULT_PASSWORD = "admin@123456";
 
 /** Public: ensure built-in admin account exists with the default credentials. Idempotent. */

@@ -102,6 +102,7 @@ export function BarberApp() {
           filter: `barber_id=eq.${myBarber.data.id}`,
         },
         (payload) => {
+          if (!payload.new || !payload.new.id) return;
           const bookingId = payload.new.id;
           
           // Prevent repeating the sound for the same booking
