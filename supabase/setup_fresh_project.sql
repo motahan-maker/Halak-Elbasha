@@ -130,8 +130,7 @@ CREATE TABLE public.bookings (
   booking_date date NOT NULL,
   booking_time time NOT NULL,
   status public.booking_status NOT NULL DEFAULT 'booked',
-  created_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT bookings_no_double UNIQUE (barber_id, booking_date, booking_time)
+  created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX bookings_customer_idx ON public.bookings(customer_id);
 CREATE INDEX bookings_barber_idx ON public.bookings(barber_id);
