@@ -112,7 +112,7 @@ export const createBarberAccount = createServerFn({ method: "POST" })
 export const resetBarberPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d) =>
-    z.object({ user_id: z.string().uuid(), password: z.string().min(6).max(60) }).parse(d),
+    z.object({ barber_id: z.string().uuid(), password: z.string().min(6).max(60) }).parse(d),
   )
   .handler(async ({ context, data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -121,7 +121,13 @@ export const resetBarberPassword = createServerFn({ method: "POST" })
       _role: "admin",
     });
     if (!isAdmin) throw new Error("FORBIDDEN");
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+    const { data: barber } = await supabaseAdmin
+      .from("barbers")
+      .select("user_id")
+      .eq("id", data.barber_id)
+      .maybeSingle();
+    if (!barber?.user_id) throw new Error("الحلاق ليس له حساب مستخدم مرتبط. قم بحذفه وإعادة إضافته.");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(barber.user_id, {
       password: data.password,
     });
     if (error) throw new Error(error.message);

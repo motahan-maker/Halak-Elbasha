@@ -122,42 +122,40 @@ export function AdminApp() {
 
 /* OVERVIEW */
 function Overview() {
-  const today = isoDate(new Date());
   const stats = useQuery({
     queryKey: ["admin-overview"],
+    staleTime: 30000,
     queryFn: async () => {
-      const [b, c, s, barbersRes] = await Promise.all([
+      const today = isoDate(new Date());
+      const weekAgo = isoDate(new Date(Date.now() - 7 * 86400000));
+      const monthAgo = isoDate(new Date(Date.now() - 30 * 86400000));
+      const [bookingsRes, c, s, barbersRes, reviewAgg] = await Promise.all([
         supabase
           .from("bookings")
-          .select("status, booking_date, service_price, service_name, barber_id"),
+          .select("status, booking_date, service_price, service_name, barber_id")
+          .gte("booking_date", monthAgo),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("services").select("id", { count: "exact", head: true }),
         supabase.from("barbers").select("id, name"),
+        supabase.from("reviews").select("barber_id, rating"),
       ]);
-      const bookings = (b.data ?? []) as any[];
+      const bookings = (bookingsRes.data ?? []) as any[];
       const todayBookings = bookings.filter((x) => x.booking_date === today);
       const completed = bookings.filter((x) => x.status === "completed");
       const cancelled = bookings.filter((x) => x.status === "cancelled");
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - 7);
-      const monthStart = new Date(now);
-      monthStart.setMonth(now.getMonth() - 1);
       const revDay = completed
         .filter((x) => x.booking_date === today)
         .reduce((a, x) => a + Number(x.service_price), 0);
       const revWeek = completed
-        .filter((x) => new Date(x.booking_date) >= weekStart)
+        .filter((x) => x.booking_date >= weekAgo)
         .reduce((a, x) => a + Number(x.service_price), 0);
       const revMonth = completed
-        .filter((x) => new Date(x.booking_date) >= monthStart)
         .reduce((a, x) => a + Number(x.service_price), 0);
       const svcCount: Record<string, number> = {};
       completed.forEach((x) => (svcCount[x.service_name] = (svcCount[x.service_name] ?? 0) + 1));
       const topService = Object.entries(svcCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
-      const { data: reviewAgg } = await supabase.from("reviews").select("barber_id, rating");
       const ratings: Record<string, { s: number; c: number }> = {};
-      (reviewAgg ?? []).forEach((r: any) => {
+      (reviewAgg.data ?? []).forEach((r: any) => {
         ratings[r.barber_id] ??= { s: 0, c: 0 };
         ratings[r.barber_id].s += r.rating;
         ratings[r.barber_id].c += 1;
@@ -321,7 +319,7 @@ function BarbersAdmin() {
             onSave={(d) => update.mutate({ ...b, ...d })}
             onReset={async (pwd) => {
               try {
-                await reset({ data: { user_id: b.user_id, password: pwd } });
+                await reset({ data: { barber_id: b.id, password: pwd } });
                 toast.success("تم إعادة التعيين");
               } catch (e: any) {
                 toast.error(e.message);
@@ -755,10 +753,10 @@ function BookingsAdmin() {
       (
         await supabase
           .from("bookings")
-          .select("*")
+          .select("id, booking_number, customer_name, customer_phone, service_name, service_price, booking_date, booking_time, status, barber_id")
           .order("booking_date", { ascending: false })
           .order("booking_time", { ascending: false })
-          .limit(500)
+          .limit(200)
       ).data ?? [],
   });
   const update = useMutation({
