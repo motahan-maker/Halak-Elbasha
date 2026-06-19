@@ -357,14 +357,18 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
       slot_minutes: barber.slot_minutes ?? settings?.slot_minutes ?? 40,
     };
     const allSlots = generateSlots(cfg, bookedQ.data ?? []);
-    // Filter past slots for today
     const today = isoDate(new Date());
     if (date === today) {
       const now = new Date();
       const nowMin = now.getHours() * 60 + now.getMinutes();
-      return allSlots.filter((s) => {
-        const [h, m] = s.time.split(":").map(Number);
-        return h * 60 + m >= nowMin;
+      return allSlots.map((s) => {
+        if (s.kind === "available") {
+          const [h, m] = s.time.split(":").map(Number);
+          if (h * 60 + m < nowMin) {
+            return { ...s, kind: "past" as const };
+          }
+        }
+        return s;
       });
     }
     return allSlots;
@@ -550,7 +554,9 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     ? "border-success/30 bg-success/10 text-success hover:border-success"
                     : s.kind === "booked"
                       ? "border-destructive/30 bg-destructive/10 text-destructive/70"
-                      : "border-border bg-muted text-muted-foreground";
+                      : s.kind === "past"
+                        ? "border-border bg-muted text-muted-foreground/50"
+                        : "border-border bg-muted text-muted-foreground";
                 return (
                   <button
                     key={s.time}
@@ -564,6 +570,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     {s.label}
                     {s.kind === "break" && <div className="text-[10px] font-normal">استراحة</div>}
                     {s.kind === "booked" && <div className="text-[10px] font-normal">محجوز</div>}
+                    {s.kind === "past" && <div className="text-[10px] font-normal">منتهي</div>}
                   </button>
                 );
               })}

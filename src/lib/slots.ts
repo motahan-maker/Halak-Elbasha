@@ -7,7 +7,7 @@ export interface SlotConfig {
   slot_minutes: number;
 }
 
-export type SlotKind = "available" | "break" | "booked";
+export type SlotKind = "available" | "break" | "booked" | "past";
 export interface Slot {
   time: string; // "HH:MM"
   label: string;
