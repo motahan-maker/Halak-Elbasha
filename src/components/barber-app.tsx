@@ -21,13 +21,32 @@ interface BookingRow {
   status: "booked" | "completed" | "cancelled";
 }
 
+let notifInterval: ReturnType<typeof setInterval> | null = null;
+
 function playNotification(audioRef: React.MutableRefObject<HTMLAudioElement | null>) {
-  try {
-    const a = new Audio("/notification.mp3");
-    a.volume = 1;
-    a.play().catch(() => {});
-    audioRef.current = a;
-  } catch {}
+  // Stop any previous notification loop
+  if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
+  if (audioRef.current) { try { audioRef.current.pause(); } catch {} }
+
+  const a = new Audio("/notification.mp3");
+  a.volume = 1;
+  a.play().catch(() => {});
+  audioRef.current = a;
+
+  // Repeat every ~2 seconds for 10 seconds
+  let elapsed = 0;
+  notifInterval = setInterval(() => {
+    elapsed += 2000;
+    if (elapsed >= 10000) {
+      clearInterval(notifInterval!);
+      notifInterval = null;
+      try { a.pause(); } catch {}
+      return;
+    }
+    const ring = new Audio("/notification.mp3");
+    ring.volume = 1;
+    ring.play().catch(() => {});
+  }, 2000);
 }
 
 export function BarberApp() {
@@ -44,8 +63,7 @@ export function BarberApp() {
     const a = new Audio("/notification.mp3");
     a.volume = 1;
     a.play().then(() => {
-      a.pause();
-      a.currentTime = 0;
+      setTimeout(() => { try { a.pause(); } catch {} }, 1500);
       toast.success("تم تفعيل صوت الإشعارات");
     }).catch(() => {});
   }, []);
