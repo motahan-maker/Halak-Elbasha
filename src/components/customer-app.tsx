@@ -380,10 +380,8 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
           if (isOvernight) {
             if (nowMin >= startMin) {
               isPast = slotMin >= startMin && slotMin < nowMin;
-            } else if (nowMin < endMin) {
-              isPast = true;
             } else {
-              isPast = slotMin < nowMin && slotMin >= endMin;
+              isPast = slotMin >= startMin || slotMin < nowMin;
             }
           } else {
             isPast = slotMin < nowMin;
