@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { arabicDate, isoDate } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
 import { toast } from "sonner";
-import { Phone, LogOut, Scissors, Calendar, Check, Star } from "lucide-react";
+import { Phone, LogOut, Scissors, Calendar, Check, Star, Volume2 } from "lucide-react";
 
 interface BookingRow {
   id: string;
@@ -21,17 +21,33 @@ interface BookingRow {
   status: "booked" | "completed" | "cancelled";
 }
 
+function playNotification(audioRef: React.MutableRefObject<HTMLAudioElement | null>) {
+  try {
+    const a = new Audio("/notification.mp3");
+    a.volume = 1;
+    a.play().catch(() => {});
+    audioRef.current = a;
+  } catch {}
+}
+
 export function BarberApp() {
   const auth = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const notifiedBookings = useRef<Set<string>>(new Set());
+  const prevIdsRef = useRef<Set<string>>(new Set());
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const soundEnabledRef = useRef(false);
 
-  useEffect(() => {
-    // Preload audio
-    audioRef.current = new Audio("/notification.mp3");
-    audioRef.current.load();
+  const enableSound = useCallback(() => {
+    if (soundEnabledRef.current) return;
+    soundEnabledRef.current = true;
+    const a = new Audio("/notification.mp3");
+    a.volume = 1;
+    a.play().then(() => {
+      a.pause();
+      a.currentTime = 0;
+      toast.success("تم تفعيل صوت الإشعارات");
+    }).catch(() => {});
   }, []);
 
   const myBarber = useQuery({
@@ -50,6 +66,7 @@ export function BarberApp() {
   const bookings = useQuery<BookingRow[]>({
     queryKey: ["barber-bookings", myBarber.data?.id],
     enabled: !!myBarber.data?.id,
+    refetchInterval: 5000,
     queryFn: async () => {
       const { data } = await supabase
         .from("bookings")
@@ -60,6 +77,27 @@ export function BarberApp() {
       return (data ?? []) as BookingRow[];
     },
   });
+
+  // Detect new bookings and play sound
+  useEffect(() => {
+    if (!bookings.data) return;
+    const currentIds = new Set(bookings.data.map((b) => b.id));
+    if (prevIdsRef.current.size > 0) {
+      for (const id of currentIds) {
+        if (!prevIdsRef.current.has(id)) {
+          const booking = bookings.data.find((b) => b.id === id);
+          if (booking && booking.status === "booked") {
+            if (soundEnabledRef.current) playNotification(audioRef);
+            toast.success("حجز جديد!", {
+              description: `${booking.customer_name} — ${booking.service_name} ${formatTime(booking.booking_time)}`,
+              duration: 8000,
+            });
+          }
+        }
+      }
+    }
+    prevIdsRef.current = currentIds;
+  }, [bookings.data]);
 
   const reviews = useQuery({
     queryKey: ["barber-reviews", myBarber.data?.id],
@@ -88,55 +126,6 @@ export function BarberApp() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
-  useEffect(() => {
-    if (!myBarber.data?.id) return;
-
-    const channel = supabase
-      .channel("new-bookings")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "bookings",
-          filter: `barber_id=eq.${myBarber.data.id}`,
-        },
-        (payload) => {
-          if (!payload.new || !payload.new.id) return;
-          const bookingId = payload.new.id;
-          
-          // Prevent repeating the sound for the same booking
-          if (notifiedBookings.current.has(bookingId)) return;
-          notifiedBookings.current.add(bookingId);
-
-          // Play premium notification sound
-          if (audioRef.current) {
-            audioRef.current.currentTime = 0;
-            audioRef.current.play().catch((e) => {
-              console.error("Error playing sound:", e);
-              // Fallback: try creating a new instance if preloaded fails
-              const fallbackAudio = new Audio("/notification.mp3");
-              fallbackAudio.play().catch(err => console.error("Fallback audio failed:", err));
-            });
-          }
-
-          // Show toast notification
-          toast.success("تم استلام حجز جديد! 🛎️", {
-            description: `لديك حجز جديد من ${payload.new.customer_name || "عميل"}`,
-            duration: 6000,
-          });
-
-          // Refresh the bookings list
-          qc.invalidateQueries({ queryKey: ["barber-bookings"] });
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [myBarber.data?.id, qc]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -186,14 +175,11 @@ export function BarberApp() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <button
-              onClick={() => audioRef.current?.play().then(() => {
-                audioRef.current?.pause();
-                toast.info("تم تفعيل صوت الإشعارات");
-              })}
+              onClick={enableSound}
               className="grid h-9 w-9 place-items-center rounded-full border border-border text-primary"
               title="تفعيل الصوت"
             >
-              <Scissors className="h-4 w-4" />
+              <Volume2 className="h-4 w-4" />
             </button>
             <ThemeToggle />
             <button
