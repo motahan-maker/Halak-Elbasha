@@ -530,32 +530,45 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
       {step === "time" && (
         <div>
           <h2 className="mb-3 text-xl font-black">اختر الوقت</h2>
-          <div className="grid grid-cols-3 gap-2">
-            {slots.map((s) => {
-              const disabled = s.kind !== "available";
-              const styles =
-                s.kind === "available"
-                  ? "border-success/30 bg-success/10 text-success hover:border-success"
-                  : s.kind === "booked"
-                    ? "border-destructive/30 bg-destructive/10 text-destructive/70"
-                    : "border-border bg-muted text-muted-foreground";
-              return (
-                <button
-                  key={s.time}
-                  disabled={disabled}
-                  onClick={() => {
-                    setTime(s.time);
-                    setStep("confirm");
-                  }}
-                  className={`rounded-xl border p-2.5 text-sm font-bold transition ${styles} ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
-                >
-                  {s.label}
-                  {s.kind === "break" && <div className="text-[10px] font-normal">استراحة</div>}
-                  {s.kind === "booked" && <div className="text-[10px] font-normal">محجوز</div>}
-                </button>
-              );
-            })}
-          </div>
+          {slots.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-card/40 p-10 text-center">
+              <div className="text-lg font-bold">لا توجد مواعيد متاحة</div>
+              <div className="mt-1 text-sm text-muted-foreground">لا يوجد وقت متاح لهذا اليوم</div>
+              <button
+                onClick={() => setStep("date")}
+                className="mt-4 rounded-xl border border-border px-4 py-2 text-sm font-bold"
+              >
+                اختر تاريخاً آخر
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {slots.map((s) => {
+                const disabled = s.kind !== "available";
+                const styles =
+                  s.kind === "available"
+                    ? "border-success/30 bg-success/10 text-success hover:border-success"
+                    : s.kind === "booked"
+                      ? "border-destructive/30 bg-destructive/10 text-destructive/70"
+                      : "border-border bg-muted text-muted-foreground";
+                return (
+                  <button
+                    key={s.time}
+                    disabled={disabled}
+                    onClick={() => {
+                      setTime(s.time);
+                      setStep("confirm");
+                    }}
+                    className={`rounded-xl border p-2.5 text-sm font-bold transition ${styles} ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
+                  >
+                    {s.label}
+                    {s.kind === "break" && <div className="text-[10px] font-normal">استراحة</div>}
+                    {s.kind === "booked" && <div className="text-[10px] font-normal">محجوز</div>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

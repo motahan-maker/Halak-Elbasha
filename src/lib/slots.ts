@@ -34,14 +34,18 @@ const arabicHour12 = (t: string) => {
 export function generateSlots(cfg: SlotConfig, bookedTimes: string[] = []): Slot[] {
   const start = toMin(cfg.start_time);
   const end = toMin(cfg.end_time);
+  const dur = cfg.slot_minutes || 40;
+
+  if (isNaN(start) || isNaN(end) || isNaN(dur) || dur <= 0 || start >= end) {
+    return [];
+  }
+
   const bs = cfg.break_start ? toMin(cfg.break_start) : null;
   const be = cfg.break_end ? toMin(cfg.break_end) : null;
-  const dur = cfg.slot_minutes;
   const booked = new Set(bookedTimes.map((t) => t.slice(0, 5)));
 
   const slots: Slot[] = [];
-  for (let t = start; t + dur <= end + dur; t += dur) {
-    if (t >= end) break;
+  for (let t = start; t < end; t += dur) {
     const time = fromMin(t);
     const isBreak = bs !== null && be !== null && t >= bs && t < be;
     const isBooked = booked.has(time);
