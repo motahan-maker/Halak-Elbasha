@@ -148,6 +148,19 @@ export const deleteBarberAccount = createServerFn({ method: "POST" })
 
 export const staffEmailFor = staffEmail;
 
+/** Customer or admin: cancel a booking via server to bypass RLS issues. */
+export const cancelBooking = createServerFn({ method: "POST" })
+  .validator((d) => z.object({ booking_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", data.booking_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 /** Public: sign up a customer via admin API (bypasses email confirmation). */
 export const signUpCustomer = createServerFn({ method: "POST" })
   .validator((d) =>

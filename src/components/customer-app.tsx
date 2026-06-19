@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { generateSlots, type Slot } from "@/lib/slots";
 import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink } from "@/lib/format";
+import { cancelBooking } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import {
   Scissors,
@@ -311,15 +313,10 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
   const workingDays = barber?.working_days ?? settings.working_days;
   const dates = useMemo(() => {
-    const out: { iso: string; date: Date; available: boolean }[] = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      out.push({ iso: isoDate(d), date: d, available: (workingDays ?? []).includes(d.getDay()) });
-    }
-    return out;
+    const available = (workingDays ?? []).includes(today.getDay());
+    return [{ iso: isoDate(today), date: today, available }];
   }, [workingDays]);
 
   const bookedQ = useQuery<string[]>({
@@ -338,7 +335,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
   const slots: Slot[] = useMemo(() => {
     if (!date || !barber) return [];
-    return generateSlots(
+    const allSlots = generateSlots(
       {
         start_time: barber.start_time ?? settings.start_time,
         end_time: barber.end_time ?? settings.end_time,
@@ -348,6 +345,17 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
       },
       bookedQ.data ?? [],
     );
+    // Filter past slots for today
+    const today = isoDate(new Date());
+    if (date === today) {
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      return allSlots.filter((s) => {
+        const [h, m] = s.time.split(":").map(Number);
+        return h * 60 + m >= nowMin;
+      });
+    }
+    return allSlots;
   }, [date, barber, settings, bookedQ.data]);
 
   const confirm = useMutation({
@@ -483,13 +491,13 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                 className={`rounded-2xl border p-3 text-center shadow-card transition ${
                   !d.available
                     ? "border-border bg-muted opacity-50"
-                    : "border-border bg-card hover:border-primary"
+                    : "border-success/30 bg-success/10 hover:border-success"
                 }`}
               >
-                <div className="text-xs text-muted-foreground">{ARABIC_DAYS[d.date.getDay()]}</div>
+                <div className="text-xs text-muted-foreground">اليوم</div>
                 <div className="mt-1 text-lg font-black">{d.date.getDate()}</div>
                 <div className="text-[10px] text-muted-foreground">
-                  {arabicShortDate(d.date).split(" ").slice(-1)[0]}
+                  {ARABIC_DAYS[d.date.getDay()]}
                 </div>
               </button>
             ))}
@@ -656,13 +664,10 @@ function BookingsList() {
     },
   });
 
+  const cancelFn = useServerFn(cancelBooking);
   const cancel = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("bookings")
-        .update({ status: "cancelled" })
-        .eq("id", id);
-      if (error) throw new Error(error.message);
+      await cancelFn({ data: { booking_id: id } });
     },
     onSuccess: () => {
       toast.success("تم إلغاء الحجز");
