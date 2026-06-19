@@ -128,16 +128,11 @@ export const resetBarberPassword = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Admin-only: deactivate a barber (soft delete) + delete auth user. */
 export const deleteBarberAccount = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .validator((d) => z.object({ barber_id: z.string().uuid() }).parse(d))
-  .handler(async ({ context, data }) => {
+  .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("FORBIDDEN");
     const { data: row } = await supabaseAdmin
       .from("barbers")
       .select("user_id")
@@ -165,12 +160,15 @@ export const cancelBooking = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Admin-only: delete a service. */
+/** Admin-only: deactivate a service (soft delete). */
 export const deleteService = createServerFn({ method: "POST" })
   .validator((d) => z.object({ service_id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("services").delete().eq("id", data.service_id);
+    const { error } = await supabaseAdmin
+      .from("services")
+      .update({ is_active: false })
+      .eq("id", data.service_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

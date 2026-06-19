@@ -167,9 +167,10 @@ function CustomerHome({
   });
 
   if (wizardOpen) {
+    if (!settings) return <div className="p-10 text-center">جارٍ التحميل...</div>;
     return (
       <BookingWizard
-        settings={settings!}
+        settings={settings}
         onDone={() => {
           setWizardOpen(false);
           onBook();
