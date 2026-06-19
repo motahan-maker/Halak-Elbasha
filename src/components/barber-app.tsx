@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { arabicDate, isoDate } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
 import { toast } from "sonner";
-import { Phone, LogOut, Scissors, Calendar, Check, Star, Volume2 } from "lucide-react";
+import { Phone, LogOut, Scissors, Calendar, Check, Star } from "lucide-react";
 
 interface BookingRow {
   id: string;
@@ -22,31 +22,87 @@ interface BookingRow {
 }
 
 let notifInterval: ReturnType<typeof setInterval> | null = null;
+let audioCtx: AudioContext | null = null;
 
-function playNotification(audioRef: React.MutableRefObject<HTMLAudioElement | null>) {
-  // Stop any previous notification loop
-  if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
-  if (audioRef.current) { try { audioRef.current.pause(); } catch {} }
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioContext();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
 
-  const a = new Audio("/notification.mp3");
-  a.volume = 1;
-  a.play().catch(() => {});
-  audioRef.current = a;
+function playLoudBeep(freq: number, duration: number) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.value = 1;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.stop(ctx.currentTime + duration);
+  } catch {}
+}
 
-  // Repeat every ~2 seconds for 10 seconds
+function playAlarmPattern() {
+  playLoudBeep(880, 0.15);
+  setTimeout(() => playLoudBeep(1100, 0.15), 200);
+  setTimeout(() => playLoudBeep(880, 0.15), 400);
+  setTimeout(() => playLoudBeep(1100, 0.15), 600);
+}
+
+function startNotificationLoop() {
+  stopNotificationLoop();
+  playAlarmPattern();
   let elapsed = 0;
   notifInterval = setInterval(() => {
     elapsed += 2000;
     if (elapsed >= 10000) {
-      clearInterval(notifInterval!);
-      notifInterval = null;
-      try { a.pause(); } catch {}
+      stopNotificationLoop();
       return;
     }
-    const ring = new Audio("/notification.mp3");
-    ring.volume = 1;
-    ring.play().catch(() => {});
+    playAlarmPattern();
   }, 2000);
+}
+
+function stopNotificationLoop() {
+  if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
+}
+
+let swReady = false;
+
+async function registerServiceWorker() {
+  if (swReady) return;
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    swReady = true;
+  } catch {}
+}
+
+function sendSwConfig(barberId: string) {
+  const sw = navigator.serviceWorker?.controller;
+  if (!sw) return;
+  import("@/integrations/supabase/config").then(({ SUPABASE_CONFIG }) => {
+    sw.postMessage({
+      type: "CONFIG",
+      barberId,
+      supabaseUrl: SUPABASE_CONFIG.url,
+      supabaseKey: SUPABASE_CONFIG.anonKey,
+    });
+  });
+}
+
+function showBrowserNotification(title: string, body: string) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  if (navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: "SHOW_NOTIFICATION", title, body });
+  } else {
+    try { new Notification(title, { body, tag: "new-booking", requireInteraction: true }); } catch {}
+  }
 }
 
 export function BarberApp() {
@@ -54,19 +110,24 @@ export function BarberApp() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const prevIdsRef = useRef<Set<string>>(new Set());
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const soundEnabledRef = useRef(false);
 
-  const enableSound = useCallback(() => {
-    if (soundEnabledRef.current) return;
-    soundEnabledRef.current = true;
-    const a = new Audio("/notification.mp3");
-    a.volume = 1;
-    a.play().then(() => {
-      setTimeout(() => { try { a.pause(); } catch {} }, 1500);
-      toast.success("تم تفعيل صوت الإشعارات");
-    }).catch(() => {});
-  }, []);
+  // Auto-register service worker, request notification permission, and resume AudioContext
+  useEffect(() => {
+    if (!auth.user) return;
+    registerServiceWorker().then(() => {
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission().then((perm) => {
+          if (perm === "granted") getAudioCtx();
+        });
+      } else if (Notification.permission === "granted") {
+        getAudioCtx();
+      }
+    });
+    // Also resume on any click as fallback
+    const resume = () => { getAudioCtx(); document.removeEventListener("click", resume); };
+    document.addEventListener("click", resume);
+    return () => document.removeEventListener("click", resume);
+  }, [auth.user]);
 
   const myBarber = useQuery({
     queryKey: ["my-barber", auth.user?.id],
@@ -80,6 +141,13 @@ export function BarberApp() {
       return data;
     },
   });
+
+  // Send barber config to service worker for background polling
+  useEffect(() => {
+    if (myBarber.data?.id) {
+      registerServiceWorker().then(() => sendSwConfig(myBarber.data!.id!));
+    }
+  }, [myBarber.data?.id]);
 
   const bookings = useQuery<BookingRow[]>({
     queryKey: ["barber-bookings", myBarber.data?.id],
@@ -105,11 +173,10 @@ export function BarberApp() {
         if (!prevIdsRef.current.has(id)) {
           const booking = bookings.data.find((b) => b.id === id);
           if (booking && booking.status === "booked") {
-            if (soundEnabledRef.current) playNotification(audioRef);
-            toast.success("حجز جديد!", {
-              description: `${booking.customer_name} — ${booking.service_name} ${formatTime(booking.booking_time)}`,
-              duration: 8000,
-            });
+            startNotificationLoop();
+            const desc = `${booking.customer_name} — ${booking.service_name} ${formatTime(booking.booking_time)}`;
+            toast.success("حجز جديد!", { description: desc, duration: 8000 });
+            showBrowserNotification("حجز جديد! " + booking.customer_name, desc);
           }
         }
       }
@@ -192,13 +259,6 @@ export function BarberApp() {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <button
-              onClick={enableSound}
-              className="grid h-9 w-9 place-items-center rounded-full border border-border text-primary"
-              title="تفعيل الصوت"
-            >
-              <Volume2 className="h-4 w-4" />
-            </button>
             <ThemeToggle />
             <button
               onClick={signOut}

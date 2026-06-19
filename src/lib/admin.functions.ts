@@ -165,6 +165,16 @@ export const cancelBooking = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Admin-only: delete a service. */
+export const deleteService = createServerFn({ method: "POST" })
+  .validator((d) => z.object({ service_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("services").delete().eq("id", data.service_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 /** Public: sign up a customer via admin API (bypasses email confirmation). */
 export const signUpCustomer = createServerFn({ method: "POST" })
   .validator((d) =>

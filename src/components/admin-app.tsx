@@ -9,6 +9,7 @@ import {
   createBarberAccount,
   resetBarberPassword,
   deleteBarberAccount,
+  deleteService,
 } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import { arabicDate, isoDate } from "@/lib/format";
@@ -624,15 +625,16 @@ function ServicesAdmin() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-services"] }),
   });
+  const delServer = useServerFn(deleteService);
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("services").delete().eq("id", id);
-      if (error) throw new Error(error.message);
+      await delServer({ data: { service_id: id } });
     },
     onSuccess: () => {
       toast.success("تم الحذف");
       qc.invalidateQueries({ queryKey: ["admin-services"] });
     },
+    onError: (e: Error) => toast.error(e.message),
   });
   return (
     <div className="space-y-3">
