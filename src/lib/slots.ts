@@ -2,12 +2,10 @@
 export interface SlotConfig {
   start_time: string; // "HH:MM" or "HH:MM:SS"
   end_time: string;
-  break_start: string | null;
-  break_end: string | null;
   slot_minutes: number;
 }
 
-export type SlotKind = "available" | "break" | "booked" | "past";
+export type SlotKind = "available" | "booked" | "past";
 export interface Slot {
   time: string; // "HH:MM"
   label: string;
@@ -40,37 +38,25 @@ export function generateSlots(cfg: SlotConfig, bookedTimes: string[] = []): Slot
     return [];
   }
 
-  const bs = cfg.break_start ? toMin(cfg.break_start) : null;
-  const be = cfg.break_end ? toMin(cfg.break_end) : null;
   const booked = new Set(bookedTimes.map((t) => t.slice(0, 5)));
-
-  const isBreak = (min: number) => {
-    if (bs === null || be === null) return false;
-    if (start < end) {
-      return min >= bs && min < be;
-    }
-    // Overnight: break could be in either leg
-    return (min >= bs && min < 1440) || (min >= 0 && min < be);
-  };
 
   const slots: Slot[] = [];
   if (start < end) {
     for (let t = start; t < end; t += dur) {
-      const time = fromMin(t % 1440);
+      const time = fromMin(t);
       slots.push({
         time,
         label: arabicHour12(time),
-        kind: isBreak(t) ? "break" : booked.has(time) ? "booked" : "available",
+        kind: booked.has(time) ? "booked" : "available",
       });
     }
   } else {
-    // Overnight shift: start → midnight, then midnight → end
     for (let t = start; t < 1440; t += dur) {
       const time = fromMin(t % 1440);
       slots.push({
         time,
         label: arabicHour12(time),
-        kind: isBreak(t) ? "break" : booked.has(time) ? "booked" : "available",
+        kind: booked.has(time) ? "booked" : "available",
       });
     }
     for (let t = 0; t < end; t += dur) {
@@ -78,7 +64,7 @@ export function generateSlots(cfg: SlotConfig, bookedTimes: string[] = []): Slot
       slots.push({
         time,
         label: arabicHour12(time),
-        kind: isBreak(t) ? "break" : booked.has(time) ? "booked" : "available",
+        kind: booked.has(time) ? "booked" : "available",
       });
     }
   }

@@ -43,8 +43,6 @@ interface Barber {
   working_days: number[];
   start_time: string;
   end_time: string;
-  break_start: string | null;
-  break_end: string | null;
   slot_minutes: number;
 }
 interface Booking {
@@ -74,8 +72,6 @@ interface Settings {
   working_days: number[];
   start_time: string;
   end_time: string;
-  break_start: string | null;
-  break_end: string | null;
   slot_minutes: number;
 }
 
@@ -367,8 +363,6 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
     const cfg = {
       start_time: barber.start_time ?? settings?.start_time ?? "10:00",
       end_time: barber.end_time ?? settings?.end_time ?? "23:00",
-      break_start: barber.break_start ?? settings?.break_start ?? null,
-      break_end: barber.break_end ?? settings?.break_end ?? null,
       slot_minutes: barber.slot_minutes ?? settings?.slot_minutes ?? 40,
     };
     const allSlots = generateSlots(cfg, bookedQ.data ?? []);
@@ -596,7 +590,6 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     className={`rounded-xl border p-2.5 text-sm font-bold transition ${styles} ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
                   >
                     {s.label}
-                    {s.kind === "break" && <div className="text-[10px] font-normal">استراحة</div>}
                     {s.kind === "booked" && <div className="text-[10px] font-normal">محجوز</div>}
                     {s.kind === "past" && <div className="text-[10px] font-normal">منتهي</div>}
                   </button>

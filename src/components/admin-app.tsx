@@ -280,8 +280,6 @@ function BarbersAdmin() {
         "working_days",
         "start_time",
         "end_time",
-        "break_start",
-        "break_end",
         "slot_minutes",
       ].forEach((k) => {
         if (k in rest) allowed[k] = (rest as any)[k];
@@ -399,8 +397,6 @@ function BarberRow({
     working_days: (b.working_days ?? [0, 1, 2, 3, 4, 6]) as number[],
     start_time: (b.start_time ?? "10:00").slice(0, 5),
     end_time: (b.end_time ?? "23:00").slice(0, 5),
-    break_start: (b.break_start ?? "").slice(0, 5),
-    break_end: (b.break_end ?? "").slice(0, 5),
     slot_minutes: b.slot_minutes ?? 40,
   });
   const toggleDay = (n: number) => {
@@ -545,18 +541,6 @@ function BarberRow({
               onChange={(v) => setSched({ ...sched, end_time: v })}
             />
             <Input
-              label="بداية الاستراحة"
-              type="time"
-              value={sched.break_start}
-              onChange={(v) => setSched({ ...sched, break_start: v })}
-            />
-            <Input
-              label="نهاية الاستراحة"
-              type="time"
-              value={sched.break_end}
-              onChange={(v) => setSched({ ...sched, break_end: v })}
-            />
-            <Input
               label="مدة الموعد (د)"
               type="number"
               value={String(sched.slot_minutes)}
@@ -570,8 +554,6 @@ function BarberRow({
                   working_days: sched.working_days,
                   start_time: sched.start_time,
                   end_time: sched.end_time,
-                  break_start: sched.break_start || null,
-                  break_end: sched.break_end || null,
                   slot_minutes: sched.slot_minutes,
                 });
                 setScheduling(false);
@@ -1082,8 +1064,6 @@ function SettingsForm({ initial, onSave }: { initial: any; onSave: (d: any) => v
       working_days: f.working_days ?? [],
       start_time: f.start_time,
       end_time: f.end_time,
-      break_start: f.break_start || null,
-      break_end: f.break_end || null,
     });
   };
   return (
@@ -1118,22 +1098,6 @@ function SettingsForm({ initial, onSave }: { initial: any; onSave: (d: any) => v
             label="نهاية العمل"
             value={f.end_time?.slice(0, 5) ?? ""}
             onChange={(v) => set("end_time", v)}
-            type="time"
-          />
-        </div>
-      </Group>
-      <Group title="الاستراحة">
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            label="بداية الاستراحة"
-            value={f.break_start?.slice(0, 5) ?? ""}
-            onChange={(v) => set("break_start", v || null)}
-            type="time"
-          />
-          <Input
-            label="نهاية الاستراحة"
-            value={f.break_end?.slice(0, 5) ?? ""}
-            onChange={(v) => set("break_end", v || null)}
             type="time"
           />
         </div>
