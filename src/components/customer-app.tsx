@@ -281,6 +281,11 @@ function BarbersShowcase() {
 }
 
 /* -------- WIZARD -------- */
+function toMinTime(t: string) {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
 function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () => void }) {
   const auth = useAuth();
   const [step, setStep] = useState<Step>("service");
@@ -293,22 +298,30 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   const services = useQuery<Service[]>({
     queryKey: ["services", "active"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("services")
         .select("*")
         .eq("is_active", true)
         .order("price");
+      if (error) {
+        console.error("services query error:", error);
+        return [];
+      }
       return (data ?? []) as Service[];
     },
   });
   const barbers = useQuery<Barber[]>({
     queryKey: ["barbers", "active"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("barbers")
         .select("*")
         .eq("is_active", true)
         .order("name");
+      if (error) {
+        console.error("barbers query error:", error);
+        return [];
+      }
       return (data ?? []) as Barber[];
     },
   });
@@ -337,13 +350,15 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
     queryKey: ["booked", barber?.id, date],
     enabled: !!barber && !!date,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("bookings")
-        .select("booking_time")
-        .eq("barber_id", barber!.id)
-        .eq("booking_date", date!)
-        .neq("status", "cancelled");
-      return (data ?? []).map((r) => (r as any).booking_time as string);
+      const { data, error } = await supabase.rpc("get_booked_times", {
+        _barber_id: barber!.id,
+        _booking_date: date!,
+      });
+      if (error) {
+        console.error("get_booked_times error:", error);
+        return [];
+      }
+      return (data ?? []).map((r: any) => r.booking_time as string);
     },
   });
 
@@ -361,12 +376,25 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
     if (date === today) {
       const now = new Date();
       const nowMin = now.getHours() * 60 + now.getMinutes();
+      const startMin = toMinTime(cfg.start_time);
+      const endMin = toMinTime(cfg.end_time);
+      const isOvernight = startMin >= endMin;
       return allSlots.map((s) => {
         if (s.kind === "available") {
-          const [h, m] = s.time.split(":").map(Number);
-          if (h * 60 + m < nowMin) {
-            return { ...s, kind: "past" as const };
+          const slotMin = toMinTime(s.time);
+          let isPast = false;
+          if (isOvernight) {
+            if (nowMin >= startMin) {
+              isPast = slotMin >= startMin && slotMin < nowMin;
+            } else if (nowMin < endMin) {
+              isPast = true;
+            } else {
+              isPast = slotMin < nowMin && slotMin >= endMin;
+            }
+          } else {
+            isPast = slotMin < nowMin;
           }
+          if (isPast) return { ...s, kind: "past" as const };
         }
         return s;
       });

@@ -137,11 +137,15 @@ export function BarberApp() {
     queryKey: ["my-barber", auth.user?.id],
     enabled: !!auth.user,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("barbers")
         .select("*")
         .eq("user_id", auth.user!.id)
         .maybeSingle();
+      if (error) {
+        console.error("myBarber query error:", error);
+        return null;
+      }
       return data;
     },
   });
@@ -172,12 +176,16 @@ export function BarberApp() {
     enabled: !!myBarber.data?.id,
     refetchInterval: 5000,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("bookings")
         .select("*")
         .eq("barber_id", myBarber.data!.id)
         .order("booking_date", { ascending: true })
         .order("booking_time", { ascending: true });
+      if (error) {
+        console.error("barber bookings query error:", error);
+        return [];
+      }
       return (data ?? []) as BookingRow[];
     },
   });
@@ -206,11 +214,15 @@ export function BarberApp() {
     queryKey: ["barber-reviews", myBarber.data?.id],
     enabled: !!myBarber.data?.id,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("reviews")
         .select("*")
         .eq("barber_id", myBarber.data!.id)
         .order("created_at", { ascending: false });
+      if (error) {
+        console.error("barber reviews query error:", error);
+        return [];
+      }
       return data ?? [];
     },
   });
