@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { generateSlots, formatTime, type Slot } from "@/lib/slots";
 import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink } from "@/lib/format";
-import { cancelBooking } from "@/lib/admin.functions";
+import { cancelBooking, notifyBarbers } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import {
   Scissors,
@@ -50,6 +50,7 @@ interface Barber {
 interface Booking {
   id: string;
   booking_number: string | null;
+  customer_name: string;
   service_name: string;
   service_price: number;
   booking_date: string;
@@ -390,6 +391,14 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
     onSuccess: (b) => {
       setCreated(b);
       setStep("success");
+      // Send push notification to barber
+      notifyBarbers({
+        data: {
+          barber_id: b.barber_id,
+          title: "حجز جديد!",
+          body: `${b.customer_name} — ${b.service_name} ${formatTime(b.booking_time)}`,
+        },
+      }).catch(() => {});
     },
     onError: (e: Error) => toast.error(e.message),
   });

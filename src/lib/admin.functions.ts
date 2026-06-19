@@ -203,3 +203,78 @@ export const signUpCustomer = createServerFn({ method: "POST" })
     if (error || !created.user) throw new Error(error?.message ?? "SIGNUP_FAILED");
     return { ok: true, email, password };
   });
+
+/** Save push subscription for a barber. */
+export const savePushSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d) =>
+    z.object({
+      endpoint: z.string(),
+      p256dh: z.string(),
+      auth: z.string(),
+    }).parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("push_subscriptions")
+      .upsert(
+        { user_id: context.userId, endpoint: data.endpoint, p256dh: data.p256dh, auth: data.auth },
+        { onConflict: "user_id,endpoint" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Send push notification to all barbers about a new booking. */
+export const notifyBarbers = createServerFn({ method: "POST" })
+  .validator((d) =>
+    z.object({
+      barber_id: z.string().uuid(),
+      title: z.string(),
+      body: z.string(),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const webPush = (await import("web-push")).default;
+
+    const { SUPABASE_CONFIG } = await import("@/integrations/supabase/config");
+    webPush.setVapidDetails(
+      SUPABASE_CONFIG.vapidEmail,
+      SUPABASE_CONFIG.vapidPublicKey,
+      SUPABASE_CONFIG.vapidPrivateKey,
+    );
+
+    // Get barber's user_id
+    const { data: barber } = await supabaseAdmin
+      .from("barbers")
+      .select("user_id")
+      .eq("id", data.barber_id)
+      .maybeSingle();
+    if (!barber?.user_id) return { ok: true };
+
+    // Get all subscriptions for this user
+    const { data: subs } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("*")
+      .eq("user_id", barber.user_id);
+    if (!subs?.length) return { ok: true };
+
+    const payload = JSON.stringify({ title: data.title, body: data.body });
+    const results = await Promise.allSettled(
+      subs.map(async (sub: { id: string; endpoint: string; p256dh: string; auth: string }) => {
+        try {
+          await webPush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            payload,
+          );
+        } catch (err: any) {
+          if (err.statusCode === 404 || err.statusCode === 410) {
+            await supabaseAdmin.from("push_subscriptions").delete().eq("id", sub.id);
+          }
+        }
+      }),
+    );
+    return { ok: true, sent: results.length };
+  });

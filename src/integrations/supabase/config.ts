@@ -5,4 +5,7 @@ export const SUPABASE_CONFIG = {
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tYnR1dXdzYXZxcWt2ZnZjbmdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3OTQwMzYsImV4cCI6MjA5NzM3MDAzNn0.9JdL1qUbl4mi0sD-gGIZSNRJabdayCC5bPD74rz5OT0",
   serviceRoleKey:
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tYnR1dXdzYXZxcWt2ZnZjbmdjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTc5NDAzNiwiZXhwIjoyMDk3MzcwMDM2fQ.h4p4PV2hekvIT9j2pZZQ7DwylULOrq_OpRe8WURYWRM",
+  vapidPublicKey: "BAm8MXVb3anA_Zx14QivwaMplDCNxwpJkOQhDkd9ipvDXqWXg5HNgkP8r7LV1dtZY_baaa6KBqMR1Llw1NZ9V-8",
+  vapidPrivateKey: "JURkK33VzEP3zuBnQl_7toIWr-xS5jTq-Qo4Xcws6tk",
+  vapidEmail: "mailto:admin@bashapp.com",
 };

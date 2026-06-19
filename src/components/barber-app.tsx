@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { savePushSubscription } from "@/lib/admin.functions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { arabicDate, isoDate } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
@@ -35,7 +36,7 @@ function playLoudBeep(freq: number, duration: number) {
     const ctx = getAudioCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = "sine";
+    osc.type = "square";
     osc.frequency.value = freq;
     gain.gain.value = 1;
     osc.connect(gain);
@@ -47,10 +48,11 @@ function playLoudBeep(freq: number, duration: number) {
 }
 
 function playAlarmPattern() {
-  playLoudBeep(880, 0.15);
-  setTimeout(() => playLoudBeep(1100, 0.15), 200);
-  setTimeout(() => playLoudBeep(880, 0.15), 400);
-  setTimeout(() => playLoudBeep(1100, 0.15), 600);
+  // High frequency loud alarm: beep-beep-beep-beep, repeat
+  playLoudBeep(2000, 0.12);
+  setTimeout(() => playLoudBeep(2500, 0.12), 150);
+  setTimeout(() => playLoudBeep(2000, 0.12), 300);
+  setTimeout(() => playLoudBeep(2500, 0.12), 450);
 }
 
 function startNotificationLoop() {
@@ -92,6 +94,8 @@ function sendSwConfig(barberId: string) {
       barberId,
       supabaseUrl: SUPABASE_CONFIG.url,
       supabaseKey: SUPABASE_CONFIG.anonKey,
+      vapidPublicKey: SUPABASE_CONFIG.vapidPublicKey,
+      supabaseAnonKey: SUPABASE_CONFIG.anonKey,
     });
   });
 }
@@ -148,6 +152,20 @@ export function BarberApp() {
       registerServiceWorker().then(() => sendSwConfig(myBarber.data!.id!));
     }
   }, [myBarber.data?.id]);
+
+  // Listen for subscription save requests from service worker
+  useEffect(() => {
+    const handler = async (e: MessageEvent) => {
+      if (e.data?.type === "SAVE_SUBSCRIPTION") {
+        const sub = e.data.subscription;
+        savePushSubscription({
+          data: { endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth },
+        }).catch(() => {});
+      }
+    };
+    navigator.serviceWorker?.addEventListener("message", handler);
+    return () => navigator.serviceWorker?.removeEventListener("message", handler);
+  }, []);
 
   const bookings = useQuery<BookingRow[]>({
     queryKey: ["barber-bookings", myBarber.data?.id],

@@ -1,4 +1,4 @@
-// Service worker: background polling + notifications
+// Service worker: push notifications + background polling
 const POLL_INTERVAL = 10000;
 let pollTimer = null;
 let barberId = null;
@@ -15,7 +15,6 @@ self.addEventListener("message", (e) => {
     barberId = e.data.barberId;
     supabaseUrl = e.data.supabaseUrl;
     supabaseKey = e.data.supabaseKey;
-    // Load known IDs from storage
     e.waitUntil(
       caches.open("bg-v1").then(async (cache) => {
         try {
@@ -28,6 +27,8 @@ self.addEventListener("message", (e) => {
       })
     );
     startPolling();
+    // Subscribe to push notifications
+    subscribeToPush(e.data.vapidPublicKey, e.data.supabaseUrl, e.data.supabaseAnonKey);
   } else if (type === "STOP") {
     stopPolling();
   } else if (type === "SHOW_NOTIFICATION") {
@@ -35,6 +36,64 @@ self.addEventListener("message", (e) => {
   }
 });
 
+// Web Push subscription
+async function subscribeToPush(vapidPublicKey, apiUrl, anonKey) {
+  try {
+    const registration = await self.registration;
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return;
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+    });
+
+    // Send subscription to server via the page client
+    const clients = await self.clients.matchAll();
+    for (const client of clients) {
+      client.postMessage({
+        type: "SAVE_SUBSCRIPTION",
+        subscription: subscription.toJSON(),
+      });
+    }
+  } catch (err) {
+    console.error("Push subscription failed:", err);
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Push event handler
+self.addEventListener("push", (e) => {
+  if (!e.data) return;
+  const { title, body } = e.data.json();
+  e.waitUntil(showNotif(title || "حجز جديد!", body || ""));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow("/");
+    })
+  );
+});
+
+// Background polling
 function startPolling() {
   stopPolling();
   pollTimer = setInterval(poll, POLL_INTERVAL);
@@ -47,13 +106,9 @@ function stopPolling() {
 async function poll() {
   if (!barberId || !supabaseUrl || !supabaseKey) return;
   try {
-    const today = new Date().toISOString().slice(0, 10);
     const url = `${supabaseUrl}/rest/v1/bookings?barber_id=eq.${barberId}&status=eq.booked&order=created_at.desc&limit=20`;
     const res = await fetch(url, {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-      },
+      headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
     });
     if (!res.ok) return;
     const bookings = await res.json();
@@ -66,7 +121,6 @@ async function poll() {
       }
     }
     knownBookingIds = new Set(bookings.map((b) => b.id));
-    // Persist known IDs
     const cache = await caches.open("bg-v1");
     const blob = new Blob([JSON.stringify([...knownBookingIds])], { type: "application/json" });
     await cache.put("/known-ids", new Response(blob));
@@ -82,17 +136,3 @@ function showNotif(title, body) {
     requireInteraction: true,
   });
 }
-
-self.addEventListener("notificationclick", (e) => {
-  e.notification.close();
-  e.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if (client.url.includes(self.location.origin) && "focus" in client) {
-          return client.focus();
-        }
-      }
-      return self.clients.openWindow("/");
-    })
-  );
-});
