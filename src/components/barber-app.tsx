@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { arabicDate, isoDate } from "@/lib/format";
+import { formatTime } from "@/lib/slots";
 import { toast } from "sonner";
 import { Phone, LogOut, Scissors, Calendar, Check, Star } from "lucide-react";
 
@@ -277,7 +278,7 @@ function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
         <div className="min-w-0 flex-1">
           <div className="truncate font-bold">{b.customer_name}</div>
           <div className="truncate text-xs text-muted-foreground">
-            {b.service_name} • {b.booking_time.slice(0, 5)}
+            {b.service_name} • {formatTime(b.booking_time)}
           </div>
           <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />

@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { generateSlots, type Slot } from "@/lib/slots";
+import { generateSlots, formatTime, type Slot } from "@/lib/slots";
 import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink } from "@/lib/format";
 import { cancelBooking } from "@/lib/admin.functions";
 import { toast } from "sonner";
@@ -315,8 +315,20 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   const dates = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const available = (workingDays ?? []).includes(today.getDay());
-    return [{ iso: isoDate(today), date: today, available }];
+    const todayIso = isoDate(today);
+    const out: { iso: string; date: Date; available: boolean; isToday: boolean }[] = [];
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const iso = isoDate(d);
+      out.push({
+        iso,
+        date: d,
+        isToday: iso === todayIso,
+        available: iso === todayIso && (workingDays ?? []).includes(d.getDay()),
+      });
+    }
+    return out;
   }, [workingDays]);
 
   const bookedQ = useQuery<string[]>({
@@ -490,14 +502,16 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                 }}
                 className={`rounded-2xl border p-3 text-center shadow-card transition ${
                   !d.available
-                    ? "border-border bg-muted opacity-50"
+                    ? "border-border bg-muted opacity-40 cursor-not-allowed"
                     : "border-success/30 bg-success/10 hover:border-success"
                 }`}
               >
-                <div className="text-xs text-muted-foreground">اليوم</div>
+                <div className="text-xs text-muted-foreground">
+                  {d.isToday ? "اليوم" : ARABIC_DAYS[d.date.getDay()]}
+                </div>
                 <div className="mt-1 text-lg font-black">{d.date.getDate()}</div>
                 <div className="text-[10px] text-muted-foreground">
-                  {ARABIC_DAYS[d.date.getDay()]}
+                  {arabicShortDate(d.date).split(" ").slice(-1)[0]}
                 </div>
               </button>
             ))}
@@ -767,7 +781,7 @@ function BookingCard({
           <div className="truncate font-bold">{b.service_name}</div>
           <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
             <CalendarDays className="h-3.5 w-3.5" />
-            {arabicDate(b.booking_date)} • {b.booking_time.slice(0, 5)}
+            {arabicDate(b.booking_date)} • {formatTime(b.booking_time)}
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">

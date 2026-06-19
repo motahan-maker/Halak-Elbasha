@@ -12,6 +12,7 @@ import {
 } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import { arabicDate, isoDate } from "@/lib/format";
+import { formatTime } from "@/lib/slots";
 import {
   LogOut,
   Users,
@@ -814,7 +815,7 @@ function BookingsAdmin() {
                   {b.service_name} • {b.customer_phone}
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {arabicDate(b.booking_date)} • {b.booking_time.slice(0, 5)}
+                  {arabicDate(b.booking_date)} • {formatTime(b.booking_time)}
                 </div>
               </div>
               <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
@@ -1068,7 +1069,7 @@ function SettingsAdmin() {
   });
   const s = settings.data;
   if (!s) return null;
-  return <SettingsForm initial={s} onSave={(d) => save.mutate(d)} />;
+  return <SettingsForm key={s.updated_at} initial={s} onSave={(d) => save.mutate(d)} />;
 }
 function SettingsForm({ initial, onSave }: { initial: any; onSave: (d: any) => void }) {
   const [f, setF] = useState({ ...initial });
