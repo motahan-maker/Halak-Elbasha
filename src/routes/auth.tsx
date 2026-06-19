@@ -244,6 +244,10 @@ function AuthPage() {
             </form>
           )}
         </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground/60">
+          Powered by Eng /Mohamed Eltahan
+        </p>
       </div>
     </div>
   );
