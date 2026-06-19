@@ -347,16 +347,14 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
   const slots: Slot[] = useMemo(() => {
     if (!date || !barber) return [];
-    const allSlots = generateSlots(
-      {
-        start_time: barber.start_time ?? settings.start_time,
-        end_time: barber.end_time ?? settings.end_time,
-        break_start: barber.break_start ?? settings.break_start,
-        break_end: barber.break_end ?? settings.break_end,
-        slot_minutes: barber.slot_minutes ?? 40,
-      },
-      bookedQ.data ?? [],
-    );
+    const cfg = {
+      start_time: barber.start_time ?? settings?.start_time ?? "10:00",
+      end_time: barber.end_time ?? settings?.end_time ?? "23:00",
+      break_start: barber.break_start ?? settings?.break_start ?? null,
+      break_end: barber.break_end ?? settings?.break_end ?? null,
+      slot_minutes: barber.slot_minutes ?? settings?.slot_minutes ?? 40,
+    };
+    const allSlots = generateSlots(cfg, bookedQ.data ?? []);
     // Filter past slots for today
     const today = isoDate(new Date());
     if (date === today) {

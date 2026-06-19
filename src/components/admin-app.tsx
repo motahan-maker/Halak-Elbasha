@@ -37,8 +37,7 @@ type AdminTab =
   | "services"
   | "bookings"
   | "offers"
-  | "reviews"
-  | "settings";
+  | "reviews";
 
 export function AdminApp() {
   const auth = useAuth();
@@ -59,7 +58,6 @@ export function AdminApp() {
     { k: "bookings", label: "الحجوزات", icon: <CalendarDays className="h-4 w-4" /> },
     { k: "offers", label: "العروض", icon: <Tag className="h-4 w-4" /> },
     { k: "reviews", label: "التقييمات", icon: <Star className="h-4 w-4" /> },
-    { k: "settings", label: "الإعدادات", icon: <Cog className="h-4 w-4" /> },
   ];
 
   return (
@@ -116,7 +114,6 @@ export function AdminApp() {
         {tab === "bookings" && <BookingsAdmin />}
         {tab === "offers" && <OffersAdmin />}
         {tab === "reviews" && <ReviewsAdmin />}
-        {tab === "settings" && <SettingsAdmin />}
       </main>
     </div>
   );

@@ -32,6 +32,10 @@ export const ensureDefaultAdmin = createServerFn({ method: "POST" }).handler(asy
       .from("user_roles")
       .upsert({ user_id: created.user.id, role: "admin" }, { onConflict: "user_id,role" });
   }
+  // Ensure settings row exists
+  await supabaseAdmin
+    .from("settings")
+    .upsert({ id: 1, shop_name: "حلاق الباشا", whatsapp: "+201018172606" }, { onConflict: "id" });
   return { ok: true };
 });
 
