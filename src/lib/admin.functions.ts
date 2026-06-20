@@ -191,8 +191,19 @@ export const signUpCustomer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const email = `${phoneOnly(data.phone)}@customer.bashapp.com`;
-    const password = `cust${phoneOnly(data.phone)}`;
+    const phone = phoneOnly(data.phone);
+    const email = `${phone}@customer.bashapp.com`;
+    const password = `cust${phone}`;
+
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("phone", data.phone.trim())
+      .limit(1);
+
+    if (profiles && profiles.length > 0) {
+      throw new Error("هذا الرقم مسجل بحساب آخر بالفعل");
+    }
 
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -200,13 +211,7 @@ export const signUpCustomer = createServerFn({ method: "POST" })
       email_confirm: true,
       user_metadata: { full_name: data.name, phone: data.phone, role: "customer" },
     });
-    if (error) {
-      const msg = error.message || "";
-      if (msg.includes("already") || msg.includes("exist")) {
-        throw new Error("هذا الرقم مسجل بحساب آخر بالفعل");
-      }
-      throw new Error("حدث خطأ أثناء إنشاء الحساب");
-    }
+    if (error) throw new Error("حدث خطأ أثناء إنشاء الحساب");
     if (!created?.user) throw new Error("حدث خطأ أثناء إنشاء الحساب");
     return { ok: true, email, password };
   });
