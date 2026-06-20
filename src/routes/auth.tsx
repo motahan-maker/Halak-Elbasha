@@ -59,13 +59,17 @@ function AuthPage() {
     if (cPhone.replace(/[^\d]/g, "").length < 6) return toast.error("رقم جوال غير صالح");
     setCLoading(true);
     try {
-      // Use server function to create customer via admin API (bypasses email confirmation)
       const result = await signUpCustomer({ data: { name: cName.trim(), phone: cPhone.trim() } });
       const { error } = await supabase.auth.signInWithPassword({
         email: result.email,
         password: result.password,
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes("Invalid login")) {
+          throw new Error("بيانات الدخول غير صحيحة. تأكد من صحة البيانات");
+        }
+        throw error;
+      }
       navigate({ to: "/", replace: true });
     } catch (err) {
       toast.error(msg(err));
@@ -100,7 +104,6 @@ function AuthPage() {
     try {
       if (aUser.trim().toLowerCase() !== "admin") throw new Error("اسم المستخدم غير صحيح");
 
-      // First try to sign in
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: ADMIN_EMAIL,
         password: aPwd,
@@ -111,17 +114,13 @@ function AuthPage() {
         return;
       }
 
-      // If sign-in failed, ensure admin account exists then retry
       try {
         await ensureAdmin();
       } catch (ensureErr) {
         console.error("ensureDefaultAdmin failed:", ensureErr);
-        throw new Error(
-          "لم يتم إنشاء حساب المدير. تأكد من إعداد SUPABASE_SERVICE_ROLE_KEY في Vercel.",
-        );
+        throw new Error("حدث خطأ أثناء إعداد حساب المدير");
       }
 
-      // Retry sign-in after ensuring admin exists
       const { error: retryError } = await supabase.auth.signInWithPassword({
         email: ADMIN_EMAIL,
         password: aPwd,
@@ -245,16 +244,12 @@ function AuthPage() {
               >
                 {aLoading ? "..." : "دخول كمدير"}
               </button>
-              <p className="text-center text-[11px] text-muted-foreground">
-                الافتراضي: <span className="font-mono">admin</span> /{" "}
-                <span className="font-mono">{ADMIN_DEFAULT_PASSWORD}</span>
-              </p>
             </form>
           )}
         </div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground/60">
-          Powered by Eng /Mohamed Eltahan
+        <p className="mt-6 text-center text-[11px] text-muted-foreground/50">
+          Powered by Eng /Mohamed Eltahan &amp; Eng /Kamel Elmahy
         </p>
       </div>
     </div>
