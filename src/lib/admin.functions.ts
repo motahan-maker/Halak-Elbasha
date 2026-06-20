@@ -201,11 +201,11 @@ export const signUpCustomer = createServerFn({ method: "POST" })
       user_metadata: { full_name: data.name, phone: data.phone, role: "customer" },
     });
     if (error) {
-      const msg = error.message || error.status?.toString() || "حدث خطأ";
+      const msg = error.message || "";
       if (msg.includes("already") || msg.includes("exist")) {
-        return { ok: true, email, password };
+        throw new Error("هذا الرقم مسجل بحساب آخر بالفعل");
       }
-      throw new Error(msg);
+      throw new Error("حدث خطأ أثناء إنشاء الحساب");
     }
     if (!created?.user) throw new Error("حدث خطأ أثناء إنشاء الحساب");
     return { ok: true, email, password };
