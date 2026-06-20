@@ -191,7 +191,12 @@ export const signUpCustomer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const email = `${phoneOnly(data.phone)}@customer.bashapp.com`;
+    const nameSlug = data.name
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_\u0600-\u06FF]/g, "");
+    const email = `${phoneOnly(data.phone)}_${nameSlug}@customer.bashapp.com`;
     const password = `cust${phoneOnly(data.phone)}`;
 
     const { data: existing } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
