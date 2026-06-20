@@ -24,11 +24,13 @@ function msg(e: unknown): string {
   if (!e) return "حدث خطأ";
   if (typeof e === "string") return e;
   if (e instanceof Error) return e.message || "حدث خطأ";
-  try {
-    return (e as any).message ?? JSON.stringify(e);
-  } catch {
-    return "حدث خطأ";
+  if (typeof e === "object" && e !== null) {
+    const obj = e as Record<string, unknown>;
+    if (obj.message) return String(obj.message);
+    if (obj.error) return typeof obj.error === "string" ? obj.error : JSON.stringify(obj.error);
+    return JSON.stringify(obj);
   }
+  return String(e);
 }
 
 function AuthPage() {

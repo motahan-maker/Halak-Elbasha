@@ -202,17 +202,19 @@ export const signUpCustomer = createServerFn({ method: "POST" })
     const email = `${phoneOnly(data.phone)}_${nameHash(data.name)}@customer.bashapp.com`;
     const password = `cust${phoneOnly(data.phone)}`;
 
-    const { data: existing } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    const alreadyExists = existing?.users.some((u: { email?: string }) => u.email === email);
-    if (alreadyExists) return { ok: true, email, password };
-
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
       user_metadata: { full_name: data.name, phone: data.phone, role: "customer" },
     });
-    if (error || !created.user) throw new Error(error?.message ?? "SIGNUP_FAILED");
+    if (error) {
+      if (error.message?.includes("already exists")) {
+        return { ok: true, email, password };
+      }
+      throw new Error(error.message);
+    }
+    if (!created?.user) throw new Error("SIGNUP_FAILED");
     return { ok: true, email, password };
   });
 
