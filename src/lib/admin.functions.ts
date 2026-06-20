@@ -180,14 +180,6 @@ export const deleteService = createServerFn({ method: "POST" })
   });
 
 /** Public: sign up a customer via admin API (bypasses email confirmation). */
-function nameHash(name: string): string {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) {
-    h = ((h << 5) - h + name.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h).toString(36);
-}
-
 export const signUpCustomer = createServerFn({ method: "POST" })
   .validator((d) =>
     z
@@ -199,7 +191,7 @@ export const signUpCustomer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const email = `${phoneOnly(data.phone)}_${nameHash(data.name)}@customer.bashapp.com`;
+    const email = `${phoneOnly(data.phone)}@customer.bashapp.com`;
     const password = `cust${phoneOnly(data.phone)}`;
 
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
