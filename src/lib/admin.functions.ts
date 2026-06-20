@@ -202,7 +202,7 @@ export const signUpCustomer = createServerFn({ method: "POST" })
       .limit(1);
 
     if (profiles && profiles.length > 0) {
-      throw new Error("هذا الرقم مسجل بحساب آخر بالفعل");
+      return { ok: true, email, password, existing: true };
     }
 
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
@@ -213,7 +213,7 @@ export const signUpCustomer = createServerFn({ method: "POST" })
     });
     if (error) throw new Error("حدث خطأ أثناء إنشاء الحساب");
     if (!created?.user) throw new Error("حدث خطأ أثناء إنشاء الحساب");
-    return { ok: true, email, password };
+    return { ok: true, email, password, existing: false };
   });
 
 /** Save push subscription for a barber. */

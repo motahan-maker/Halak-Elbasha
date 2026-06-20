@@ -65,10 +65,10 @@ function AuthPage() {
         password: result.password,
       });
       if (error) {
-        if (error.message?.includes("Invalid login")) {
-          throw new Error("بيانات الدخول غير صحيحة. تأكد من صحة البيانات");
-        }
-        throw error;
+        throw new Error("حدث خطأ أثناء الدخول. تأكد من صحة البيانات");
+      }
+      if (result.existing) {
+        toast.success("مرحباً بعودتك!");
       }
       navigate({ to: "/", replace: true });
     } catch (err) {
