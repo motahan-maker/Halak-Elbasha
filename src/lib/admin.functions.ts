@@ -197,12 +197,17 @@ export const signUpCustomer = createServerFn({ method: "POST" })
 
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id")
+      .select("id, full_name")
       .eq("phone", data.phone.trim())
       .limit(1);
 
     if (profiles && profiles.length > 0) {
-      return { ok: true, email, password, existing: true };
+      const existingName = (profiles[0].full_name || "").trim();
+      const newName = data.name.trim();
+      if (existingName === newName) {
+        return { ok: true, email, password, existing: true };
+      }
+      throw new Error("هذا الرقم مسجل بحساب آخر بالفعل");
     }
 
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
