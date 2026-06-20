@@ -21,14 +21,20 @@ export const Route = createFileRoute("/auth")({
 type Tab = "customer" | "staff" | "admin";
 
 function msg(e: unknown): string {
-  if (!e) return "حدث خطأ";
-  if (typeof e === "string") return e;
+  if (e === null || e === undefined) return "حدث خطأ غير متوقع";
+  if (typeof e === "string") return e || "حدث خطأ";
   if (e instanceof Error) return e.message || "حدث خطأ";
-  if (typeof e === "object" && e !== null) {
-    const obj = e as Record<string, unknown>;
-    if (obj.message) return String(obj.message);
-    if (obj.error) return typeof obj.error === "string" ? obj.error : JSON.stringify(obj.error);
-    return JSON.stringify(obj);
+  if (typeof e === "object") {
+    try {
+      const str = JSON.stringify(e);
+      if (str === "{}" || str === "[]") return "حدث خطأ غير متوقع";
+      const obj = e as Record<string, unknown>;
+      if (obj.message && typeof obj.message === "string") return obj.message;
+      if (obj.error && typeof obj.error === "string") return obj.error;
+      return str;
+    } catch {
+      return "حدث خطأ";
+    }
   }
   return String(e);
 }
