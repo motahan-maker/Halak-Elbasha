@@ -14,10 +14,10 @@ export function Skeleton({
 
 export function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
       <div className="flex items-start gap-3">
-        <Skeleton className="h-12 w-12 shrink-0 rounded-[0.85rem]" />
-        <div className="flex-1 space-y-2.5">
+        <Skeleton className="h-10 w-10 shrink-0 squircle" />
+        <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-3/4 rounded-lg" />
           <Skeleton className="h-3 w-1/2 rounded-lg" />
         </div>
@@ -28,9 +28,9 @@ export function SkeletonCard() {
 
 export function SkeletonStat() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-3.5 text-center shadow-card">
-      <Skeleton className="mx-auto h-8 w-16 rounded-lg" />
-      <Skeleton className="mx-auto mt-2.5 h-3 w-14 rounded-lg" />
+    <div className="rounded-xl border border-border bg-card p-3.5 text-center shadow-card">
+      <Skeleton className="mx-auto h-7 w-14 rounded-lg" />
+      <Skeleton className="mx-auto mt-2 h-3 w-12 rounded-lg" />
     </div>
   );
 }

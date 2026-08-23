@@ -53,7 +53,7 @@ export function OffersAdmin() {
     <div className="space-y-2.5">
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 font-bold text-primary-foreground shadow-card transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-bold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-105 active:scale-[0.97]"
       >
         <Plus className="h-4 w-4" strokeWidth={1.5} /> إضافة عرض
       </button>
@@ -79,7 +79,7 @@ function OfferForm({ onCancel, onSave, initial }: any) {
   const [desc, setDesc] = useState(initial?.description ?? "");
   const [pct, setPct] = useState(initial?.discount_percent ?? "");
   return (
-    <div className="space-y-2.5 rounded-2xl border border-border bg-card p-4 shadow-card animate-scale-in">
+    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card animate-scale-in">
       <Input label="عنوان العرض" value={title} onChange={setTitle} />
       <Input label="الوصف" value={desc} onChange={setDesc} />
       <Input label="نسبة الخصم %" value={String(pct)} onChange={setPct} type="number" />
@@ -89,11 +89,11 @@ function OfferForm({ onCancel, onSave, initial }: any) {
             onSave({ title, description: desc, discount_percent: pct === "" ? null : Number(pct) })
           }
           disabled={!title}
-          className="flex-1 rounded-2xl bg-primary py-2 font-bold text-primary-foreground disabled:opacity-50 transition-all duration-300 hover:brightness-110 active:scale-95"
+          className="flex-1 rounded-xl bg-primary py-2.5 font-bold text-primary-foreground disabled:opacity-50 transition-all duration-200 hover:brightness-105 active:scale-95 shadow-sm"
         >
           حفظ
         </button>
-        <button onClick={onCancel} className="rounded-2xl bg-secondary px-4 py-2 font-bold transition-all duration-300 hover:bg-accent active:scale-95">
+        <button onClick={onCancel} className="rounded-xl bg-secondary px-4 py-2.5 font-semibold transition-all duration-200 hover:bg-muted active:scale-95 border border-border/30">
           إلغاء
         </button>
       </div>
@@ -115,32 +115,35 @@ function OfferRow({ o, onSave, onToggle, onDelete }: any) {
       />
     );
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated">
-      <div className="grid h-10 w-10 place-items-center rounded-[0.85rem] bg-primary text-primary-foreground">
-        <Tag className="h-4 w-4" strokeWidth={1.5} />
+    <div className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
+      <div className="grid h-9.5 w-9.5 place-items-center squircle glass-icon text-primary shrink-0">
+        <Tag className="h-4.5 w-4.5" strokeWidth={1.5} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate font-bold text-[15px]">{o.title}</div>
-        <div className="truncate text-[13px] font-semibold text-muted-foreground">
+        <div className="truncate font-bold text-sm text-foreground">{o.title}</div>
+        <div className="truncate text-xs font-semibold text-muted-foreground mt-0.5">
           {o.description || "—"} {o.discount_percent != null && `• -${o.discount_percent}٪`}
         </div>
       </div>
-      <div className="flex shrink-0 gap-1">
+      <div className="flex shrink-0 gap-1.5">
         <button
           onClick={() => setEdit(true)}
-          className="grid h-8 w-8 place-items-center rounded-[0.85rem] bg-secondary transition-all duration-300 hover:bg-accent active:scale-95"
+          aria-label="تعديل"
+          className="grid h-8 w-8 place-items-center rounded-xl bg-secondary text-muted-foreground transition-all duration-200 hover:bg-muted active:scale-90 border border-border/30"
         >
           <Edit2 className="h-3.5 w-3.5" strokeWidth={1.5} />
         </button>
         <button
           onClick={onToggle}
-          className={`grid h-8 w-8 place-items-center rounded-[0.85rem] transition-all duration-300 hover:bg-accent active:scale-95 ${o.is_active ? "bg-success/10 text-success" : "bg-secondary"}`}
+          aria-label="تفعيل"
+          className={`grid h-8 w-8 place-items-center rounded-xl transition-all duration-200 active:scale-90 border ${o.is_active ? "bg-success/10 text-success border-success/20" : "bg-secondary text-muted-foreground border-border/30"}`}
         >
           <Power className="h-3.5 w-3.5" strokeWidth={1.5} />
         </button>
         <button
           onClick={onDelete}
-          className="grid h-8 w-8 place-items-center rounded-[0.85rem] bg-destructive/10 text-destructive transition-all duration-300 hover:bg-destructive/20 active:scale-95"
+          aria-label="حذف"
+          className="grid h-8 w-8 place-items-center rounded-xl bg-destructive/10 text-destructive border border-destructive/20 transition-all duration-200 hover:bg-destructive/20 active:scale-90"
         >
           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
         </button>
@@ -162,12 +165,12 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] font-semibold text-muted-foreground">{label}</label>
+      <label className="mb-1 block text-xs font-bold text-muted-foreground">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type={type}
-        className="w-full rounded-2xl bg-secondary px-3 py-2 text-[15px] outline-none focus:ring-2 focus:ring-primary/30 focus:bg-card transition-all duration-300"
+        className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 focus:bg-card focus:border-primary transition-all duration-200"
       />
     </div>
   );

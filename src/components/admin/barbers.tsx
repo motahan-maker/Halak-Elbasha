@@ -218,18 +218,18 @@ function BarberRow({
           )}
         </div>
         <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${b.is_active ? "bg-success/10 text-success" : "bg-secondary text-muted-foreground"}`}
+          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[9px] font-bold tracking-wider ${b.is_active ? "bg-success/10 text-success border border-success/20" : "bg-secondary text-muted-foreground border border-border/40"}`}
         >
           {b.is_active ? "نشط" : "موقوف"}
         </span>
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3.5 flex flex-wrap gap-2">
         {!edit ? (
           <button
             onClick={() => setEdit(true)}
-            className="flex items-center gap-1 rounded-[0.85rem] bg-secondary px-3 py-1.5 text-xs font-bold transition-all duration-300 hover:bg-accent active:scale-95"
+            className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
           >
-            <Edit2 className="h-3 w-3" strokeWidth={1.5} /> تعديل
+            <Edit2 className="h-3.5 w-3.5" strokeWidth={1.5} /> تعديل
           </button>
         ) : (
           <>
@@ -238,13 +238,13 @@ function BarberRow({
                 onSave({ name, specialization: spec });
                 setEdit(false);
               }}
-              className="rounded-[0.85rem] bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-all duration-300 hover:brightness-110 active:scale-95"
+              className="rounded-xl bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-95 shadow-sm"
             >
               حفظ
             </button>
             <button
               onClick={() => setEdit(false)}
-              className="rounded-[0.85rem] bg-secondary px-3 py-1.5 text-xs transition-all duration-300 hover:bg-accent active:scale-95"
+              className="rounded-xl bg-secondary px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 hover:bg-muted active:scale-95 border border-border/30"
             >
               إلغاء
             </button>
@@ -252,37 +252,37 @@ function BarberRow({
         )}
         <button
           onClick={() => setScheduling((s) => !s)}
-          className="flex items-center gap-1 rounded-[0.85rem] bg-secondary px-3 py-1.5 text-xs font-bold transition-all duration-300 hover:bg-accent active:scale-95"
+          className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
         >
-          <CalendarDays className="h-3 w-3" strokeWidth={1.5} /> المواعيد
+          <CalendarDays className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} /> المواعيد
         </button>
         <button
           onClick={onToggle}
-          className="flex items-center gap-1 rounded-[0.85rem] bg-secondary px-3 py-1.5 text-xs font-bold transition-all duration-300 hover:bg-accent active:scale-95"
+          className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
         >
-          <Power className="h-3 w-3" strokeWidth={1.5} /> {b.is_active ? "إيقاف" : "تفعيل"}
+          <Power className="h-3.5 w-3.5" strokeWidth={1.5} /> {b.is_active ? "إيقاف" : "تفعيل"}
         </button>
         <button
           onClick={() => setResetting((s) => !s)}
-          className="flex items-center gap-1 rounded-[0.85rem] bg-secondary px-3 py-1.5 text-xs font-bold transition-all duration-300 hover:bg-accent active:scale-95"
+          className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
         >
-          <KeyRound className="h-3 w-3" strokeWidth={1.5} /> كلمة المرور
+          <KeyRound className="h-3.5 w-3.5" strokeWidth={1.5} /> كلمة المرور
         </button>
         <button
           onClick={onDelete}
-          className="flex items-center gap-1 rounded-[0.85rem] bg-destructive/10 px-3 py-1.5 text-xs font-bold text-destructive transition-all duration-300 hover:bg-destructive/20 active:scale-95"
+          className="flex items-center gap-1 rounded-xl bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive border border-destructive/20 transition-all duration-200 hover:bg-destructive/20 active:scale-95"
         >
-          <Trash2 className="h-3 w-3" strokeWidth={1.5} /> حذف
+          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} /> حذف
         </button>
       </div>
       {resetting && (
-        <div className="mt-2 flex gap-2.5 animate-scale-in">
+        <div className="mt-3 flex gap-2 animate-scale-in">
           <input
             value={pwd}
             onChange={(e) => setPwd(e.target.value)}
             placeholder="كلمة المرور الجديدة"
             type="password"
-            className="flex-1 rounded-2xl bg-secondary px-3 py-1.5 text-[15px] outline-none focus:ring-2 focus:ring-primary/30 focus:bg-card transition-all duration-300"
+            className="flex-1 rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 focus:bg-card focus:border-primary transition-all"
           />
           <button
             onClick={() => {
@@ -291,27 +291,26 @@ function BarberRow({
               setPwd("");
               setResetting(false);
             }}
-            className="rounded-[0.85rem] bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-all duration-300 hover:brightness-110 active:scale-95"
+            className="rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-95"
           >
             تأكيد
           </button>
         </div>
       )}
       {scheduling && (
-        <div className="mt-3 space-y-2.5 rounded-xl bg-accent p-3 animate-scale-in">
-          <div className="rounded-xl bg-primary/10 p-2 text-[13px] font-semibold text-muted-foreground">
-            يولّد النظام مواعيد كل {sched.slot_minutes} دقيقة من بداية العمل حتى نهايته (مع استثناء
-            الاستراحة).
+        <div className="mt-3 space-y-3 rounded-xl border border-border/60 bg-muted/20 p-3.5 animate-scale-in">
+          <div className="rounded-xl bg-primary/10 border border-primary/15 p-2.5 text-xs font-semibold text-primary">
+            يولّد النظام مواعيد كل {sched.slot_minutes} دقيقة من بداية العمل حتى نهايته.
           </div>
           <div>
-            <div className="mb-1 text-[13px] font-semibold text-muted-foreground">أيام العمل</div>
-            <div className="flex flex-wrap gap-1">
+            <div className="mb-1.5 text-xs font-bold text-muted-foreground">أيام العمل</div>
+            <div className="flex flex-wrap gap-1.5">
               {days.map((d, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => toggleDay(i)}
-                  className={`rounded-[0.85rem] bg-secondary px-2.5 py-1 text-[11px] font-bold transition-all duration-300 active:scale-95 ${sched.working_days.includes(i) ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all duration-200 active:scale-95 ${sched.working_days.includes(i) ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary text-muted-foreground hover:bg-muted border border-border/30"}`}
                 >
                   {d}
                 </button>
@@ -338,7 +337,7 @@ function BarberRow({
               onChange={(v) => setSched({ ...sched, slot_minutes: Number(v) || 40 })}
             />
           </div>
-          <div className="flex gap-2.5">
+          <div className="flex gap-2.5 pt-1">
             <button
               onClick={() => {
                 onSave({
@@ -349,13 +348,13 @@ function BarberRow({
                 });
                 setScheduling(false);
               }}
-              className="flex-1 rounded-2xl bg-primary py-2 text-xs font-bold text-primary-foreground transition-all duration-300 hover:brightness-110 active:scale-95"
+              className="flex-1 rounded-xl bg-primary py-2.5 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-95 shadow-sm"
             >
               حفظ المواعيد
             </button>
             <button
               onClick={() => setScheduling(false)}
-              className="rounded-2xl bg-secondary px-3 py-2 text-xs transition-all duration-300 hover:bg-accent active:scale-95"
+              className="rounded-xl bg-secondary px-4 py-2.5 text-xs font-semibold transition-all duration-200 hover:bg-muted active:scale-95 border border-border/30"
             >
               إلغاء
             </button>
@@ -379,12 +378,12 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] font-semibold text-muted-foreground">{label}</label>
+      <label className="mb-1 block text-xs font-bold text-muted-foreground">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type={type}
-        className="w-full rounded-2xl bg-secondary px-3 py-2 text-[15px] outline-none focus:ring-2 focus:ring-primary/30 focus:bg-card transition-all duration-300"
+        className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 focus:bg-card focus:border-primary transition-all duration-200"
       />
     </div>
   );

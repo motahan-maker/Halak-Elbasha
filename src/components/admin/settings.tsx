@@ -46,19 +46,18 @@ function SettingsForm({ initial, onSave }: { initial: any; onSave: (d: any) => v
     });
   };
   return (
-    <div className="space-y-3">
-      <div className="rounded-2xl border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
-        النظام يُولِّد المواعيد تلقائياً من ساعات العمل وأيام العمل والاستراحة. لا حاجة لإنشاء
-        مواعيد يدوياً.
+    <div className="space-y-3.5">
+      <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-xs font-semibold text-primary">
+        النظام يُولِّد المواعيد تلقائياً من ساعات العمل وأيام العمل والاستراحة. لا حاجة لإنشاء مواعيد يدوياً.
       </div>
       <Group title="أيام العمل">
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {days.map((d, i) => (
             <button
               key={i}
               type="button"
               onClick={() => toggleDay(i)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition-all duration-200 active:scale-95 ${(f.working_days ?? []).includes(i) ? "gradient-luxe text-primary-foreground" : "border-border hover:bg-muted"}`}
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all duration-200 active:scale-95 ${(f.working_days ?? []).includes(i) ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary text-muted-foreground hover:bg-muted border border-border/30"}`}
             >
               {d}
             </button>
@@ -66,7 +65,7 @@ function SettingsForm({ initial, onSave }: { initial: any; onSave: (d: any) => v
         </div>
       </Group>
       <Group title="ساعات العمل">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           <Input
             label="بداية العمل"
             value={f.start_time?.slice(0, 5) ?? ""}
@@ -83,7 +82,7 @@ function SettingsForm({ initial, onSave }: { initial: any; onSave: (d: any) => v
       </Group>
       <button
         onClick={save}
-        className="w-full rounded-2xl gradient-luxe px-4 py-3 font-bold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+        className="w-full rounded-xl bg-primary px-4 py-3 text-xs font-bold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-105 active:scale-[0.97]"
       >
         حفظ الإعدادات
       </button>
@@ -93,8 +92,8 @@ function SettingsForm({ initial, onSave }: { initial: any; onSave: (d: any) => v
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-2 rounded-2xl border border-border bg-card p-4 shadow-card">
-      <div className="text-sm font-bold text-muted-foreground">{title}</div>
+    <div className="space-y-2.5 rounded-xl border border-border bg-card p-4 shadow-card hover:shadow-elevated transition-all duration-200">
+      <div className="ios-grouped-section-title px-0 pb-1">{title}</div>
       {children}
     </div>
   );
@@ -118,7 +117,7 @@ function Input({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type={type}
-        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200"
+        className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 focus:bg-card focus:border-primary transition-all duration-200"
       />
     </div>
   );

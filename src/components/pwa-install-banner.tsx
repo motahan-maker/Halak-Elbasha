@@ -57,27 +57,27 @@ export function PwaInstallBanner() {
   if (installed || !show || !deferred) return null;
 
   return (
-    <div className="pwa-banner-animate fixed bottom-4 right-4 left-4 z-50 md:left-auto md:w-96">
-      <div className="rounded-2xl bg-gradient-to-l from-amber-600 to-amber-500 p-4 shadow-2xl">
+    <div className="pwa-banner-animate fixed bottom-6 inset-x-4 z-50 mx-auto max-w-sm">
+      <div className="rounded-3xl glass-card p-4 shadow-elevated border border-border/60">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20 text-2xl">
-            📲
+          <div className="grid h-10 w-10 shrink-0 place-items-center squircle glass-icon text-primary">
+            <span className="text-lg">📲</span>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-white">تثبيت حلاق الباشا</p>
-            <p className="mt-0.5 text-xs text-white/80">أضف التطبيق إلى شاشة هاتفك للوصول السريع</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">تثبيت حلاق الباشا</p>
+            <p className="mt-0.5 text-xs text-muted-foreground font-medium">أضف التطبيق للوصول السريع بدون إنترنت</p>
           </div>
         </div>
         <div className="mt-3 flex gap-2">
           <button
             onClick={handleInstall}
-            className="flex-1 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-amber-700 shadow-lg transition-transform active:scale-95"
+            className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition-transform active:scale-95"
           >
             تثبيت الآن
           </button>
           <button
             onClick={handleDismiss}
-            className="rounded-xl bg-white/20 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/30"
+            className="rounded-xl bg-secondary px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:bg-muted active:scale-95 border border-border/30"
           >
             لاحقاً
           </button>
