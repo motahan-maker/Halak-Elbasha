@@ -53,7 +53,7 @@ export function OffersAdmin() {
     <div className="space-y-2.5">
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-bold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-105 active:scale-[0.97]"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-luxe px-4 py-3.5 font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
       >
         <Plus className="h-4 w-4" strokeWidth={1.5} /> إضافة عرض
       </button>

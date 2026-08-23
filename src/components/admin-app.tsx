@@ -61,7 +61,7 @@ export function AdminApp() {
         <div className="mx-auto max-w-4xl px-5 py-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 border border-primary/20 text-primary">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-luxe text-white shadow-luxe border border-white/15">
                 <Cog className="h-4.5 w-4.5" strokeWidth={1.5} />
               </div>
               <div className="min-w-0">
@@ -76,22 +76,22 @@ export function AdminApp() {
               <button
                 onClick={signOut}
                 aria-label="خروج"
-                className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive active:scale-90"
+                className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:shadow-glow-primary active:scale-90"
               >
                 <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
               </button>
             </div>
           </div>
           <div className="-mx-4 mt-3 overflow-x-auto px-4 scrollbar-none">
-            <div className="inline-flex gap-1 bg-secondary/55 p-1 rounded-xl min-w-full border border-border/30">
+            <div className="inline-flex gap-1 glass-pill p-1 min-w-full">
               {tabs.map((t) => (
                 <button
                   key={t.k}
                   onClick={() => setTab(t.k)}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-200 active:scale-[0.96] ${
+                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-300 active:scale-[0.96] ${
                     tab === t.k
                       ? "bg-card text-foreground shadow-card border border-border/20"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                   }`}
                 >
                   <span className={tab === t.k ? "text-primary" : "text-muted-foreground"}>{t.icon}</span>

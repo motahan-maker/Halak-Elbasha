@@ -142,11 +142,11 @@ function AuthPage() {
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
         {/* Logo & Brand */}
         <div className="text-center animate-fade-in-up">
-          <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-primary shadow-luxe border border-primary/20 transition-transform duration-300 hover:scale-105 active:scale-95">
-            <Scissors className="h-10 w-10 text-primary-foreground" strokeWidth={1.5} />
+          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[1.6rem] gradient-luxe shadow-glow-primary animate-float border border-white/20 transition-transform duration-300 hover:scale-105 active:scale-95">
+            <Scissors className="h-12 w-12 text-white" strokeWidth={1.5} />
           </div>
-          <h1 className="mt-5 text-3xl font-bold tracking-tight">حلاق الباشا</h1>
-          <p className="mt-1.5 text-sm text-muted-foreground font-medium">حجز المواعيد بكل سهولة ورقي</p>
+          <h1 className="mt-6 text-3xl font-black tracking-tight text-foreground">حلاق الباشا</h1>
+          <p className="mt-2 text-sm text-muted-foreground font-medium">حجز المواعيد بكل سهولة ورقي</p>
         </div>
 
         {/* Segmented Control */}
@@ -174,7 +174,7 @@ function AuthPage() {
 
         {/* Form Card */}
         <div className="mt-5 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+          <div className="rounded-2xl glass-card p-6">
             {tab === "customer" && (
               <form onSubmit={customerSubmit} className="space-y-4">
                 <AppleField
@@ -192,7 +192,7 @@ function AuthPage() {
                 />
                 <button
                   disabled={cLoading}
-                  className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-105 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
+                  className="w-full rounded-xl gradient-luxe py-3.5 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
                 >
                   {cLoading ? (
                     <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
@@ -200,7 +200,7 @@ function AuthPage() {
                     "دخول / تسجيل"
                   )}
                 </button>
-                <p className="text-center text-xs text-muted-foreground/80 font-medium">
+                <p className="text-center text-[11px] text-muted-foreground/70 font-medium">
                   لا حاجة لكلمة مرور — الرقم هو هويتك
                 </p>
               </form>
@@ -224,7 +224,7 @@ function AuthPage() {
                 />
                 <button
                   disabled={sLoading}
-                  className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-105 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
+                  className="w-full rounded-xl gradient-luxe py-3.5 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
                 >
                   {sLoading ? (
                     <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
@@ -237,7 +237,7 @@ function AuthPage() {
 
             {tab === "admin" && (
               <form onSubmit={adminSubmit} className="space-y-4">
-                <div className="flex items-center gap-2.5 rounded-xl bg-accent px-3.5 py-2.5 text-xs font-semibold text-accent-foreground">
+                <div className="flex items-center gap-2.5 rounded-xl glass-icon px-3.5 py-2.5 text-xs font-semibold text-accent-foreground">
                   <ShieldCheck className="h-4.5 w-4.5 shrink-0" strokeWidth={1.5} />
                   <span>دخول المدير الافتراضي</span>
                 </div>
@@ -256,7 +256,7 @@ function AuthPage() {
                 />
                 <button
                   disabled={aLoading}
-                  className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-105 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
+                  className="w-full rounded-xl gradient-luxe py-3.5 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
                 >
                   {aLoading ? (
                     <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
@@ -270,7 +270,7 @@ function AuthPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-[10px] font-semibold text-muted-foreground/45 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
+        <p className="mt-8 text-center text-[10px] font-semibold text-muted-foreground/40 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
           Powered by Eng /Mohamed Eltahan &amp; Eng /Kamel Elmahy
         </p>
       </div>
@@ -292,14 +292,14 @@ function AppleField({
   type?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-3.5 transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary focus-within:bg-card">
-      <span className="text-muted-foreground shrink-0">{icon}</span>
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-3.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary/50 focus-within:bg-card focus-within:shadow-glow-primary">
+      <span className="text-muted-foreground shrink-0 transition-colors duration-200 peer-focus:text-primary">{icon}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
-        className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground/45 font-medium"
+        className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground/40 font-medium"
       />
     </div>
   );

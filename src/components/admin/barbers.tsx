@@ -81,11 +81,11 @@ export function BarbersAdmin() {
     );
   }
 
-  return (
+    return (
     <div className="space-y-2.5">
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 font-bold text-primary-foreground shadow-card transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-luxe px-4 py-3.5 font-bold text-primary-foreground shadow-glow-primary transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
       >
         <Plus className="h-4 w-4" strokeWidth={1.5} /> إضافة حلاق
       </button>
@@ -196,7 +196,7 @@ function BarberRow({
     setSched({ ...sched, working_days: Array.from(set).sort() });
   };
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated">
+    <div className="rounded-2xl glass-card p-4 transition-all duration-300 hover:shadow-elevated">
       <div className="flex items-start justify-between gap-2.5">
         <div className="min-w-0 flex-1">
           {!edit ? (

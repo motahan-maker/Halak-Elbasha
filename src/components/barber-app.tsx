@@ -297,7 +297,7 @@ export function BarberApp() {
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 py-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 border border-primary/10 text-primary transition-all duration-300">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-luxe text-white shadow-luxe border border-white/15">
               <Scissors className="h-4.5 w-4.5" strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
@@ -310,7 +310,7 @@ export function BarberApp() {
             <button
               onClick={signOut}
               aria-label="خروج"
-              className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive active:scale-90"
+              className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:shadow-glow-primary active:scale-90"
             >
               <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
             </button>
@@ -319,13 +319,14 @@ export function BarberApp() {
       </header>
 
       <main className="mx-auto max-w-2xl space-y-5 px-5 pt-5">
-        <section className="grid grid-cols-3 gap-2.5 animate-fade-in-up">
-          <Stat label="اليوم" value={todays.length} colorClass="text-primary" />
-          <Stat label="مكتملة" value={completed.length} colorClass="text-success" />
+        <section className="grid grid-cols-3 gap-2.5 animate-fade-in-up stagger-children">
+          <Stat label="اليوم" value={todays.length} colorClass="text-primary" gradientClass="from-primary/10 to-primary/5" />
+          <Stat label="مكتملة" value={completed.length} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
           <Stat
             label="التقييم"
             value={avg ? avg.toFixed(1) : "—"}
             colorClass="text-amber-500"
+            gradientClass="from-amber-500/10 to-amber-500/5"
             icon={<Star className="h-4 w-4 fill-amber-500 text-amber-500" strokeWidth={0} />}
           />
         </section>
@@ -366,15 +367,17 @@ function Stat({
   value,
   icon,
   colorClass = "text-foreground",
+  gradientClass = "",
 }: {
   label: string;
   value: number | string;
   icon?: React.ReactNode;
   colorClass?: string;
+  gradientClass?: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-3 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
-      <div className={`flex items-center justify-center gap-1 text-2xl font-bold ${colorClass}`}>
+    <div className={`rounded-2xl border border-border bg-card p-3.5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15 active:scale-[0.98] bg-gradient-to-br ${gradientClass}`}>
+      <div className={`flex items-center justify-center gap-1 text-2xl font-black ${colorClass} animate-counter-up`}>
         {value}
         {icon}
       </div>

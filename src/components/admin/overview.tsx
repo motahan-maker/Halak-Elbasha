@@ -88,19 +88,19 @@ export function Overview() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up">
-        <KPI label="حجوزات اليوم" value={d?.todayCount ?? "—"} colorClass="text-primary" />
-        <KPI label="مكتملة" value={d?.completedCount ?? "—"} colorClass="text-success" />
-        <KPI label="ملغية" value={d?.cancelledCount ?? "—"} colorClass="text-destructive" />
+      <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up stagger-children">
+        <KPI label="حجوزات اليوم" value={d?.todayCount ?? "—"} colorClass="text-primary" gradientClass="from-primary/10 to-primary/5" />
+        <KPI label="مكتملة" value={d?.completedCount ?? "—"} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
+        <KPI label="ملغية" value={d?.cancelledCount ?? "—"} colorClass="text-destructive" gradientClass="from-destructive/10 to-destructive/5" />
         <KPI label="العملاء" value={d?.customers ?? "—"} />
         <KPI label="الحلاقون" value={d?.barbers ?? "—"} />
         <KPI label="الخدمات" value={d?.services ?? "—"} />
       </div>
       <h3 className="ios-grouped-section-title px-1 pt-2">الإيرادات</h3>
       <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-        <KPI label="اليوم" value={`${d?.revDay ?? 0} ج.م`} colorClass="text-success" />
-        <KPI label="الأسبوع" value={`${d?.revWeek ?? 0} ج.م`} colorClass="text-success" />
-        <KPI label="الشهر" value={`${d?.revMonth ?? 0} ج.م`} colorClass="text-success" />
+        <KPI label="اليوم" value={`${d?.revDay ?? 0} ج.م`} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
+        <KPI label="الأسبوع" value={`${d?.revWeek ?? 0} ج.م`} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
+        <KPI label="الشهر" value={`${d?.revMonth ?? 0} ج.م`} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
       </div>
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
         <StatCard
@@ -122,14 +122,16 @@ function KPI({
   label,
   value,
   colorClass = "text-foreground",
+  gradientClass = "",
 }: {
   label: string;
   value: string | number;
   colorClass?: string;
+  gradientClass?: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-3.5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
-      <div className={`text-xl font-bold ${colorClass}`}>{value}</div>
+    <div className={`rounded-2xl border border-border bg-card p-3.5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15 active:scale-[0.98] bg-gradient-to-br ${gradientClass}`}>
+      <div className={`text-xl font-black ${colorClass} animate-counter-up`}>{value}</div>
       <div className="mt-1 text-[11px] font-bold text-muted-foreground">{label}</div>
     </div>
   );
@@ -137,8 +139,8 @@ function KPI({
 
 function StatCard({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
-      <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 border border-primary/20 text-primary shrink-0">
+    <div className="flex items-center gap-3 rounded-2xl glass-card p-4 transition-all duration-300 hover:shadow-elevated active:scale-[0.98]">
+      <div className="grid h-10 w-10 place-items-center rounded-xl gradient-luxe text-white shadow-luxe shrink-0 border border-white/15">
         {icon}
       </div>
       <div>

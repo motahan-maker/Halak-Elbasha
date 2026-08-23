@@ -106,7 +106,7 @@ export function CustomerApp() {
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center squircle bg-primary/10 border border-primary/20 text-primary shadow-sm">
+            <div className="grid h-10 w-10 shrink-0 place-items-center squircle gradient-luxe text-white shadow-luxe border border-white/20">
               <Scissors className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
@@ -129,7 +129,7 @@ export function CustomerApp() {
             <button
               onClick={signOut}
               aria-label="خروج"
-              className="grid h-8.5 w-8.5 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive active:scale-90"
+              className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:shadow-glow-primary active:scale-90"
             >
               <LogOut className="h-4 w-4" strokeWidth={1.5} />
             </button>
@@ -188,24 +188,25 @@ function CustomerHome({
   return (
     <div className="space-y-6">
       {/* Hero Card */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a84ff] via-[#5e5ce6] to-[#bf5af2] p-6 text-white shadow-luxe border border-white/20 animate-fade-in-up">
+      <section className="relative overflow-hidden rounded-3xl gradient-hero p-6 text-white shadow-luxe border border-white/20 animate-fade-in-up animate-gradient-shift">
         {/* Ambient lighting sphere overlays */}
-        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
-        <div className="pointer-events-none absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-purple-500/30 blur-2xl" />
+        <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-10 -bottom-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
+        <div className="pointer-events-none absolute right-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-400/20 blur-2xl" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold tracking-wider text-amber-200 backdrop-blur-md border border-white/20">
+          <div className="inline-flex items-center gap-1.5 rounded-full glass-pill px-3 py-1 text-[10px] font-bold tracking-wider text-amber-200">
             <Sparkles className="h-3 w-3 fill-amber-300" /> تجربة فاخرة ومعتمدة
           </div>
-          <h1 className="mt-3.5 text-2xl font-black leading-tight tracking-tight text-white drop-shadow-sm">
+          <h1 className="mt-4 text-2xl font-black leading-tight tracking-tight text-white drop-shadow-sm">
             يسعدنا خدمتك في
             <br />
             {settings?.shop_name ?? "حلاق الباشا"}
           </h1>
-          <p className="mt-1.5 text-xs text-white/80 font-medium">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
+          <p className="mt-1.5 text-xs text-white/75 font-medium">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
           <button
             onClick={() => setWizardOpen(true)}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3.5 text-sm font-bold text-zinc-950 shadow-xl shadow-black/15 transition-all duration-200 hover:bg-white/95 active:scale-[0.97]"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3.5 text-sm font-bold text-zinc-950 shadow-xl shadow-black/15 transition-all duration-300 hover:bg-white/95 hover:shadow-2xl active:scale-[0.97]"
           >
             <CalendarDays className="h-4.5 w-4.5 text-blue-600" strokeWidth={2} /> ابدأ الحجز الآن
           </button>
@@ -702,15 +703,15 @@ function SuccessCard({
   const wa = buildWhatsAppLink(settings.whatsapp, waMessage);
   return (
     <div className="space-y-5 text-center animate-spring-in">
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-success shadow-luxe animate-check-pop">
-        <Check className="h-10 w-10 text-success-foreground" strokeWidth={2.5} />
+      <div className="mx-auto grid h-24 w-24 place-items-center rounded-full gradient-success shadow-glow-success animate-success-bounce">
+        <Check className="h-12 w-12 text-white" strokeWidth={2.5} />
       </div>
-      <h2 className="text-2xl font-bold tracking-tight text-foreground">تم الحجز بنجاح</h2>
-      <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+      <h2 className="text-2xl font-black tracking-tight text-foreground">تم الحجز بنجاح</h2>
+      <div className="rounded-2xl glass-card p-5">
         <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">رقم الحجز</div>
-        <div className="mt-1 text-3xl font-bold text-gradient-gold">{booking.booking_number}</div>
+        <div className="mt-1 text-3xl font-black text-gradient-gold">{booking.booking_number}</div>
       </div>
-      <p className="text-xs text-muted-foreground/90 font-medium leading-relaxed">
+      <p className="text-xs text-muted-foreground/80 font-medium leading-relaxed">
         يرجى الحضور قبل موعدك بـ ٥ دقائق.
         <br />
         في حالة التأخير أكثر من ١٠ دقائق قد يتم إلغاء الموعد تلقائياً.
@@ -719,7 +720,7 @@ function SuccessCard({
         href={wa}
         target="_blank"
         rel="noopener"
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#34C759] py-3.5 text-sm font-bold text-white shadow-card transition-all duration-200 hover:brightness-105 active:scale-[0.97]"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#34C759] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#34C759]/20 transition-all duration-300 hover:brightness-105 hover:shadow-xl active:scale-[0.97]"
       >
         <MessageCircle className="h-4.5 w-4.5" strokeWidth={1.5} /> تأكيد عبر واتساب
       </a>
@@ -1063,13 +1064,18 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
           <button
             key={it.t}
             onClick={() => onChange(it.t)}
-            className={`flex flex-col items-center gap-1.5 py-1 text-[9px] font-semibold transition-all duration-200 ${
+            className={`flex flex-col items-center gap-1 py-1.5 text-[9px] font-semibold transition-all duration-300 ${
               tab === it.t
-                ? "text-primary scale-105"
-                : "text-muted-foreground/80 active:scale-95 hover:text-foreground"
+                ? "text-primary scale-105 drop-shadow-sm"
+                : "text-muted-foreground/70 active:scale-95 hover:text-foreground"
             }`}
           >
-            {it.icon}
+            <div className={`relative transition-all duration-300 ${tab === it.t ? "animate-glow-pulse rounded-full" : ""}`}>
+              {it.icon}
+              {tab === it.t && (
+                <span className="absolute -bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-primary" />
+              )}
+            </div>
             {it.label}
           </button>
         ))}

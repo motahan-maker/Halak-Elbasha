@@ -16,14 +16,14 @@ import { OfflineIndicator } from "../components/offline-indicator";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-gradient-gold">٤٠٤</h1>
-        <h2 className="mt-4 text-xl font-semibold">الصفحة غير موجودة</h2>
-        <p className="mt-2 text-sm text-muted-foreground">الصفحة التي تبحث عنها غير موجودة.</p>
-        <div className="mt-6">
+      <div className="max-w-md text-center animate-fade-in-up">
+        <h1 className="text-8xl font-black text-gradient-gold animate-float">٤٠٤</h1>
+        <h2 className="mt-5 text-xl font-bold text-foreground">الصفحة غير موجودة</h2>
+        <p className="mt-2 text-sm text-muted-foreground font-medium">الصفحة التي تبحث عنها غير موجودة.</p>
+        <div className="mt-8">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-xl gradient-luxe px-6 py-2 text-sm font-bold text-primary-foreground shadow-luxe"
+            className="inline-flex items-center justify-center rounded-xl gradient-luxe px-8 py-3 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-300 hover:brightness-110 hover:shadow-elevated active:scale-[0.97]"
           >
             الرئيسية
           </Link>
@@ -39,22 +39,22 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold">حدث خطأ</h1>
-        <p className="mt-2 text-sm text-muted-foreground">حاول إعادة المحاولة</p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+      <div className="max-w-md text-center animate-fade-in-up">
+        <h1 className="text-2xl font-black text-foreground">حدث خطأ</h1>
+        <p className="mt-2 text-sm text-muted-foreground font-medium">حاول إعادة المحاولة</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="rounded-xl gradient-luxe px-5 py-2 text-sm font-bold text-primary-foreground"
+            className="rounded-xl gradient-luxe px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
           >
             إعادة المحاولة
           </button>
           <a
             href="/"
-            className="rounded-xl border border-input bg-background px-5 py-2 text-sm font-medium"
+            className="rounded-xl bg-secondary px-6 py-3 text-sm font-bold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
           >
             الرئيسية
           </a>

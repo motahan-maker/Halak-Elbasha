@@ -21,8 +21,8 @@ export function OfflineIndicator() {
   if (!isOffline) return null;
 
   return (
-    <div className="fixed inset-x-0 top-0 z-50 flex items-center justify-center gap-2 bg-destructive/90 px-4 py-2 text-sm font-bold text-destructive-foreground backdrop-blur-sm">
-      <WifiOff className="h-4 w-4" />
+    <div className="fixed inset-x-0 top-0 z-50 flex items-center justify-center gap-2 glass px-4 py-2.5 text-sm font-bold text-destructive animate-slide-in-bottom border-b border-destructive/20">
+      <WifiOff className="h-4 w-4 animate-pulse-soft" />
       لا يوجد اتصال بالإنترنت
     </div>
   );

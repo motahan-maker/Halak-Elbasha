@@ -82,7 +82,7 @@ function SettingsForm({ initial, onSave }: { initial: any; onSave: (d: any) => v
       </Group>
       <button
         onClick={save}
-        className="w-full rounded-xl bg-primary px-4 py-3 text-xs font-bold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-105 active:scale-[0.97]"
+        className="w-full rounded-2xl gradient-luxe px-4 py-3.5 font-bold text-primary-foreground shadow-glow-primary transition-all duration-300 hover:brightness-110 active:scale-[0.98]"
       >
         حفظ الإعدادات
       </button>

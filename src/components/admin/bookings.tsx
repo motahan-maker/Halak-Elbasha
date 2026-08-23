@@ -105,7 +105,7 @@ export function BookingsAdmin() {
                 <>
                   <button
                     onClick={() => update.mutate({ id: b.id, status: "completed" })}
-                    className="flex-1 rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.96] shadow-sm"
+                    className="flex-1 rounded-xl gradient-luxe py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-110 active:scale-[0.96]"
                   >
                     إكمال
                   </button>
