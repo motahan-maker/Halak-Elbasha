@@ -45,7 +45,7 @@
 }
 
 :root {
-  --radius: 0.75rem; /* 12px Apple standard corner radius */
+  --radius: 0.85rem; /* 14px Apple squircle corner radius */
 
   /* iOS Light Mode Colors */
   --background: oklch(0.965 0.005 240); /* System Gray 6 / Grouped Background */
@@ -76,18 +76,18 @@
   --gradient-luxe: linear-gradient(135deg, oklch(0.54 0.22 253.3) 0%, oklch(0.45 0.2 265) 100%);
   --gradient-night: linear-gradient(160deg, oklch(0.2 0.005 240) 0%, oklch(0.1 0 0) 100%);
   --gradient-gold: linear-gradient(135deg, oklch(0.78 0.12 85) 0%, oklch(0.65 0.11 75) 100%);
-  --shadow-luxe: 0 8px 24px -4px oklch(0.54 0.22 253.3 / 0.15);
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.03), 0 4px 12px -1px oklch(0 0 0 / 0.05);
-  --shadow-elevated: 0 4px 6px -1px oklch(0 0 0 / 0.02), 0 10px 25px -5px oklch(0 0 0 / 0.08);
+  --shadow-luxe: 0 8px 24px -4px oklch(0.54 0.22 253.3 / 0.18);
+  --shadow-card: 0 1px 3px oklch(0 0 0 / 0.03), 0 6px 16px -2px oklch(0 0 0 / 0.06);
+  --shadow-elevated: 0 4px 6px -1px oklch(0 0 0 / 0.02), 0 12px 28px -5px oklch(0 0 0 / 0.1);
 }
 
 .dark {
   /* iOS Dark Mode Colors */
-  --background: oklch(0.1 0 0); /* System Background Primary (Pure Black #000000) */
+  --background: oklch(0.08 0 0); /* System Background Primary (Pure Black #000000) */
   --foreground: oklch(0.98 0 0); /* System Label (Almost White) */
-  --card: oklch(0.16 0.006 240); /* System Background Secondary (Charcoal #1C1C1E) */
+  --card: oklch(0.15 0.006 240); /* System Background Secondary (Charcoal #1C1C1E) */
   --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.16 0.006 240);
+  --popover: oklch(0.15 0.006 240);
   --popover-foreground: oklch(0.98 0 0);
   --primary: oklch(0.6 0.22 253.3); /* Apple Blue Dark #0A84FF */
   --primary-foreground: oklch(1.0 0 0);
@@ -111,9 +111,9 @@
   --gradient-luxe: linear-gradient(135deg, oklch(0.6 0.22 253.3) 0%, oklch(0.5 0.2 265) 100%);
   --gradient-night: linear-gradient(160deg, oklch(0.18 0.006 240) 0%, oklch(0.08 0 0) 100%);
   --gradient-gold: linear-gradient(135deg, oklch(0.85 0.11 85) 0%, oklch(0.72 0.1 75) 100%);
-  --shadow-luxe: 0 8px 30px -4px oklch(0 0 0 / 0.4);
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.15), 0 4px 12px -2px oklch(0 0 0 / 0.2);
-  --shadow-elevated: 0 4px 6px -1px oklch(0 0 0 / 0.2), 0 12px 30px -4px oklch(0 0 0 / 0.35);
+  --shadow-luxe: 0 8px 32px -4px oklch(0.6 0.22 253.3 / 0.25);
+  --shadow-card: 0 1px 3px oklch(0 0 0 / 0.2), 0 6px 16px -2px oklch(0 0 0 / 0.3);
+  --shadow-elevated: 0 4px 8px -1px oklch(0 0 0 / 0.3), 0 16px 36px -4px oklch(0 0 0 / 0.45);
 }
 
 @layer base {
@@ -131,7 +131,6 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Respect iOS safe area */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
@@ -141,23 +140,38 @@
     text-align: right;
   }
   ::selection {
-    background: oklch(0.54 0.22 253.3 / 0.2);
+    background: oklch(0.54 0.22 253.3 / 0.25);
   }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Apple squircle icon container */
+.squircle {
+  border-radius: 22%;
 }
 
 /* iOS glassmorphism tab bar and nav header */
 @utility glass {
-  background: color-mix(in oklab, var(--card) 85%, transparent);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid color-mix(in oklab, var(--border) 40%, transparent);
+  background: color-mix(in oklab, var(--card) 82%, transparent);
+  backdrop-filter: saturate(200%) blur(25px);
+  -webkit-backdrop-filter: saturate(200%) blur(25px);
+  border-bottom: 0.5px solid color-mix(in oklab, var(--border) 45%, transparent);
 }
 
 @utility glass-bottom {
-  background: color-mix(in oklab, var(--card) 85%, transparent);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-top: 0.5px solid color-mix(in oklab, var(--border) 40%, transparent);
+  background: color-mix(in oklab, var(--card) 82%, transparent);
+  backdrop-filter: saturate(200%) blur(25px);
+  -webkit-backdrop-filter: saturate(200%) blur(25px);
+  border-top: 0.5px solid color-mix(in oklab, var(--border) 45%, transparent);
 }
 
 /* Grouped iOS lists */
@@ -170,17 +184,17 @@
 }
 
 .ios-grouped-section-title {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--color-muted-foreground);
-  padding: 0 1rem 0.4rem;
-  letter-spacing: 0.05em;
+  padding: 0 0.5rem 0.4rem;
+  letter-spacing: 0.06em;
 }
 
 .ios-grouped-card {
   background-color: var(--color-card);
-  border-radius: var(--radius);
+  border-radius: calc(var(--radius) + 2px);
   overflow: hidden;
   box-shadow: var(--shadow-card);
   border: 0.5px solid var(--color-border);
@@ -207,17 +221,17 @@
 .ios-segmented-control {
   display: inline-flex;
   width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: var(--color-secondary);
-  padding: 2px;
+  padding: 3px;
   border: 0.5px solid color-mix(in oklab, var(--border) 40%, transparent);
 }
 
 .ios-segmented-btn {
   position: relative;
   flex: 1;
-  border-radius: 8px;
-  padding: 0.5rem 0;
+  border-radius: 9px;
+  padding: 0.55rem 0;
   font-size: 0.875rem;
   font-weight: 600;
   text-align: center;
@@ -228,47 +242,7 @@
 .ios-segmented-btn-active {
   background-color: var(--color-card);
   color: var(--color-foreground);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
-}
-
-/* iOS Toggle Switch */
-.ios-switch-track {
-  width: 51px;
-  height: 31px;
-  border-radius: 15.5px;
-  background-color: var(--color-secondary);
-  position: relative;
-  transition: background-color 0.25s ease;
-  cursor: pointer;
-}
-
-.ios-switch-track-active {
-  background-color: var(--color-success);
-}
-
-.ios-switch-thumb {
-  width: 27px;
-  height: 27px;
-  border-radius: 13.5px;
-  background-color: #ffffff;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 3px 1px rgba(0, 0, 0, 0.06);
-  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-[dir="rtl"] .ios-switch-thumb {
-  left: auto;
-  right: 2px;
-}
-
-.ios-switch-track-active .ios-switch-thumb {
-  transform: translateX(20px);
-}
-
-[dir="rtl"] .ios-switch-track-active .ios-switch-thumb {
-  transform: translateX(-20px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 /* Base utility classes */
@@ -324,7 +298,7 @@
 }
 
 @keyframes fade-in-up {
-  from { transform: translateY(12px); opacity: 0; }
+  from { transform: translateY(14px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 .animate-fade-in-up {

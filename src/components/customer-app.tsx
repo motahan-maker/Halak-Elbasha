@@ -106,14 +106,20 @@ export function CustomerApp() {
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 border border-primary/10 text-primary">
-              <Scissors className="h-4.5 w-4.5" strokeWidth={1.5} />
+            <div className="grid h-10 w-10 shrink-0 place-items-center squircle bg-primary/10 border border-primary/20 text-primary shadow-sm">
+              <Scissors className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold">
-                {settings.data?.shop_name ?? "حلاق الباشا"}
+              <div className="flex items-center gap-2">
+                <div className="truncate text-sm font-bold text-foreground">
+                  {settings.data?.shop_name ?? "حلاق الباشا"}
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  مفتوح
+                </span>
               </div>
-              <div className="truncate text-[11px] font-semibold text-muted-foreground">
+              <div className="truncate text-[11px] font-semibold text-muted-foreground mt-0.5">
                 مرحباً، {auth.profile?.full_name ?? "صديقنا"}
               </div>
             </div>
@@ -123,9 +129,9 @@ export function CustomerApp() {
             <button
               onClick={signOut}
               aria-label="خروج"
-              className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive active:scale-90"
+              className="grid h-8.5 w-8.5 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive active:scale-90"
             >
-              <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
+              <LogOut className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -181,23 +187,29 @@ function CustomerHome({
 
   return (
     <div className="space-y-6">
-      {/* Hero */}
-      <section className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#1c1c1e] to-[#000000] border border-white/5 p-6 text-white shadow-luxe animate-fade-in-up">
-        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-400">
-          <Sparkles className="h-3 w-3 fill-amber-400/20" /> تجربة فاخرة
+      {/* Hero Card */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a84ff] via-[#5e5ce6] to-[#bf5af2] p-6 text-white shadow-luxe border border-white/20 animate-fade-in-up">
+        {/* Ambient lighting sphere overlays */}
+        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
+        <div className="pointer-events-none absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-purple-500/30 blur-2xl" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold tracking-wider text-amber-200 backdrop-blur-md border border-white/20">
+            <Sparkles className="h-3 w-3 fill-amber-300" /> تجربة فاخرة ومعتمدة
+          </div>
+          <h1 className="mt-3.5 text-2xl font-black leading-tight tracking-tight text-white drop-shadow-sm">
+            يسعدنا خدمتك في
+            <br />
+            {settings?.shop_name ?? "حلاق الباشا"}
+          </h1>
+          <p className="mt-1.5 text-xs text-white/80 font-medium">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
+          <button
+            onClick={() => setWizardOpen(true)}
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3.5 text-sm font-bold text-zinc-950 shadow-xl shadow-black/15 transition-all duration-200 hover:bg-white/95 active:scale-[0.97]"
+          >
+            <CalendarDays className="h-4.5 w-4.5 text-blue-600" strokeWidth={2} /> ابدأ الحجز الآن
+          </button>
         </div>
-        <h1 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-white">
-          يسعدنا خدمتك في
-          <br />
-          {settings?.shop_name ?? "حلاق الباشا"}
-        </h1>
-        <p className="mt-1 text-xs text-zinc-400 font-medium">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
-        <button
-          onClick={() => setWizardOpen(true)}
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-all duration-200 hover:brightness-105 active:scale-[0.97]"
-        >
-          <CalendarDays className="h-4.5 w-4.5" strokeWidth={1.5} /> ابدأ الحجز
-        </button>
       </section>
 
       {/* Offers */}
@@ -212,8 +224,8 @@ function CustomerHome({
                 style={{ animationDelay: `${0.04 * (i + 1)}s` }}
               >
                 <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground">
-                    <Tag className="h-4 w-4" strokeWidth={1.5} />
+                  <div className="grid h-9.5 w-9.5 shrink-0 place-items-center squircle bg-primary/10 text-primary border border-primary/15">
+                    <Tag className="h-4.5 w-4.5" strokeWidth={1.5} />
                   </div>
                   <div className="min-w-0">
                     <div className="text-[14px] font-bold text-foreground">{o.title}</div>
@@ -223,7 +235,7 @@ function CustomerHome({
                   </div>
                 </div>
                 {o.discount_percent != null && (
-                  <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
+                  <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20">
                     -{o.discount_percent}٪
                   </span>
                 )}
@@ -549,7 +561,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
         {step === "date" && (
           <div>
             <h2 className="mb-3.5 px-1 text-2xl font-bold tracking-tight">اختر التاريخ</h2>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
               {dates.map((d) => (
                 <button
                   key={d.iso}
@@ -558,19 +570,22 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     setDate(d.iso);
                     goNext("time");
                   }}
-                  className={`rounded-xl border p-3.5 text-center transition-all duration-200 active:scale-95 ${
+                  className={`relative rounded-2xl border p-3.5 text-center transition-all duration-200 active:scale-95 flex flex-col items-center justify-center ${
                     !d.available
-                      ? "border-border/60 bg-muted/40 opacity-30 cursor-not-allowed"
-                      : "border-border bg-card hover:border-primary/45 shadow-sm"
+                      ? "border-border/50 bg-muted/25 opacity-35 cursor-not-allowed"
+                      : "border-border bg-card hover:border-primary/50 shadow-card hover:shadow-elevated"
                   }`}
                 >
-                  <div className="text-[10px] font-semibold text-muted-foreground uppercase">
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                     {d.isToday ? "اليوم" : ARABIC_DAYS[d.date.getDay()]}
                   </div>
-                  <div className="mt-1 text-xl font-bold text-foreground">{d.date.getDate()}</div>
-                  <div className="text-[9px] font-semibold text-muted-foreground/80 mt-0.5">
+                  <div className="mt-1 text-2xl font-black text-foreground">{d.date.getDate()}</div>
+                  <div className="text-[9.5px] font-semibold text-muted-foreground/75 mt-0.5">
                     {arabicShortDate(d.date).split(" ").slice(-1)[0]}
                   </div>
+                  {d.isToday && d.available && (
+                    <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                  )}
                 </button>
               ))}
             </div>
@@ -581,23 +596,23 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
           <div>
             <h2 className="mb-3.5 px-1 text-2xl font-bold tracking-tight">اختر الوقت</h2>
             {slots.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-10 text-center">
-                <div className="text-base font-bold">لا توجد مواعيد متاحة</div>
-                <div className="mt-1.5 text-xs text-muted-foreground">لا يوجد وقت متاح لهذا اليوم</div>
+              <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-10 text-center">
+                <div className="text-base font-bold text-foreground">لا توجد مواعيد متاحة</div>
+                <div className="mt-1 text-xs text-muted-foreground">لا يوجد وقت متاح لهذا اليوم</div>
                 <button
                   onClick={() => setStep("date")}
-                  className="mt-4 rounded-xl bg-secondary px-4 py-2.5 text-xs font-semibold transition-all duration-200 hover:bg-muted active:scale-95"
+                  className="mt-4 rounded-xl bg-secondary px-4 py-2.5 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted active:scale-95"
                 >
                   اختر تاريخاً آخر
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2.5">
                 {slots.map((s) => {
                   const disabled = s.kind !== "available";
                   const styles =
                     s.kind === "available"
-                      ? "border-border bg-card text-foreground hover:border-primary/40 focus:ring-1 focus:ring-primary shadow-sm"
+                      ? "border-border bg-card text-foreground hover:border-primary/50 shadow-card active:scale-[0.96]"
                       : s.kind === "booked"
                         ? "border-border/40 bg-muted/30 text-muted-foreground/40"
                         : "border-border/40 bg-muted/30 text-muted-foreground/30";
@@ -609,11 +624,14 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                         setTime(s.time);
                         goNext("confirm");
                       }}
-                      className={`rounded-xl border p-2.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${styles} ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+                      className={`rounded-2xl border p-3 text-xs font-bold transition-all duration-200 flex items-center justify-between ${styles} ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
                     >
-                      <div>{s.label}</div>
-                      {s.kind === "booked" && <div className="text-[9px] font-medium mt-0.5 opacity-60">محجوز</div>}
-                      {s.kind === "past" && <div className="text-[9px] font-medium mt-0.5 opacity-55">منتهي</div>}
+                      <span className="truncate">{s.label}</span>
+                      {s.kind === "available" && (
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0 shadow-sm" />
+                      )}
+                      {s.kind === "booked" && <span className="text-[9px] font-medium opacity-60">محجوز</span>}
+                      {s.kind === "past" && <span className="text-[9px] font-medium opacity-55">منتهي</span>}
                     </button>
                   );
                 })}
