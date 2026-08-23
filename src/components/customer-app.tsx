@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SkeletonCard, SkeletonWizard } from "@/components/ui/skeleton";
 import { generateSlots, formatTime, type Slot } from "@/lib/slots";
 import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink } from "@/lib/format";
 import { cancelBooking, notifyBarbers } from "@/lib/admin.functions";
@@ -163,7 +164,7 @@ function CustomerHome({
   });
 
   if (wizardOpen) {
-    if (!settings) return <div className="p-10 text-center">جارٍ التحميل...</div>;
+    if (!settings) return <SkeletonWizard />;
     return (
       <BookingWizard
         settings={settings}
@@ -177,7 +178,7 @@ function CustomerHome({
 
   return (
     <div className="space-y-5">
-      <section className="overflow-hidden rounded-3xl gradient-night p-6 text-primary-foreground shadow-luxe">
+      <section className="overflow-hidden rounded-3xl gradient-night p-6 text-primary-foreground shadow-luxe animate-fade-in-up">
         <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-primary/80">
           <Sparkles className="h-4 w-4" /> تجربة فاخرة
         </div>
@@ -187,20 +188,21 @@ function CustomerHome({
         <p className="mt-2 text-sm opacity-80">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
         <button
           onClick={() => setWizardOpen(true)}
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-base font-black text-primary-foreground shadow-luxe transition active:scale-[0.98]"
+          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-base font-black text-primary-foreground shadow-luxe transition-all duration-200 hover:shadow-luxe hover:brightness-110 active:scale-[0.97]"
         >
           <CalendarDays className="h-5 w-5" /> ابدأ الحجز
         </button>
       </section>
 
       {(offers.data?.length ?? 0) > 0 && (
-        <section>
+        <section className="animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">العروض الحالية</h2>
           <div className="space-y-2">
-            {offers.data!.slice(0, 3).map((o) => (
+            {offers.data!.slice(0, 3).map((o, i) => (
               <div
                 key={o.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card"
+                className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card animate-fade-in-up transition-all duration-200 hover:shadow-luxe"
+                style={{ animationDelay: `${0.05 * (i + 1)}s` }}
               >
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl gradient-luxe text-primary-foreground">
                   <Tag className="h-5 w-5" />
@@ -222,7 +224,9 @@ function CustomerHome({
         </section>
       )}
 
-      <BarbersShowcase />
+      <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+        <BarbersShowcase />
+      </div>
     </div>
   );
 }
@@ -250,13 +254,28 @@ function BarbersShowcase() {
       }));
     },
   });
+  if (barbers.isLoading) {
+    return (
+      <section>
+        <SkeletonCard />
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </section>
+    );
+  }
   if (!barbers.data?.length) return null;
   return (
     <section>
       <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">فريق الحلاقين</h2>
       <div className="grid grid-cols-2 gap-2">
-        {barbers.data.map((b) => (
-          <div key={b.id} className="rounded-2xl border border-border bg-card p-3 shadow-card">
+        {barbers.data.map((b, i) => (
+          <div
+            key={b.id}
+            className="rounded-2xl border border-border bg-card p-3 shadow-card animate-scale-in transition-all duration-200 hover:shadow-luxe hover:border-primary/30"
+            style={{ animationDelay: `${0.05 * i}s` }}
+          >
             <div className="grid h-12 w-12 place-items-center rounded-xl gradient-luxe text-lg font-black text-primary-foreground">
               {b.name.charAt(0)}
             </div>
@@ -290,6 +309,17 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [created, setCreated] = useState<Booking | null>(null);
+  const [animDir, setAnimDir] = useState<"next" | "prev">("next");
+
+  const goNext = (newStep: Step) => {
+    setAnimDir("next");
+    setStep(newStep);
+  };
+
+  const goPrev = (newStep: Step) => {
+    setAnimDir("prev");
+    setStep(newStep);
+  };
 
   const services = useQuery<Service[]>({
     queryKey: ["services", "active"],
@@ -436,12 +466,12 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
         <button
           onClick={() => {
             if (step === "service" || step === "success") onDone();
-            else if (step === "barber") setStep("service");
-            else if (step === "date") setStep("barber");
-            else if (step === "time") setStep("date");
-            else if (step === "confirm") setStep("time");
+            else if (step === "barber") goPrev("service");
+            else if (step === "date") goPrev("barber");
+            else if (step === "time") goPrev("date");
+            else if (step === "confirm") goPrev("time");
           }}
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card"
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card transition-all duration-200 hover:bg-muted active:scale-95"
         >
           <ChevronLeft className="h-4 w-4 rotate-180" />
         </button>
@@ -450,13 +480,17 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
             {[0, 1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all ${i <= stepIndex ? "w-8 gradient-luxe" : "w-4 bg-muted"}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ease-out ${
+                  i <= stepIndex ? "w-8 gradient-luxe" : i === stepIndex + 1 ? "w-5 bg-muted" : "w-3 bg-muted"
+                }`}
               />
             ))}
           </div>
         )}
         <div className="w-9" />
       </div>
+
+      <div key={step} className={`wizard-step-enter`}>
 
       {step === "service" && (
         <div>
@@ -467,9 +501,9 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                 key={s.id}
                 onClick={() => {
                   setService(s);
-                  setStep("barber");
+                  goNext("barber");
                 }}
-                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-right shadow-card transition hover:border-primary"
+                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-right shadow-card transition-all duration-200 hover:border-primary hover:shadow-luxe active:scale-[0.98]"
               >
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl gradient-luxe text-primary-foreground">
                   <Scissors className="h-5 w-5" />
@@ -501,9 +535,9 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                 key={b.id}
                 onClick={() => {
                   setBarber(b);
-                  setStep("date");
+                  goNext("date");
                 }}
-                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-right shadow-card transition hover:border-primary"
+                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-right shadow-card transition-all duration-200 hover:border-primary hover:shadow-luxe active:scale-[0.98]"
               >
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl gradient-luxe text-lg font-black text-primary-foreground">
                   {b.name.charAt(0)}
@@ -530,12 +564,12 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                 disabled={!d.available}
                 onClick={() => {
                   setDate(d.iso);
-                  setStep("time");
+                  goNext("time");
                 }}
-                className={`rounded-2xl border p-3 text-center shadow-card transition ${
+                className={`rounded-2xl border p-3 text-center shadow-card transition-all duration-200 active:scale-95 ${
                   !d.available
                     ? "border-border bg-muted opacity-40 cursor-not-allowed"
-                    : "border-success/30 bg-success/10 hover:border-success"
+                    : "border-success/30 bg-success/10 hover:border-success hover:shadow-luxe"
                 }`}
               >
                 <div className="text-xs text-muted-foreground">
@@ -559,8 +593,8 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
               <div className="text-lg font-bold">لا توجد مواعيد متاحة</div>
               <div className="mt-1 text-sm text-muted-foreground">لا يوجد وقت متاح لهذا اليوم</div>
               <button
-                onClick={() => setStep("date")}
-                className="mt-4 rounded-xl border border-border px-4 py-2 text-sm font-bold"
+                onClick={() => goPrev("date")}
+                className="mt-4 rounded-xl border border-border px-4 py-2 text-sm font-bold transition-all duration-200 hover:bg-muted active:scale-95"
               >
                 اختر تاريخاً آخر
               </button>
@@ -583,9 +617,9 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     disabled={disabled}
                     onClick={() => {
                       setTime(s.time);
-                      setStep("confirm");
+                      goNext("confirm");
                     }}
-                    className={`rounded-xl border p-2.5 text-sm font-bold transition ${styles} ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
+                    className={`rounded-xl border p-2.5 text-sm font-bold transition-all duration-200 active:scale-95 ${styles} ${disabled ? "cursor-not-allowed opacity-70" : "hover:shadow-luxe"}`}
                   >
                     {s.label}
                     {s.kind === "booked" && <div className="text-[10px] font-normal">محجوز</div>}
@@ -643,6 +677,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
       {step === "success" && created && (
         <SuccessCard booking={created} settings={settings} onDone={onDone} />
       )}
+      </div>
     </div>
   );
 }
@@ -678,7 +713,7 @@ function SuccessCard({
 الوقت: ${booking.booking_time}`;
   const wa = buildWhatsAppLink(settings.whatsapp, waMessage);
   return (
-    <div className="space-y-4 text-center">
+    <div className="space-y-4 text-center animate-scale-in">
       <div className="mx-auto grid h-20 w-20 place-items-center rounded-full gradient-luxe shadow-luxe">
         <Check className="h-10 w-10 text-primary-foreground" />
       </div>
@@ -757,6 +792,16 @@ function BookingsList() {
     onSuccess: () => toast.success("شكراً لتقييمك!"),
     onError: (e: Error) => toast.error(e.message),
   });
+
+  if (list.isLoading) {
+    return (
+      <div className="space-y-3">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    );
+  }
 
   if (!list.data?.length) {
     return <Empty title="لا توجد حجوزات" subtitle="ابدأ بحجز موعدك الأول" />;
@@ -900,13 +945,22 @@ function OffersList() {
       return (data ?? []) as Offer[];
     },
   });
+  if (offers.isLoading) {
+    return (
+      <div className="space-y-3">
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    );
+  }
   if (!offers.data?.length) return <Empty title="لا توجد عروض" subtitle="تابعنا للجديد" />;
   return (
     <div className="space-y-2">
-      {offers.data.map((o) => (
+      {offers.data.map((o, i) => (
         <div
           key={o.id}
-          className="rounded-2xl border border-border gradient-night p-5 text-primary-foreground shadow-luxe"
+          className="rounded-2xl border border-border gradient-night p-5 text-primary-foreground shadow-luxe animate-fade-in-up transition-all duration-200 hover:shadow-luxe hover:brightness-110"
+          style={{ animationDelay: `${0.05 * i}s` }}
         >
           <div className="flex items-center justify-between">
             <Tag className="h-6 w-6 text-primary" />
@@ -929,7 +983,7 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
   const auth = useAuth();
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-border bg-card p-5 text-center shadow-card">
+      <div className="rounded-2xl border border-border bg-card p-5 text-center shadow-card animate-fade-in-up">
         <div className="mx-auto grid h-20 w-20 place-items-center rounded-full gradient-luxe text-3xl font-black text-primary-foreground shadow-luxe">
           {auth.profile?.full_name?.charAt(0) ?? "?"}
         </div>
@@ -937,7 +991,7 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
         <div className="text-sm text-muted-foreground">{auth.profile?.phone}</div>
       </div>
       {settings && (
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-card animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <div className="font-bold">{settings.shop_name}</div>
           {settings.address && (
             <div className="mt-1 text-sm text-muted-foreground">{settings.address}</div>
@@ -984,6 +1038,24 @@ function Empty({ title, subtitle }: { title: string; subtitle: string }) {
 
 /* -------- BOTTOM NAV -------- */
 function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
+  const tabs: Tab[] = ["home", "bookings", "offers", "profile"];
+  const touchStartX = useRef(0);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) < 50) return;
+    const currentIndex = tabs.indexOf(tab);
+    if (diff > 0 && currentIndex < tabs.length - 1) {
+      onChange(tabs[currentIndex + 1]);
+    } else if (diff < 0 && currentIndex > 0) {
+      onChange(tabs[currentIndex - 1]);
+    }
+  }, [tab, onChange, tabs]);
+
   const items: { t: Tab; label: string; icon: React.ReactNode }[] = [
     { t: "home", label: "الرئيسية", icon: <Home className="h-5 w-5" /> },
     { t: "bookings", label: "حجوزاتي", icon: <CalendarDays className="h-5 w-5" /> },
@@ -991,14 +1063,18 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
     { t: "profile", label: "حسابي", icon: <User className="h-5 w-5" /> },
   ];
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border glass">
+    <nav
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border glass"
+    >
       <div className="mx-auto grid max-w-2xl grid-cols-4">
         {items.map((it) => (
           <button
             key={it.t}
             onClick={() => onChange(it.t)}
-            className={`flex flex-col items-center gap-1 py-3 text-xs font-bold transition ${
-              tab === it.t ? "text-primary" : "text-muted-foreground"
+            className={`flex flex-col items-center gap-1 py-3 text-xs font-bold transition-all duration-200 ${
+              tab === it.t ? "text-primary scale-105" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {it.icon}

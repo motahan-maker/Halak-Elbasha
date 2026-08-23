@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { savePushSubscription } from "@/lib/admin.functions";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SkeletonStat, SkeletonCard } from "@/components/ui/skeleton";
 import { arabicDate, isoDate } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
 import { toast } from "sonner";
@@ -260,7 +261,29 @@ export function BarberApp() {
     ? reviews.data.reduce((s, r) => s + (r as any).rating, 0) / reviews.data.length
     : 0;
 
-  if (myBarber.isLoading) return <div className="p-10 text-center">جارٍ التحميل...</div>;
+  if (myBarber.isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 z-30 glass">
+          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <SkeletonStat />
+            </div>
+          </div>
+        </header>
+        <main className="mx-auto max-w-2xl space-y-5 px-4 pt-5">
+          <section className="grid grid-cols-3 gap-2">
+            <SkeletonStat />
+            <SkeletonStat />
+            <SkeletonStat />
+          </section>
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </main>
+      </div>
+    );
+  }
   if (!myBarber.data) {
     return (
       <div className="mx-auto max-w-md p-6 text-center" dir="rtl">
@@ -301,7 +324,7 @@ export function BarberApp() {
       </header>
 
       <main className="mx-auto max-w-2xl space-y-5 px-4 pt-5">
-        <section className="grid grid-cols-3 gap-2">
+        <section className="grid grid-cols-3 gap-2 animate-fade-in-up">
           <Stat label="اليوم" value={todays.length} />
           <Stat label="مكتملة" value={completed.length} />
           <Stat
@@ -313,22 +336,28 @@ export function BarberApp() {
 
         <Section title="مواعيد اليوم">
           {todays.length === 0 && <Empty msg="لا توجد مواعيد اليوم" />}
-          {todays.map((b) => (
-            <Card key={b.id} b={b} onComplete={() => complete.mutate(b.id)} />
+          {todays.map((b, i) => (
+            <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
+              <Card b={b} onComplete={() => complete.mutate(b.id)} />
+            </div>
           ))}
         </Section>
 
         <Section title="المواعيد القادمة">
           {upcoming.length === 0 && <Empty msg="لا توجد مواعيد قادمة" />}
-          {upcoming.map((b) => (
-            <Card key={b.id} b={b} onComplete={() => complete.mutate(b.id)} />
+          {upcoming.map((b, i) => (
+            <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
+              <Card b={b} onComplete={() => complete.mutate(b.id)} />
+            </div>
           ))}
         </Section>
 
         <Section title="المكتملة">
           {completed.length === 0 && <Empty msg="لا يوجد سجل" />}
-          {completed.slice(0, 10).map((b) => (
-            <Card key={b.id} b={b} />
+          {completed.slice(0, 10).map((b, i) => (
+            <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
+              <Card b={b} />
+            </div>
           ))}
         </Section>
       </main>
@@ -367,7 +396,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-200 hover:shadow-luxe hover:border-primary/20">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="truncate font-bold">{b.customer_name}</div>
@@ -386,14 +415,14 @@ function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
       <div className="mt-3 flex gap-2">
         <a
           href={`tel:${b.customer_phone}`}
-          className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-border px-3 py-2 text-xs font-bold"
+          className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-border px-3 py-2 text-xs font-bold transition-all duration-200 hover:bg-muted active:scale-95"
         >
           <Phone className="h-3.5 w-3.5" /> اتصال
         </a>
         {onComplete && b.status === "booked" && (
           <button
             onClick={onComplete}
-            className="flex flex-1 items-center justify-center gap-1 rounded-xl gradient-luxe px-3 py-2 text-xs font-bold text-primary-foreground"
+            className="flex flex-1 items-center justify-center gap-1 rounded-xl gradient-luxe px-3 py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-110 active:scale-95"
           >
             <Check className="h-3.5 w-3.5" /> إنهاء
           </button>

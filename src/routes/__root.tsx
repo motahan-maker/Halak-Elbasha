@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { PwaInstallBanner } from "../components/pwa-install-banner";
+import { OfflineIndicator } from "../components/offline-indicator";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
@@ -123,6 +124,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <OfflineIndicator />
       <Outlet />
       <Toaster position="top-center" richColors closeButton dir="rtl" />
       <PwaInstallBanner />
