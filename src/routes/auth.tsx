@@ -139,19 +139,19 @@ function AuthPage() {
       <div className="fixed top-4 left-4 z-10">
         <ThemeToggle />
       </div>
-      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
         {/* Logo & Brand */}
         <div className="text-center animate-fade-in-up">
-          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[1.75rem] bg-primary shadow-luxe transition-transform duration-500 hover:scale-105">
-            <Scissors className="h-12 w-12 text-primary-foreground" strokeWidth={1.5} />
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-primary shadow-luxe border border-primary/20 transition-transform duration-300 hover:scale-105 active:scale-95">
+            <Scissors className="h-10 w-10 text-primary-foreground" strokeWidth={1.5} />
           </div>
-          <h1 className="mt-6 text-4xl font-black tracking-tight">حلاق الباشا</h1>
-          <p className="mt-2 text-base text-muted-foreground">احجز موعدك في ثوانٍ</p>
+          <h1 className="mt-5 text-3xl font-bold tracking-tight">حلاق الباشا</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground font-medium">حجز المواعيد بكل سهولة ورقي</p>
         </div>
 
         {/* Segmented Control */}
-        <div className="mt-10 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          <div className="inline-flex w-full rounded-2xl bg-secondary p-1">
+        <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+          <div className="ios-segmented-control">
             {(
               [
                 ["customer", "عميل"],
@@ -162,10 +162,8 @@ function AuthPage() {
               <button
                 key={k}
                 onClick={() => setTab(k)}
-                className={`relative flex-1 rounded-xl py-3 text-sm font-bold transition-all duration-300 ${
-                  tab === k
-                    ? "bg-card text-foreground shadow-card"
-                    : "text-muted-foreground"
+                className={`ios-segmented-btn ${
+                  tab === k ? "ios-segmented-btn-active" : ""
                 }`}
               >
                 {lbl}
@@ -175,8 +173,8 @@ function AuthPage() {
         </div>
 
         {/* Form Card */}
-        <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-elevated">
+        <div className="mt-5 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
             {tab === "customer" && (
               <form onSubmit={customerSubmit} className="space-y-4">
                 <AppleField
@@ -194,7 +192,7 @@ function AuthPage() {
                 />
                 <button
                   disabled={cLoading}
-                  className="w-full rounded-2xl bg-primary py-3.5 text-[15px] font-bold text-primary-foreground shadow-luxe transition-all duration-300 hover:brightness-110 active:scale-[0.97] disabled:opacity-50"
+                  className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-105 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
                 >
                   {cLoading ? (
                     <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
@@ -202,7 +200,7 @@ function AuthPage() {
                     "دخول / تسجيل"
                   )}
                 </button>
-                <p className="text-center text-xs text-muted-foreground">
+                <p className="text-center text-xs text-muted-foreground/80 font-medium">
                   لا حاجة لكلمة مرور — الرقم هو هويتك
                 </p>
               </form>
@@ -226,7 +224,7 @@ function AuthPage() {
                 />
                 <button
                   disabled={sLoading}
-                  className="w-full rounded-2xl bg-primary py-3.5 text-[15px] font-bold text-primary-foreground shadow-luxe transition-all duration-300 hover:brightness-110 active:scale-[0.97] disabled:opacity-50"
+                  className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-105 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
                 >
                   {sLoading ? (
                     <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
@@ -239,9 +237,9 @@ function AuthPage() {
 
             {tab === "admin" && (
               <form onSubmit={adminSubmit} className="space-y-4">
-                <div className="flex items-center gap-3 rounded-2xl bg-accent px-4 py-3 text-sm">
-                  <ShieldCheck className="h-5 w-5 shrink-0 text-accent-foreground" strokeWidth={1.5} />
-                  <span className="text-accent-foreground">دخول المدير الافتراضي</span>
+                <div className="flex items-center gap-2.5 rounded-xl bg-accent px-3.5 py-2.5 text-xs font-semibold text-accent-foreground">
+                  <ShieldCheck className="h-4.5 w-4.5 shrink-0" strokeWidth={1.5} />
+                  <span>دخول المدير الافتراضي</span>
                 </div>
                 <AppleField
                   icon={<User className="h-[18px]" strokeWidth={1.5} />}
@@ -258,7 +256,7 @@ function AuthPage() {
                 />
                 <button
                   disabled={aLoading}
-                  className="w-full rounded-2xl bg-primary py-3.5 text-[15px] font-bold text-primary-foreground shadow-luxe transition-all duration-300 hover:brightness-110 active:scale-[0.97] disabled:opacity-50"
+                  className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-105 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
                 >
                   {aLoading ? (
                     <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
@@ -272,7 +270,7 @@ function AuthPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-[11px] text-muted-foreground/60 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
+        <p className="mt-8 text-center text-[10px] font-semibold text-muted-foreground/45 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
           Powered by Eng /Mohamed Eltahan &amp; Eng /Kamel Elmahy
         </p>
       </div>
@@ -294,14 +292,14 @@ function AppleField({
   type?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-secondary px-4 transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/30 focus-within:bg-card">
-      <span className="text-muted-foreground">{icon}</span>
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 px-3.5 transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary focus-within:bg-card">
+      <span className="text-muted-foreground shrink-0">{icon}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
-        className="w-full bg-transparent py-3.5 text-[15px] outline-none placeholder:text-muted-foreground/50"
+        className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground/45 font-medium"
       />
     </div>
   );

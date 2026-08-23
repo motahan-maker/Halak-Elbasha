@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -295,36 +295,38 @@ export function BarberApp() {
   return (
     <div className="min-h-screen bg-background pb-10">
       <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 py-4">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 py-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-card transition-all duration-300">
-              <Scissors className="h-5 w-5" strokeWidth={1.5} />
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 border border-primary/10 text-primary transition-all duration-300">
+              <Scissors className="h-4.5 w-4.5" strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-[15px] font-bold">{myBarber.data.name}</div>
-              <div className="truncate text-xs text-muted-foreground">حلاق</div>
+              <div className="truncate text-sm font-bold text-foreground">{myBarber.data.name}</div>
+              <div className="truncate text-[11px] font-semibold text-muted-foreground">حلاق</div>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2.5">
             <ThemeToggle />
             <button
               onClick={signOut}
-              className="grid h-10 w-10 place-items-center rounded-2xl border border-border transition-all duration-300 hover:shadow-elevated active:scale-[0.95]"
+              aria-label="خروج"
+              className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive active:scale-90"
             >
-              <LogOut className="h-4 w-4" strokeWidth={1.5} />
+              <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl space-y-2.5 px-5 pt-5">
+      <main className="mx-auto max-w-2xl space-y-5 px-5 pt-5">
         <section className="grid grid-cols-3 gap-2.5 animate-fade-in-up">
-          <Stat label="اليوم" value={todays.length} />
-          <Stat label="مكتملة" value={completed.length} />
+          <Stat label="اليوم" value={todays.length} colorClass="text-primary" />
+          <Stat label="مكتملة" value={completed.length} colorClass="text-success" />
           <Stat
             label="التقييم"
             value={avg ? avg.toFixed(1) : "—"}
-            icon={<Star className="h-4 w-4 fill-primary text-primary" strokeWidth={1.5} />}
+            colorClass="text-amber-500"
+            icon={<Star className="h-4 w-4 fill-amber-500 text-amber-500" strokeWidth={0} />}
           />
         </section>
 
@@ -363,18 +365,20 @@ function Stat({
   label,
   value,
   icon,
+  colorClass = "text-foreground",
 }: {
   label: string;
   value: number | string;
   icon?: React.ReactNode;
+  colorClass?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-card transition-all duration-300 hover:shadow-elevated">
-      <div className="flex items-center justify-center gap-1 text-2xl font-black text-gradient-gold">
+    <div className="rounded-xl border border-border bg-card p-3 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
+      <div className={`flex items-center justify-center gap-1 text-2xl font-bold ${colorClass}`}>
         {value}
         {icon}
       </div>
-      <div className="mt-1.5 text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1 text-[11px] font-bold text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -382,41 +386,41 @@ function Stat({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="mb-2.5 px-1 text-[15px] font-bold text-muted-foreground">{title}</h2>
-      <div className="space-y-2.5">{children}</div>
+      <h2 className="ios-grouped-section-title mb-2">{title}</h2>
+      <div className="space-y-3">{children}</div>
     </section>
   );
 }
 
 function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/20">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
       <div className="flex items-start justify-between gap-2.5">
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[15px] font-bold">{b.customer_name}</div>
-          <div className="truncate text-xs text-muted-foreground">
+          <div className="truncate text-sm font-bold text-foreground">{b.customer_name}</div>
+          <div className="truncate text-xs text-muted-foreground font-semibold mt-1">
             {b.service_name} • {formatTime(b.booking_time)}
           </div>
-          <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground/80 font-medium">
             <Calendar className="h-3 w-3" strokeWidth={1.5} />
             {arabicDate(b.booking_date)}
           </div>
         </div>
-        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary shrink-0">
           {b.booking_number}
         </span>
       </div>
-      <div className="mt-3 flex gap-2.5">
+      <div className="mt-3.5 flex gap-2.5">
         <a
           href={`tel:${b.customer_phone}`}
-          className="flex flex-1 items-center justify-center gap-1 rounded-2xl border border-border px-3 py-2 text-xs font-bold transition-all duration-300 hover:bg-muted active:scale-[0.97]"
+          className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-border/80 bg-card px-3 py-2 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.96]"
         >
           <Phone className="h-3.5 w-3.5" strokeWidth={1.5} /> اتصال
         </a>
         {onComplete && b.status === "booked" && (
           <button
             onClick={onComplete}
-            className="flex flex-1 items-center justify-center gap-1 rounded-2xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
+            className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.96]"
           >
             <Check className="h-3.5 w-3.5" strokeWidth={1.5} /> إنهاء
           </button>
@@ -428,7 +432,7 @@ function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
 
 function Empty({ msg }: { msg: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border p-6 text-center text-[15px] text-muted-foreground">
+    <div className="rounded-xl border border-dashed border-border bg-secondary/15 p-6 text-center text-xs font-medium text-muted-foreground">
       {msg}
     </div>
   );

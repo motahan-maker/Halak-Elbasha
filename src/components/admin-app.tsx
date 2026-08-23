@@ -58,15 +58,15 @@ export function AdminApp() {
   return (
     <div className="min-h-screen bg-background pb-10">
       <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto max-w-4xl px-5 py-4">
+        <div className="mx-auto max-w-4xl px-5 py-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[0.85rem] bg-primary shadow-card text-primary-foreground">
-                <Cog className="h-5 w-5" strokeWidth={1.5} />
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 border border-primary/20 text-primary">
+                <Cog className="h-4.5 w-4.5" strokeWidth={1.5} />
               </div>
               <div className="min-w-0">
-                <div className="truncate text-sm font-bold">لوحة المدير</div>
-                <div className="truncate text-[13px] font-semibold text-muted-foreground">
+                <div className="truncate text-sm font-bold text-foreground">لوحة المدير</div>
+                <div className="truncate text-[11px] font-semibold text-muted-foreground mt-0.5">
                   {auth.profile?.full_name}
                 </div>
               </div>
@@ -75,25 +75,26 @@ export function AdminApp() {
               <ThemeToggle />
               <button
                 onClick={signOut}
-                className="grid h-9 w-9 place-items-center rounded-full border border-border transition-all duration-300 hover:bg-muted active:scale-95"
+                aria-label="خروج"
+                className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive active:scale-90"
               >
-                <LogOut className="h-4 w-4" strokeWidth={1.5} />
+                <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
               </button>
             </div>
           </div>
-          <div className="-mx-4 mt-3 overflow-x-auto px-4">
-            <div className="flex gap-2 pb-1">
+          <div className="-mx-4 mt-3 overflow-x-auto px-4 scrollbar-none">
+            <div className="inline-flex gap-1 bg-secondary/55 p-1 rounded-xl min-w-full border border-border/30">
               {tabs.map((t) => (
                 <button
                   key={t.k}
                   onClick={() => setTab(t.k)}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-300 active:scale-95 ${
+                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-200 active:scale-[0.96] ${
                     tab === t.k
-                      ? "bg-primary text-primary-foreground shadow-card"
-                      : "bg-secondary text-muted-foreground hover:bg-accent"
+                      ? "bg-card text-foreground shadow-card border border-border/20"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t.icon}
+                  <span className={tab === t.k ? "text-primary" : "text-muted-foreground"}>{t.icon}</span>
                   {t.label}
                 </button>
               ))}

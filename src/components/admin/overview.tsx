@@ -87,55 +87,63 @@ export function Overview() {
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up">
-        <KPI label="حجوزات اليوم" value={d?.todayCount ?? "—"} />
-        <KPI label="مكتملة" value={d?.completedCount ?? "—"} />
-        <KPI label="ملغية" value={d?.cancelledCount ?? "—"} />
+        <KPI label="حجوزات اليوم" value={d?.todayCount ?? "—"} colorClass="text-primary" />
+        <KPI label="مكتملة" value={d?.completedCount ?? "—"} colorClass="text-success" />
+        <KPI label="ملغية" value={d?.cancelledCount ?? "—"} colorClass="text-destructive" />
         <KPI label="العملاء" value={d?.customers ?? "—"} />
         <KPI label="الحلاقون" value={d?.barbers ?? "—"} />
         <KPI label="الخدمات" value={d?.services ?? "—"} />
       </div>
-      <h3 className="px-1 pt-2 text-[13px] font-semibold text-muted-foreground">الإيرادات</h3>
+      <h3 className="ios-grouped-section-title px-1 pt-2">الإيرادات</h3>
       <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-        <KPI label="اليوم" value={`${d?.revDay ?? 0} ج.م`} />
-        <KPI label="الأسبوع" value={`${d?.revWeek ?? 0} ج.م`} />
-        <KPI label="الشهر" value={`${d?.revMonth ?? 0} ج.م`} />
+        <KPI label="اليوم" value={`${d?.revDay ?? 0} ج.م`} colorClass="text-success" />
+        <KPI label="الأسبوع" value={`${d?.revWeek ?? 0} ج.م`} colorClass="text-success" />
+        <KPI label="الشهر" value={`${d?.revMonth ?? 0} ج.م`} colorClass="text-success" />
       </div>
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
         <StatCard
           title="الأكثر طلباً"
           value={d?.topService ?? "—"}
-          icon={<Scissors className="h-5 w-5" strokeWidth={1.5} />}
+          icon={<Scissors className="h-4.5 w-4.5" strokeWidth={1.5} />}
         />
         <StatCard
           title="أفضل حلاق تقييماً"
           value={d?.topBarber ?? "—"}
-          icon={<Star className="h-5 w-5" strokeWidth={1.5} />}
+          icon={<Star className="h-4.5 w-4.5 text-amber-500 fill-amber-500" strokeWidth={0} />}
         />
       </div>
     </div>
   );
 }
 
-function KPI({ label, value }: { label: string; value: string | number }) {
+function KPI({
+  label,
+  value,
+  colorClass = "text-foreground",
+}: {
+  label: string;
+  value: string | number;
+  colorClass?: string;
+}) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 text-center shadow-card transition-all duration-300 hover:shadow-elevated">
-      <div className="text-xl font-black text-gradient-gold">{value}</div>
-      <div className="mt-1 text-[13px] font-semibold text-muted-foreground">{label}</div>
+    <div className="rounded-xl border border-border bg-card p-3.5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
+      <div className={`text-xl font-bold ${colorClass}`}>{value}</div>
+      <div className="mt-1 text-[11px] font-bold text-muted-foreground">{label}</div>
     </div>
   );
 }
 
 function StatCard({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated">
-      <div className="grid h-10 w-10 place-items-center rounded-[0.85rem] bg-primary text-primary-foreground">
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
+      <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 border border-primary/20 text-primary shrink-0">
         {icon}
       </div>
       <div>
-        <div className="text-[13px] font-semibold text-muted-foreground">{title}</div>
-        <div className="text-[15px] font-bold">{value}</div>
+        <div className="text-[11px] font-bold text-muted-foreground">{title}</div>
+        <div className="text-sm font-bold text-foreground mt-0.5">{value}</div>
       </div>
     </div>
   );
