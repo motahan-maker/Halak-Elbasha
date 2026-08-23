@@ -6,7 +6,7 @@ import { useAuth, customerEmail, customerPassword, staffEmail } from "@/hooks/us
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ensureDefaultAdmin, signUpCustomer, ADMIN_EMAIL, ADMIN_DEFAULT_PASSWORD } from "@/lib/admin.functions";
 import { toast } from "sonner";
-import { Scissors, User, Lock, Phone, ShieldCheck } from "lucide-react";
+import { Scissors, User, Lock, Phone, ShieldCheck, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -139,116 +139,140 @@ function AuthPage() {
       <div className="fixed top-4 left-4 z-10">
         <ThemeToggle />
       </div>
-      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-10">
-        <div className="text-center">
-          <div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl gradient-luxe shadow-luxe">
-            <Scissors className="h-10 w-10 text-primary-foreground" />
+      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
+        {/* Logo & Brand */}
+        <div className="text-center animate-fade-in-up">
+          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[1.75rem] bg-primary shadow-luxe transition-transform duration-500 hover:scale-105">
+            <Scissors className="h-12 w-12 text-primary-foreground" strokeWidth={1.5} />
           </div>
-          <h1 className="mt-4 text-3xl font-black text-gradient-gold">حلاق الباشا</h1>
-          <p className="mt-1 text-sm text-muted-foreground">احجز موعدك بضغطة واحدة</p>
+          <h1 className="mt-6 text-4xl font-black tracking-tight">حلاق الباشا</h1>
+          <p className="mt-2 text-base text-muted-foreground">احجز موعدك في ثوانٍ</p>
         </div>
 
-        <div className="mt-8 inline-flex w-full rounded-2xl border border-border bg-card p-1">
-          {(
-            [
-              ["customer", "عميل"],
-              ["staff", "موظف"],
-              ["admin", "مدير"],
-            ] as [Tab, string][]
-          ).map(([k, lbl]) => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition ${tab === k ? "gradient-luxe text-primary-foreground" : "text-muted-foreground"}`}
-            >
-              {lbl}
-            </button>
-          ))}
+        {/* Segmented Control */}
+        <div className="mt-10 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+          <div className="inline-flex w-full rounded-2xl bg-secondary p-1">
+            {(
+              [
+                ["customer", "عميل"],
+                ["staff", "موظف"],
+                ["admin", "مدير"],
+              ] as [Tab, string][]
+            ).map(([k, lbl]) => (
+              <button
+                key={k}
+                onClick={() => setTab(k)}
+                className={`relative flex-1 rounded-xl py-3 text-sm font-bold transition-all duration-300 ${
+                  tab === k
+                    ? "bg-card text-foreground shadow-card"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {lbl}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-border bg-card p-5 shadow-card">
-          {tab === "customer" && (
-            <form onSubmit={customerSubmit} className="space-y-3">
-              <Field
-                icon={<User className="h-4 w-4" />}
-                placeholder="الاسم بالكامل"
-                value={cName}
-                onChange={setCName}
-              />
-              <Field
-                icon={<Phone className="h-4 w-4" />}
-                placeholder="رقم الجوال"
-                type="tel"
-                value={cPhone}
-                onChange={setCPhone}
-              />
-              <button
-                disabled={cLoading}
-                className="w-full rounded-xl gradient-luxe py-3 font-black text-primary-foreground shadow-luxe disabled:opacity-60"
-              >
-                {cLoading ? "..." : "دخول / تسجيل"}
-              </button>
-              <p className="text-center text-xs text-muted-foreground">
-                لا حاجة لكلمة مرور — الرقم هو هويتك
-              </p>
-            </form>
-          )}
+        {/* Form Card */}
+        <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-elevated">
+            {tab === "customer" && (
+              <form onSubmit={customerSubmit} className="space-y-4">
+                <AppleField
+                  icon={<User className="h-[18px]" strokeWidth={1.5} />}
+                  placeholder="الاسم بالكامل"
+                  value={cName}
+                  onChange={setCName}
+                />
+                <AppleField
+                  icon={<Phone className="h-[18px]" strokeWidth={1.5} />}
+                  placeholder="رقم الجوال"
+                  type="tel"
+                  value={cPhone}
+                  onChange={setCPhone}
+                />
+                <button
+                  disabled={cLoading}
+                  className="w-full rounded-2xl bg-primary py-3.5 text-[15px] font-bold text-primary-foreground shadow-luxe transition-all duration-300 hover:brightness-110 active:scale-[0.97] disabled:opacity-50"
+                >
+                  {cLoading ? (
+                    <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
+                  ) : (
+                    "دخول / تسجيل"
+                  )}
+                </button>
+                <p className="text-center text-xs text-muted-foreground">
+                  لا حاجة لكلمة مرور — الرقم هو هويتك
+                </p>
+              </form>
+            )}
 
-          {tab === "staff" && (
-            <form onSubmit={staffSubmit} className="space-y-3">
-              <Field
-                icon={<Phone className="h-4 w-4" />}
-                placeholder="رقم الجوال"
-                type="tel"
-                value={sPhone}
-                onChange={setSPhone}
-              />
-              <Field
-                icon={<Lock className="h-4 w-4" />}
-                placeholder="كلمة المرور"
-                type="password"
-                value={sPwd}
-                onChange={setSPwd}
-              />
-              <button
-                disabled={sLoading}
-                className="w-full rounded-xl gradient-luxe py-3 font-black text-primary-foreground shadow-luxe disabled:opacity-60"
-              >
-                {sLoading ? "..." : "دخول"}
-              </button>
-            </form>
-          )}
+            {tab === "staff" && (
+              <form onSubmit={staffSubmit} className="space-y-4">
+                <AppleField
+                  icon={<Phone className="h-[18px]" strokeWidth={1.5} />}
+                  placeholder="رقم الجوال"
+                  type="tel"
+                  value={sPhone}
+                  onChange={setSPhone}
+                />
+                <AppleField
+                  icon={<Lock className="h-[18px]" strokeWidth={1.5} />}
+                  placeholder="كلمة المرور"
+                  type="password"
+                  value={sPwd}
+                  onChange={setSPwd}
+                />
+                <button
+                  disabled={sLoading}
+                  className="w-full rounded-2xl bg-primary py-3.5 text-[15px] font-bold text-primary-foreground shadow-luxe transition-all duration-300 hover:brightness-110 active:scale-[0.97] disabled:opacity-50"
+                >
+                  {sLoading ? (
+                    <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
+                  ) : (
+                    "دخول"
+                  )}
+                </button>
+              </form>
+            )}
 
-          {tab === "admin" && (
-            <form onSubmit={adminSubmit} className="space-y-3">
-              <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                دخول المدير الافتراضي
-              </div>
-              <Field
-                icon={<User className="h-4 w-4" />}
-                placeholder="اسم المستخدم"
-                value={aUser}
-                onChange={setAUser}
-              />
-              <Field
-                icon={<Lock className="h-4 w-4" />}
-                placeholder="كلمة المرور"
-                type="password"
-                value={aPwd}
-                onChange={setAPwd}
-              />
-              <button
-                disabled={aLoading}
-                className="w-full rounded-xl gradient-luxe py-3 font-black text-primary-foreground shadow-luxe disabled:opacity-60"
-              >
-                {aLoading ? "..." : "دخول كمدير"}
-              </button>
-            </form>
-          )}
+            {tab === "admin" && (
+              <form onSubmit={adminSubmit} className="space-y-4">
+                <div className="flex items-center gap-3 rounded-2xl bg-accent px-4 py-3 text-sm">
+                  <ShieldCheck className="h-5 w-5 shrink-0 text-accent-foreground" strokeWidth={1.5} />
+                  <span className="text-accent-foreground">دخول المدير الافتراضي</span>
+                </div>
+                <AppleField
+                  icon={<User className="h-[18px]" strokeWidth={1.5} />}
+                  placeholder="اسم المستخدم"
+                  value={aUser}
+                  onChange={setAUser}
+                />
+                <AppleField
+                  icon={<Lock className="h-[18px]" strokeWidth={1.5} />}
+                  placeholder="كلمة المرور"
+                  type="password"
+                  value={aPwd}
+                  onChange={setAPwd}
+                />
+                <button
+                  disabled={aLoading}
+                  className="w-full rounded-2xl bg-primary py-3.5 text-[15px] font-bold text-primary-foreground shadow-luxe transition-all duration-300 hover:brightness-110 active:scale-[0.97] disabled:opacity-50"
+                >
+                  {aLoading ? (
+                    <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
+                  ) : (
+                    "دخول كمدير"
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
 
-        <p className="mt-6 text-center text-[11px] text-muted-foreground/50">
+        {/* Footer */}
+        <p className="mt-8 text-center text-[11px] text-muted-foreground/60 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
           Powered by Eng /Mohamed Eltahan &amp; Eng /Kamel Elmahy
         </p>
       </div>
@@ -256,7 +280,7 @@ function AuthPage() {
   );
 }
 
-function Field({
+function AppleField({
   icon,
   placeholder,
   value,
@@ -270,14 +294,14 @@ function Field({
   type?: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-input bg-background px-3 focus-within:ring-2 focus-within:ring-primary/50">
+    <div className="flex items-center gap-3 rounded-2xl bg-secondary px-4 transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/30 focus-within:bg-card">
       <span className="text-muted-foreground">{icon}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
-        className="w-full bg-transparent py-3 text-sm outline-none"
+        className="w-full bg-transparent py-3.5 text-[15px] outline-none placeholder:text-muted-foreground/50"
       />
     </div>
   );

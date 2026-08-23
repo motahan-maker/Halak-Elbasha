@@ -87,8 +87,8 @@ export function Overview() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2 animate-fade-in-up">
+    <div className="space-y-2.5">
+      <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up">
         <KPI label="حجوزات اليوم" value={d?.todayCount ?? "—"} />
         <KPI label="مكتملة" value={d?.completedCount ?? "—"} />
         <KPI label="ملغية" value={d?.cancelledCount ?? "—"} />
@@ -96,22 +96,22 @@ export function Overview() {
         <KPI label="الحلاقون" value={d?.barbers ?? "—"} />
         <KPI label="الخدمات" value={d?.services ?? "—"} />
       </div>
-      <h3 className="px-1 pt-2 text-sm font-bold text-muted-foreground">الإيرادات</h3>
-      <div className="grid grid-cols-3 gap-2 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+      <h3 className="px-1 pt-2 text-[13px] font-semibold text-muted-foreground">الإيرادات</h3>
+      <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
         <KPI label="اليوم" value={`${d?.revDay ?? 0} ج.م`} />
         <KPI label="الأسبوع" value={`${d?.revWeek ?? 0} ج.م`} />
         <KPI label="الشهر" value={`${d?.revMonth ?? 0} ج.م`} />
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
         <StatCard
           title="الأكثر طلباً"
           value={d?.topService ?? "—"}
-          icon={<Scissors className="h-5 w-5" />}
+          icon={<Scissors className="h-5 w-5" strokeWidth={1.5} />}
         />
         <StatCard
           title="أفضل حلاق تقييماً"
           value={d?.topBarber ?? "—"}
-          icon={<Star className="h-5 w-5" />}
+          icon={<Star className="h-5 w-5" strokeWidth={1.5} />}
         />
       </div>
     </div>
@@ -120,22 +120,22 @@ export function Overview() {
 
 function KPI({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 text-center shadow-card transition-all duration-200 hover:shadow-luxe">
+    <div className="rounded-2xl border border-border bg-card p-3 text-center shadow-card transition-all duration-300 hover:shadow-elevated">
       <div className="text-xl font-black text-gradient-gold">{value}</div>
-      <div className="mt-1 text-[11px] text-muted-foreground">{label}</div>
+      <div className="mt-1 text-[13px] font-semibold text-muted-foreground">{label}</div>
     </div>
   );
 }
 
 function StatCard({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-200 hover:shadow-luxe">
-      <div className="grid h-10 w-10 place-items-center rounded-xl gradient-luxe text-primary-foreground">
+    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated">
+      <div className="grid h-10 w-10 place-items-center rounded-[0.85rem] bg-primary text-primary-foreground">
         {icon}
       </div>
       <div>
-        <div className="text-xs text-muted-foreground">{title}</div>
-        <div className="font-bold">{value}</div>
+        <div className="text-[13px] font-semibold text-muted-foreground">{title}</div>
+        <div className="text-[15px] font-bold">{value}</div>
       </div>
     </div>
   );

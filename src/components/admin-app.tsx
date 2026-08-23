@@ -47,37 +47,37 @@ export function AdminApp() {
   };
 
   const tabs: { k: AdminTab; label: string; icon: React.ReactNode }[] = [
-    { k: "overview", label: "نظرة عامة", icon: <TrendingUp className="h-4 w-4" /> },
-    { k: "barbers", label: "الحلاقون", icon: <Users className="h-4 w-4" /> },
-    { k: "services", label: "الخدمات", icon: <Scissors className="h-4 w-4" /> },
-    { k: "bookings", label: "الحجوزات", icon: <CalendarDays className="h-4 w-4" /> },
-    { k: "offers", label: "العروض", icon: <Tag className="h-4 w-4" /> },
-    { k: "reviews", label: "التقييمات", icon: <Star className="h-4 w-4" /> },
+    { k: "overview", label: "نظرة عامة", icon: <TrendingUp className="h-4 w-4" strokeWidth={1.5} /> },
+    { k: "barbers", label: "الحلاقون", icon: <Users className="h-4 w-4" strokeWidth={1.5} /> },
+    { k: "services", label: "الخدمات", icon: <Scissors className="h-4 w-4" strokeWidth={1.5} /> },
+    { k: "bookings", label: "الحجوزات", icon: <CalendarDays className="h-4 w-4" strokeWidth={1.5} /> },
+    { k: "offers", label: "العروض", icon: <Tag className="h-4 w-4" strokeWidth={1.5} /> },
+    { k: "reviews", label: "التقييمات", icon: <Star className="h-4 w-4" strokeWidth={1.5} /> },
   ];
 
   return (
     <div className="min-h-screen bg-background pb-10">
       <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto max-w-4xl px-4 py-3">
+        <div className="mx-auto max-w-4xl px-5 py-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl gradient-luxe text-primary-foreground shadow-card">
-                <Cog className="h-5 w-5" />
+            <div className="flex min-w-0 items-center gap-2.5">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[0.85rem] bg-primary shadow-card text-primary-foreground">
+                <Cog className="h-5 w-5" strokeWidth={1.5} />
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold">لوحة المدير</div>
-                <div className="truncate text-xs text-muted-foreground">
+                <div className="truncate text-[13px] font-semibold text-muted-foreground">
                   {auth.profile?.full_name}
                 </div>
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2.5">
               <ThemeToggle />
               <button
                 onClick={signOut}
-                className="grid h-9 w-9 place-items-center rounded-full border border-border transition-all duration-200 hover:bg-muted active:scale-95"
+                className="grid h-9 w-9 place-items-center rounded-full border border-border transition-all duration-300 hover:bg-muted active:scale-95"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4" strokeWidth={1.5} />
               </button>
             </div>
           </div>
@@ -87,10 +87,10 @@ export function AdminApp() {
                 <button
                   key={t.k}
                   onClick={() => setTab(t.k)}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 active:scale-95 ${
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-300 active:scale-95 ${
                     tab === t.k
-                      ? "gradient-luxe text-primary-foreground shadow-card"
-                      : "border border-border bg-card text-muted-foreground hover:bg-muted"
+                      ? "bg-primary text-primary-foreground shadow-card"
+                      : "bg-secondary text-muted-foreground hover:bg-accent"
                   }`}
                 >
                   {t.icon}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,7 +49,6 @@ function playLoudBeep(freq: number, duration: number) {
 }
 
 function playAlarmPattern() {
-  // High frequency loud alarm: beep-beep-beep-beep, repeat
   playLoudBeep(2000, 0.12);
   setTimeout(() => playLoudBeep(2500, 0.12), 150);
   setTimeout(() => playLoudBeep(2000, 0.12), 300);
@@ -116,7 +115,6 @@ export function BarberApp() {
   const qc = useQueryClient();
   const prevIdsRef = useRef<Set<string>>(new Set());
 
-  // Auto-register service worker, request notification permission, and resume AudioContext
   useEffect(() => {
     if (!auth.user) return;
     registerServiceWorker().then(() => {
@@ -128,7 +126,6 @@ export function BarberApp() {
         getAudioCtx();
       }
     });
-    // Also resume on any click as fallback
     const resume = () => { getAudioCtx(); document.removeEventListener("click", resume); };
     document.addEventListener("click", resume);
     return () => document.removeEventListener("click", resume);
@@ -151,14 +148,12 @@ export function BarberApp() {
     },
   });
 
-  // Send barber config to service worker for background polling
   useEffect(() => {
     if (myBarber.data?.id) {
       registerServiceWorker().then(() => sendSwConfig(myBarber.data!.id!));
     }
   }, [myBarber.data?.id]);
 
-  // Listen for subscription save requests from service worker
   useEffect(() => {
     const handler = async (e: MessageEvent) => {
       if (e.data?.type === "SAVE_SUBSCRIPTION") {
@@ -191,7 +186,6 @@ export function BarberApp() {
     },
   });
 
-  // Detect new bookings and play sound
   useEffect(() => {
     if (!bookings.data) return;
     const currentIds = new Set(bookings.data.map((b) => b.id));
@@ -265,14 +259,14 @@ export function BarberApp() {
     return (
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-30 glass">
-          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-            <div className="flex min-w-0 items-center gap-2">
+          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 py-4">
+            <div className="flex min-w-0 items-center gap-2.5">
               <SkeletonStat />
             </div>
           </div>
         </header>
-        <main className="mx-auto max-w-2xl space-y-5 px-4 pt-5">
-          <section className="grid grid-cols-3 gap-2">
+        <main className="mx-auto max-w-2xl space-y-5 px-5 pt-5">
+          <section className="grid grid-cols-3 gap-2.5">
             <SkeletonStat />
             <SkeletonStat />
             <SkeletonStat />
@@ -287,10 +281,10 @@ export function BarberApp() {
   if (!myBarber.data) {
     return (
       <div className="mx-auto max-w-md p-6 text-center" dir="rtl">
-        <p>لم يتم ربط حسابك بأي حلاق. تواصل مع المدير.</p>
+        <p className="text-[15px]">لم يتم ربط حسابك بأي حلاق. تواصل مع المدير.</p>
         <button
           onClick={signOut}
-          className="mt-4 rounded-xl gradient-luxe px-5 py-2 font-bold text-primary-foreground"
+          className="mt-4 rounded-2xl bg-primary px-5 py-2.5 text-[15px] font-bold text-primary-foreground transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
         >
           خروج
         </button>
@@ -301,36 +295,36 @@ export function BarberApp() {
   return (
     <div className="min-h-screen bg-background pb-10">
       <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl gradient-luxe text-primary-foreground shadow-card">
-              <Scissors className="h-5 w-5" />
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 py-4">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-card transition-all duration-300">
+              <Scissors className="h-5 w-5" strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold">{myBarber.data.name}</div>
+              <div className="truncate text-[15px] font-bold">{myBarber.data.name}</div>
               <div className="truncate text-xs text-muted-foreground">حلاق</div>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2.5">
             <ThemeToggle />
             <button
               onClick={signOut}
-              className="grid h-9 w-9 place-items-center rounded-full border border-border"
+              className="grid h-10 w-10 place-items-center rounded-2xl border border-border transition-all duration-300 hover:shadow-elevated active:scale-[0.95]"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl space-y-5 px-4 pt-5">
-        <section className="grid grid-cols-3 gap-2 animate-fade-in-up">
+      <main className="mx-auto max-w-2xl space-y-2.5 px-5 pt-5">
+        <section className="grid grid-cols-3 gap-2.5 animate-fade-in-up">
           <Stat label="اليوم" value={todays.length} />
           <Stat label="مكتملة" value={completed.length} />
           <Stat
             label="التقييم"
             value={avg ? avg.toFixed(1) : "—"}
-            icon={<Star className="h-4 w-4 fill-primary text-primary" />}
+            icon={<Star className="h-4 w-4 fill-primary text-primary" strokeWidth={1.5} />}
           />
         </section>
 
@@ -375,12 +369,12 @@ function Stat({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 text-center shadow-card">
+    <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-card transition-all duration-300 hover:shadow-elevated">
       <div className="flex items-center justify-center gap-1 text-2xl font-black text-gradient-gold">
         {value}
         {icon}
       </div>
-      <div className="mt-1 text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1.5 text-xs text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -388,43 +382,43 @@ function Stat({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">{title}</h2>
-      <div className="space-y-2">{children}</div>
+      <h2 className="mb-2.5 px-1 text-[15px] font-bold text-muted-foreground">{title}</h2>
+      <div className="space-y-2.5">{children}</div>
     </section>
   );
 }
 
 function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-200 hover:shadow-luxe hover:border-primary/20">
-      <div className="flex items-start justify-between gap-2">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/20">
+      <div className="flex items-start justify-between gap-2.5">
         <div className="min-w-0 flex-1">
-          <div className="truncate font-bold">{b.customer_name}</div>
+          <div className="truncate text-[15px] font-bold">{b.customer_name}</div>
           <div className="truncate text-xs text-muted-foreground">
             {b.service_name} • {formatTime(b.booking_time)}
           </div>
-          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3" />
+          <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" strokeWidth={1.5} />
             {arabicDate(b.booking_date)}
           </div>
         </div>
-        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
           {b.booking_number}
         </span>
       </div>
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex gap-2.5">
         <a
           href={`tel:${b.customer_phone}`}
-          className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-border px-3 py-2 text-xs font-bold transition-all duration-200 hover:bg-muted active:scale-95"
+          className="flex flex-1 items-center justify-center gap-1 rounded-2xl border border-border px-3 py-2 text-xs font-bold transition-all duration-300 hover:bg-muted active:scale-[0.97]"
         >
-          <Phone className="h-3.5 w-3.5" /> اتصال
+          <Phone className="h-3.5 w-3.5" strokeWidth={1.5} /> اتصال
         </a>
         {onComplete && b.status === "booked" && (
           <button
             onClick={onComplete}
-            className="flex flex-1 items-center justify-center gap-1 rounded-xl gradient-luxe px-3 py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-110 active:scale-95"
+            className="flex flex-1 items-center justify-center gap-1 rounded-2xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
           >
-            <Check className="h-3.5 w-3.5" /> إنهاء
+            <Check className="h-3.5 w-3.5" strokeWidth={1.5} /> إنهاء
           </button>
         )}
       </div>
@@ -434,7 +428,7 @@ function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
 
 function Empty({ msg }: { msg: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+    <div className="rounded-2xl border border-dashed border-border p-6 text-center text-[15px] text-muted-foreground">
       {msg}
     </div>
   );

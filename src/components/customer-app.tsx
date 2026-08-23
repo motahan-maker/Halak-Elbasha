@@ -101,15 +101,16 @@ export function CustomerApp() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-24">
+    <div className="flex min-h-screen flex-col bg-background pb-28">
+      {/* Header */}
       <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl gradient-luxe shadow-card">
-              <Scissors className="h-5 w-5 text-primary-foreground" />
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[0.85rem] bg-primary shadow-card">
+              <Scissors className="h-5 w-5 text-primary-foreground" strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold">
+              <div className="truncate text-[15px] font-bold">
                 {settings.data?.shop_name ?? "حلاق الباشا"}
               </div>
               <div className="truncate text-xs text-muted-foreground">
@@ -122,21 +123,23 @@ export function CustomerApp() {
             <button
               onClick={signOut}
               aria-label="خروج"
-              className="grid h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground hover:text-foreground"
+              className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive active:scale-90"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4">
+      {/* Content */}
+      <main className="mx-auto w-full max-w-2xl flex-1 px-5 pt-2">
         {tab === "home" && <CustomerHome settings={settings.data} onBook={() => setTab("home")} />}
         {tab === "bookings" && <BookingsList />}
         {tab === "offers" && <OffersList />}
         {tab === "profile" && <ProfileView settings={settings.data} />}
       </main>
 
+      {/* Bottom Nav */}
       <BottomNav tab={tab} onChange={setTab} />
     </div>
   );
@@ -177,44 +180,48 @@ function CustomerHome({
   }
 
   return (
-    <div className="space-y-5">
-      <section className="overflow-hidden rounded-3xl gradient-night p-6 text-primary-foreground shadow-luxe animate-fade-in-up">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-primary/80">
-          <Sparkles className="h-4 w-4" /> تجربة فاخرة
+    <div className="space-y-6">
+      {/* Hero */}
+      <section className="overflow-hidden rounded-3xl bg-primary p-7 text-primary-foreground shadow-luxe animate-fade-in-up">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary-foreground/60">
+          <Sparkles className="h-3.5 w-3.5" /> تجربة فاخرة
         </div>
-        <h1 className="mt-2 text-3xl font-black leading-tight text-gradient-gold">
-          يسعدنا خدمتك في {settings?.shop_name ?? "حلاق الباشا"}
+        <h1 className="mt-3 text-[1.75rem] font-black leading-tight tracking-tight">
+          يسعدنا خدمتك في
+          <br />
+          {settings?.shop_name ?? "حلاق الباشا"}
         </h1>
-        <p className="mt-2 text-sm opacity-80">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
+        <p className="mt-2 text-sm text-primary-foreground/70">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
         <button
           onClick={() => setWizardOpen(true)}
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-base font-black text-primary-foreground shadow-luxe transition-all duration-200 hover:shadow-luxe hover:brightness-110 active:scale-[0.97]"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl bg-card px-6 py-4 text-[15px] font-bold text-card-foreground shadow-elevated transition-all duration-300 hover:brightness-95 active:scale-[0.97]"
         >
-          <CalendarDays className="h-5 w-5" /> ابدأ الحجز
+          <CalendarDays className="h-5 w-5" strokeWidth={1.5} /> ابدأ الحجز
         </button>
       </section>
 
+      {/* Offers */}
       {(offers.data?.length ?? 0) > 0 && (
-        <section className="animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">العروض الحالية</h2>
-          <div className="space-y-2">
+        <section className="animate-fade-in-up" style={{ animationDelay: "0.08s" }}>
+          <h2 className="mb-3 px-1 text-[13px] font-semibold text-muted-foreground">العروض الحالية</h2>
+          <div className="space-y-2.5">
             {offers.data!.slice(0, 3).map((o, i) => (
               <div
                 key={o.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card animate-fade-in-up transition-all duration-200 hover:shadow-luxe"
-                style={{ animationDelay: `${0.05 * (i + 1)}s` }}
+                className="flex items-center gap-3.5 rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated active:scale-[0.98]"
+                style={{ animationDelay: `${0.04 * (i + 1)}s` }}
               >
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl gradient-luxe text-primary-foreground">
-                  <Tag className="h-5 w-5" />
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[0.85rem] bg-accent text-accent-foreground">
+                  <Tag className="h-5 w-5" strokeWidth={1.5} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-bold">{o.title}</div>
+                  <div className="truncate text-[15px] font-bold">{o.title}</div>
                   {o.description && (
                     <div className="truncate text-xs text-muted-foreground">{o.description}</div>
                   )}
                 </div>
                 {o.discount_percent != null && (
-                  <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary">
+                  <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                     -{o.discount_percent}٪
                   </span>
                 )}
@@ -224,7 +231,8 @@ function CustomerHome({
         </section>
       )}
 
-      <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+      {/* Barbers */}
+      <div className="animate-fade-in-up" style={{ animationDelay: "0.16s" }}>
         <BarbersShowcase />
       </div>
     </div>
@@ -256,35 +264,32 @@ function BarbersShowcase() {
   });
   if (barbers.isLoading) {
     return (
-      <section>
+      <div className="space-y-2.5">
         <SkeletonCard />
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-      </section>
+        <SkeletonCard />
+      </div>
     );
   }
   if (!barbers.data?.length) return null;
   return (
     <section>
-      <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">فريق الحلاقين</h2>
-      <div className="grid grid-cols-2 gap-2">
+      <h2 className="mb-3 px-1 text-[13px] font-semibold text-muted-foreground">فريق الحلاقين</h2>
+      <div className="grid grid-cols-2 gap-2.5">
         {barbers.data.map((b, i) => (
           <div
             key={b.id}
-            className="rounded-2xl border border-border bg-card p-3 shadow-card animate-scale-in transition-all duration-200 hover:shadow-luxe hover:border-primary/30"
-            style={{ animationDelay: `${0.05 * i}s` }}
+            className="rounded-2xl border border-border bg-card p-4 shadow-card animate-scale-in transition-all duration-300 hover:shadow-elevated active:scale-[0.97]"
+            style={{ animationDelay: `${0.04 * i}s` }}
           >
-            <div className="grid h-12 w-12 place-items-center rounded-xl gradient-luxe text-lg font-black text-primary-foreground">
+            <div className="grid h-14 w-14 place-items-center rounded-[0.9rem] bg-primary text-lg font-black text-primary-foreground">
               {b.name.charAt(0)}
             </div>
-            <div className="mt-2 truncate font-bold">{b.name}</div>
+            <div className="mt-3 truncate text-[15px] font-bold">{b.name}</div>
             <div className="truncate text-xs text-muted-foreground">
               {b.specialization || "حلاق"}
             </div>
-            <div className="mt-1 flex items-center gap-1 text-xs">
-              <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+            <div className="mt-1.5 flex items-center gap-1 text-xs">
+              <Star className="h-3.5 w-3.5 fill-warning text-warning" strokeWidth={0} />
               <span className="font-bold">{b.avg ? b.avg.toFixed(1) : "جديد"}</span>
               {b.cnt > 0 && <span className="text-muted-foreground">({b.cnt})</span>}
             </div>
@@ -309,16 +314,13 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [created, setCreated] = useState<Booking | null>(null);
-  const [animDir, setAnimDir] = useState<"next" | "prev">("next");
 
-  const goNext = (newStep: Step) => {
-    setAnimDir("next");
-    setStep(newStep);
-  };
-
-  const goPrev = (newStep: Step) => {
-    setAnimDir("prev");
-    setStep(newStep);
+  const goNext = (s: Step) => setStep(s);
+  const goBack = () => {
+    if (step === "barber") setStep("service");
+    else if (step === "date") setStep("barber");
+    else if (step === "time") setStep("date");
+    else if (step === "confirm") setStep("time");
   };
 
   const services = useQuery<Service[]>({
@@ -329,10 +331,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
         .select("*")
         .eq("is_active", true)
         .order("price");
-      if (error) {
-        console.error("services query error:", error);
-        return [];
-      }
+      if (error) return [];
       return (data ?? []) as Service[];
     },
   });
@@ -344,10 +343,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
         .select("*")
         .eq("is_active", true)
         .order("name");
-      if (error) {
-        console.error("barbers query error:", error);
-        return [];
-      }
+      if (error) return [];
       return (data ?? []) as Barber[];
     },
   });
@@ -380,10 +376,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
         _barber_id: barber!.id,
         _booking_date: date!,
       });
-      if (error) {
-        console.error("get_booked_times error:", error);
-        return [];
-      }
+      if (error) return [];
       return (data ?? []).map((r: any) => r.booking_time as string);
     },
   });
@@ -446,7 +439,6 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
     onSuccess: (b) => {
       setCreated(b);
       setStep("success");
-      // Send push notification to barber
       notifyBarbers({
         data: {
           barber_id: b.barber_id,
@@ -461,235 +453,211 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   const stepIndex = ["service", "barber", "date", "time", "confirm"].indexOf(step);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Nav Bar */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => {
             if (step === "service" || step === "success") onDone();
-            else if (step === "barber") goPrev("service");
-            else if (step === "date") goPrev("barber");
-            else if (step === "time") goPrev("date");
-            else if (step === "confirm") goPrev("time");
+            else goBack();
           }}
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card transition-all duration-200 hover:bg-muted active:scale-95"
+          className="grid h-10 w-10 place-items-center rounded-full bg-secondary transition-all duration-200 hover:bg-muted active:scale-90"
         >
-          <ChevronLeft className="h-4 w-4 rotate-180" />
+          <ChevronLeft className="h-5 w-5 rotate-180" strokeWidth={1.5} />
         </button>
         {step !== "success" && (
-          <div className="flex gap-1.5">
+          <div className="flex gap-1">
             {[0, 1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ease-out ${
-                  i <= stepIndex ? "w-8 gradient-luxe" : i === stepIndex + 1 ? "w-5 bg-muted" : "w-3 bg-muted"
+                className={`h-[5px] rounded-full transition-all duration-500 ease-out ${
+                  i <= stepIndex ? "w-8 bg-primary" : i === stepIndex + 1 ? "w-5 bg-muted" : "w-3 bg-muted"
                 }`}
               />
             ))}
           </div>
         )}
-        <div className="w-9" />
+        <div className="w-10" />
       </div>
 
-      <div key={step} className={`wizard-step-enter`}>
-
-      {step === "service" && (
-        <div>
-          <h2 className="mb-3 text-xl font-black">اختر الخدمة</h2>
-          <div className="space-y-2">
-            {services.data?.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => {
-                  setService(s);
-                  goNext("barber");
-                }}
-                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-right shadow-card transition-all duration-200 hover:border-primary hover:shadow-luxe active:scale-[0.98]"
-              >
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl gradient-luxe text-primary-foreground">
-                  <Scissors className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-bold">{s.name}</div>
-                  {s.description && (
-                    <div className="truncate text-xs text-muted-foreground">{s.description}</div>
-                  )}
-                </div>
-                <div className="shrink-0 text-lg font-black text-primary">{s.price} ج.م</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {step === "barber" && (
-        <div>
-          <h2 className="mb-3 text-xl font-black">اختر الحلاق</h2>
-          {!barbers.data?.length && (
-            <p className="rounded-2xl border border-border bg-card p-4 text-center text-sm text-muted-foreground">
-              لم يقم المدير بإضافة حلاقين بعد.
-            </p>
-          )}
-          <div className="space-y-2">
-            {barbers.data?.map((b) => (
-              <button
-                key={b.id}
-                onClick={() => {
-                  setBarber(b);
-                  goNext("date");
-                }}
-                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-right shadow-card transition-all duration-200 hover:border-primary hover:shadow-luxe active:scale-[0.98]"
-              >
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl gradient-luxe text-lg font-black text-primary-foreground">
-                  {b.name.charAt(0)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-bold">{b.name}</div>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {b.specialization || "حلاق"}
+      {/* Step Content */}
+      <div key={step} className="wizard-step-enter">
+        {step === "service" && (
+          <div>
+            <h2 className="mb-4 text-2xl font-black tracking-tight">اختر الخدمة</h2>
+            <div className="space-y-2.5">
+              {services.data?.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => {
+                    setService(s);
+                    goNext("barber");
+                  }}
+                  className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-4 text-right shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/20 active:scale-[0.98]"
+                >
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[0.9rem] bg-accent text-accent-foreground">
+                    <Scissors className="h-5 w-5" strokeWidth={1.5} />
                   </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {step === "date" && (
-        <div>
-          <h2 className="mb-3 text-xl font-black">اختر التاريخ</h2>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {dates.map((d) => (
-              <button
-                key={d.iso}
-                disabled={!d.available}
-                onClick={() => {
-                  setDate(d.iso);
-                  goNext("time");
-                }}
-                className={`rounded-2xl border p-3 text-center shadow-card transition-all duration-200 active:scale-95 ${
-                  !d.available
-                    ? "border-border bg-muted opacity-40 cursor-not-allowed"
-                    : "border-success/30 bg-success/10 hover:border-success hover:shadow-luxe"
-                }`}
-              >
-                <div className="text-xs text-muted-foreground">
-                  {d.isToday ? "اليوم" : ARABIC_DAYS[d.date.getDay()]}
-                </div>
-                <div className="mt-1 text-lg font-black">{d.date.getDate()}</div>
-                <div className="text-[10px] text-muted-foreground">
-                  {arabicShortDate(d.date).split(" ").slice(-1)[0]}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {step === "time" && (
-        <div>
-          <h2 className="mb-3 text-xl font-black">اختر الوقت</h2>
-          {slots.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border bg-card/40 p-10 text-center">
-              <div className="text-lg font-bold">لا توجد مواعيد متاحة</div>
-              <div className="mt-1 text-sm text-muted-foreground">لا يوجد وقت متاح لهذا اليوم</div>
-              <button
-                onClick={() => goPrev("date")}
-                className="mt-4 rounded-xl border border-border px-4 py-2 text-sm font-bold transition-all duration-200 hover:bg-muted active:scale-95"
-              >
-                اختر تاريخاً آخر
-              </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[15px] font-bold">{s.name}</div>
+                    {s.description && (
+                      <div className="truncate text-xs text-muted-foreground">{s.description}</div>
+                    )}
+                  </div>
+                  <div className="shrink-0 text-lg font-black text-primary">{s.price} ج.م</div>
+                </button>
+              ))}
             </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {slots.map((s) => {
-                const disabled = s.kind !== "available";
-                const styles =
-                  s.kind === "available"
-                    ? "border-success/30 bg-success/10 text-success hover:border-success"
-                    : s.kind === "booked"
-                      ? "border-destructive/30 bg-destructive/10 text-destructive/70"
-                      : s.kind === "past"
-                        ? "border-border bg-muted text-muted-foreground/50"
-                        : "border-border bg-muted text-muted-foreground";
-                return (
-                  <button
-                    key={s.time}
-                    disabled={disabled}
-                    onClick={() => {
-                      setTime(s.time);
-                      goNext("confirm");
-                    }}
-                    className={`rounded-xl border p-2.5 text-sm font-bold transition-all duration-200 active:scale-95 ${styles} ${disabled ? "cursor-not-allowed opacity-70" : "hover:shadow-luxe"}`}
-                  >
-                    {s.label}
-                    {s.kind === "booked" && <div className="text-[10px] font-normal">محجوز</div>}
-                    {s.kind === "past" && <div className="text-[10px] font-normal">منتهي</div>}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {step === "confirm" && service && barber && date && time && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-black">تأكيد الحجز</h2>
-          <div className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-card">
-            <Row
-              label="الاسم"
-              value={auth.profile?.full_name ?? ""}
-              icon={<User className="h-4 w-4" />}
-            />
-            <Row
-              label="الجوال"
-              value={auth.profile?.phone ?? ""}
-              icon={<Phone className="h-4 w-4" />}
-            />
-            <Row
-              label="الخدمة"
-              value={`${service.name} • ${service.price} ج.م`}
-              icon={<Scissors className="h-4 w-4" />}
-            />
-            <Row label="الحلاق" value={barber.name} icon={<User className="h-4 w-4" />} />
-            <Row
-              label="التاريخ"
-              value={arabicDate(date)}
-              icon={<CalendarDays className="h-4 w-4" />}
-            />
-            <Row
-              label="الوقت"
-              value={slots.find((s) => s.time === time)?.label ?? time}
-              icon={<Clock className="h-4 w-4" />}
-            />
           </div>
-          <button
-            onClick={() => confirm.mutate()}
-            disabled={confirm.isPending}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-luxe px-6 py-4 text-base font-black text-primary-foreground shadow-luxe disabled:opacity-60"
-          >
-            <Check className="h-5 w-5" />
-            {confirm.isPending ? "جارٍ التأكيد..." : "تأكيد الحجز"}
-          </button>
-        </div>
-      )}
+        )}
 
-      {step === "success" && created && (
-        <SuccessCard booking={created} settings={settings} onDone={onDone} />
-      )}
+        {step === "barber" && (
+          <div>
+            <h2 className="mb-4 text-2xl font-black tracking-tight">اختر الحلاق</h2>
+            {!barbers.data?.length && (
+              <p className="rounded-2xl bg-secondary p-5 text-center text-sm text-muted-foreground">
+                لم يقم المدير بإضافة حلاقين بعد.
+              </p>
+            )}
+            <div className="space-y-2.5">
+              {barbers.data?.map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => {
+                    setBarber(b);
+                    goNext("date");
+                  }}
+                  className="flex w-full items-center gap-4 rounded-2xl border border-border bg-card p-4 text-right shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/20 active:scale-[0.98]"
+                >
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[0.9rem] bg-primary text-lg font-black text-primary-foreground">
+                    {b.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[15px] font-bold">{b.name}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {b.specialization || "حلاق"}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === "date" && (
+          <div>
+            <h2 className="mb-4 text-2xl font-black tracking-tight">اختر التاريخ</h2>
+            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+              {dates.map((d) => (
+                <button
+                  key={d.iso}
+                  disabled={!d.available}
+                  onClick={() => {
+                    setDate(d.iso);
+                    goNext("time");
+                  }}
+                  className={`rounded-2xl border p-4 text-center transition-all duration-300 active:scale-95 ${
+                    !d.available
+                      ? "border-border bg-secondary opacity-40 cursor-not-allowed"
+                      : "border-success/20 bg-success/5 hover:shadow-card hover:border-success/40"
+                  }`}
+                >
+                  <div className="text-[11px] text-muted-foreground">
+                    {d.isToday ? "اليوم" : ARABIC_DAYS[d.date.getDay()]}
+                  </div>
+                  <div className="mt-1 text-2xl font-black">{d.date.getDate()}</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {arabicShortDate(d.date).split(" ").slice(-1)[0]}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === "time" && (
+          <div>
+            <h2 className="mb-4 text-2xl font-black tracking-tight">اختر الوقت</h2>
+            {slots.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-border bg-secondary/50 p-12 text-center">
+                <div className="text-lg font-bold">لا توجد مواعيد متاحة</div>
+                <div className="mt-1.5 text-sm text-muted-foreground">لا يوجد وقت متاح لهذا اليوم</div>
+                <button
+                  onClick={() => setStep("date")}
+                  className="mt-5 rounded-2xl bg-secondary px-5 py-2.5 text-sm font-bold transition-all duration-200 hover:bg-muted active:scale-95"
+                >
+                  اختر تاريخاً آخر
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2.5">
+                {slots.map((s) => {
+                  const disabled = s.kind !== "available";
+                  const styles =
+                    s.kind === "available"
+                      ? "border-success/20 bg-success/5 text-success hover:shadow-card hover:border-success/40"
+                      : s.kind === "booked"
+                        ? "border-destructive/15 bg-destructive/5 text-destructive/60"
+                        : "border-border bg-secondary text-muted-foreground/50";
+                  return (
+                    <button
+                      key={s.time}
+                      disabled={disabled}
+                      onClick={() => {
+                        setTime(s.time);
+                        goNext("confirm");
+                      }}
+                      className={`rounded-2xl border p-3 text-sm font-bold transition-all duration-300 active:scale-95 ${styles} ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+                    >
+                      {s.label}
+                      {s.kind === "booked" && <div className="text-[10px] font-normal opacity-70">محجوز</div>}
+                      {s.kind === "past" && <div className="text-[10px] font-normal opacity-70">منتهي</div>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === "confirm" && service && barber && date && time && (
+          <div className="space-y-5">
+            <h2 className="text-2xl font-black tracking-tight">تأكيد الحجز</h2>
+            <div className="space-y-4 rounded-3xl border border-border bg-card p-6 shadow-elevated">
+              <AppleRow label="الاسم" value={auth.profile?.full_name ?? ""} icon={<User className="h-4 w-4" strokeWidth={1.5} />} />
+              <AppleRow label="الجوال" value={auth.profile?.phone ?? ""} icon={<Phone className="h-4 w-4" strokeWidth={1.5} />} />
+              <AppleRow label="الخدمة" value={`${service.name} • ${service.price} ج.م`} icon={<Scissors className="h-4 w-4" strokeWidth={1.5} />} />
+              <AppleRow label="الحلاق" value={barber.name} icon={<User className="h-4 w-4" strokeWidth={1.5} />} />
+              <AppleRow label="التاريخ" value={arabicDate(date)} icon={<CalendarDays className="h-4 w-4" strokeWidth={1.5} />} />
+              <AppleRow label="الوقت" value={slots.find((s) => s.time === time)?.label ?? time} icon={<Clock className="h-4 w-4" strokeWidth={1.5} />} />
+            </div>
+            <button
+              onClick={() => confirm.mutate()}
+              disabled={confirm.isPending}
+              className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-primary px-6 py-4 text-[15px] font-bold text-primary-foreground shadow-luxe transition-all duration-300 hover:brightness-110 active:scale-[0.97] disabled:opacity-50"
+            >
+              <Check className="h-5 w-5" strokeWidth={2} />
+              {confirm.isPending ? "جارٍ التأكيد..." : "تأكيد الحجز"}
+            </button>
+          </div>
+        )}
+
+        {step === "success" && created && (
+          <SuccessCard booking={created} settings={settings} onDone={onDone} />
+        )}
       </div>
     </div>
   );
 }
 
-function Row({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+function AppleRow({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 border-b border-border pb-3 last:border-0 last:pb-0">
+      <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
         {icon}
         {label}
       </div>
-      <div className="truncate text-sm font-bold">{value}</div>
+      <div className="truncate text-[15px] font-semibold">{value}</div>
     </div>
   );
 }
@@ -713,14 +681,14 @@ function SuccessCard({
 الوقت: ${booking.booking_time}`;
   const wa = buildWhatsAppLink(settings.whatsapp, waMessage);
   return (
-    <div className="space-y-4 text-center animate-scale-in">
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full gradient-luxe shadow-luxe">
-        <Check className="h-10 w-10 text-primary-foreground" />
+    <div className="space-y-5 text-center animate-spring-in">
+      <div className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-success shadow-luxe animate-check-pop">
+        <Check className="h-12 w-12 text-success-foreground" strokeWidth={2.5} />
       </div>
-      <h2 className="text-2xl font-black">تم الحجز بنجاح</h2>
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">رقم الحجز</div>
-        <div className="mt-1 text-3xl font-black text-gradient-gold">{booking.booking_number}</div>
+      <h2 className="text-[1.75rem] font-black tracking-tight">تم الحجز بنجاح</h2>
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-elevated">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">رقم الحجز</div>
+        <div className="mt-2 text-4xl font-black text-gradient-gold">{booking.booking_number}</div>
       </div>
       <p className="text-sm text-muted-foreground">
         يرجى الحضور قبل موعدك بـ ٥ دقائق.
@@ -731,11 +699,11 @@ function SuccessCard({
         href={wa}
         target="_blank"
         rel="noopener"
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-success px-6 py-3.5 font-black text-success-foreground shadow-card"
+        className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-success px-6 py-4 font-bold text-success-foreground shadow-card transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
       >
-        <MessageCircle className="h-5 w-5" /> تأكيد عبر واتساب
+        <MessageCircle className="h-5 w-5" strokeWidth={1.5} /> تأكيد عبر واتساب
       </a>
-      <button onClick={onDone} className="text-sm font-bold text-muted-foreground underline">
+      <button onClick={onDone} className="text-sm font-semibold text-primary">
         العودة للرئيسية
       </button>
     </div>
@@ -810,11 +778,11 @@ function BookingsList() {
   const past = list.data.filter((b) => b.status !== "booked");
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {upcoming.length > 0 && (
         <section>
-          <h2 className="mb-2 text-sm font-bold text-muted-foreground">القادمة</h2>
-          <div className="space-y-2">
+          <h2 className="mb-3 text-[13px] font-semibold text-muted-foreground">القادمة</h2>
+          <div className="space-y-2.5">
             {upcoming.map((b) => (
               <BookingCard key={b.id} b={b} onCancel={() => cancel.mutate(b.id)} />
             ))}
@@ -823,8 +791,8 @@ function BookingsList() {
       )}
       {past.length > 0 && (
         <section>
-          <h2 className="mb-2 text-sm font-bold text-muted-foreground">السابقة</h2>
-          <div className="space-y-2">
+          <h2 className="mb-3 text-[13px] font-semibold text-muted-foreground">السابقة</h2>
+          <div className="space-y-2.5">
             {past.map((b) => (
               <BookingCard
                 key={b.id}
@@ -861,32 +829,32 @@ function BookingCard({
   const status = b.status === "booked" ? "محجوز" : b.status === "completed" ? "مكتمل" : "ملغي";
   const statusClass =
     b.status === "booked"
-      ? "bg-primary/15 text-primary"
+      ? "bg-primary/10 text-primary"
       : b.status === "completed"
-        ? "bg-success/15 text-success"
-        : "bg-destructive/15 text-destructive";
+        ? "bg-success/10 text-success"
+        : "bg-destructive/10 text-destructive";
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="truncate font-bold">{b.service_name}</div>
-          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-            <CalendarDays className="h-3.5 w-3.5" />
+          <div className="text-[15px] font-bold">{b.service_name}</div>
+          <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.5} />
             {arabicDate(b.booking_date)} • {formatTime(b.booking_time)}
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>
+        <div className="flex flex-col items-end gap-1.5">
+          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${statusClass}`}>
             {status}
           </span>
-          <span className="text-xs font-bold text-muted-foreground">{b.booking_number}</span>
+          <span className="text-[11px] font-semibold text-muted-foreground">{b.booking_number}</span>
         </div>
       </div>
       {onCancel && (
         <button
           onClick={onCancel}
-          className="mt-3 w-full rounded-xl border border-destructive/40 px-4 py-2 text-sm font-bold text-destructive"
+          className="mt-3 w-full rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-2.5 text-sm font-bold text-destructive transition-all duration-200 hover:bg-destructive/10 active:scale-[0.98]"
         >
           إلغاء الحجز
         </button>
@@ -896,17 +864,18 @@ function BookingCard({
           {!open ? (
             <button
               onClick={() => setOpen(true)}
-              className="w-full rounded-xl border border-border px-4 py-2 text-sm font-bold"
+              className="w-full rounded-2xl bg-secondary px-4 py-2.5 text-sm font-bold transition-all duration-200 hover:bg-muted active:scale-[0.98]"
             >
               تقييم الخدمة
             </button>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3 rounded-2xl bg-secondary/50 p-4 animate-scale-in">
               <div className="flex items-center justify-center gap-1">
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <button key={n} onClick={() => setRating(n)}>
+                  <button key={n} onClick={() => setRating(n)} className="transition-transform duration-200 active:scale-125">
                     <Star
-                      className={`h-7 w-7 ${n <= rating ? "fill-primary text-primary" : "text-muted"}`}
+                      className={`h-8 w-8 transition-colors duration-200 ${n <= rating ? "fill-warning text-warning" : "text-muted"}`}
+                      strokeWidth={n <= rating ? 0 : 1.5}
                     />
                   </button>
                 ))}
@@ -915,7 +884,7 @@ function BookingCard({
                 value={comment}
                 onChange={(e) => setComment(e.target.value.slice(0, 300))}
                 placeholder="رأيك يهمنا..."
-                className="w-full rounded-xl border border-input bg-background p-2 text-sm"
+                className="w-full rounded-2xl border border-border bg-card p-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
                 rows={2}
               />
               <button
@@ -924,7 +893,7 @@ function BookingCard({
                   setOpen(false);
                   setComment("");
                 }}
-                className="w-full rounded-xl gradient-luxe px-4 py-2 text-sm font-bold text-primary-foreground"
+                className="w-full rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
               >
                 إرسال التقييم
               </button>
@@ -955,23 +924,23 @@ function OffersList() {
   }
   if (!offers.data?.length) return <Empty title="لا توجد عروض" subtitle="تابعنا للجديد" />;
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {offers.data.map((o, i) => (
         <div
           key={o.id}
-          className="rounded-2xl border border-border gradient-night p-5 text-primary-foreground shadow-luxe animate-fade-in-up transition-all duration-200 hover:shadow-luxe hover:brightness-110"
-          style={{ animationDelay: `${0.05 * i}s` }}
+          className="rounded-3xl bg-primary p-6 text-primary-foreground shadow-luxe animate-fade-in-up transition-all duration-300 hover:brightness-105 active:scale-[0.98]"
+          style={{ animationDelay: `${0.04 * i}s` }}
         >
           <div className="flex items-center justify-between">
-            <Tag className="h-6 w-6 text-primary" />
+            <Tag className="h-7 w-7 text-primary-foreground/60" strokeWidth={1.5} />
             {o.discount_percent != null && (
-              <span className="rounded-full bg-primary px-3 py-1 text-xs font-black text-primary-foreground">
+              <span className="rounded-full bg-primary-foreground/20 px-3.5 py-1 text-xs font-bold">
                 خصم {o.discount_percent}٪
               </span>
             )}
           </div>
-          <div className="mt-3 text-xl font-black text-gradient-gold">{o.title}</div>
-          {o.description && <div className="mt-1 text-sm opacity-80">{o.description}</div>}
+          <div className="mt-4 text-xl font-black tracking-tight">{o.title}</div>
+          {o.description && <div className="mt-1.5 text-sm text-primary-foreground/70">{o.description}</div>}
         </div>
       ))}
     </div>
@@ -982,25 +951,25 @@ function OffersList() {
 function ProfileView({ settings }: { settings: Settings | undefined }) {
   const auth = useAuth();
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-border bg-card p-5 text-center shadow-card animate-fade-in-up">
-        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full gradient-luxe text-3xl font-black text-primary-foreground shadow-luxe">
+    <div className="space-y-5">
+      <div className="rounded-3xl border border-border bg-card p-6 text-center shadow-elevated animate-fade-in-up">
+        <div className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-primary text-3xl font-black text-primary-foreground shadow-luxe">
           {auth.profile?.full_name?.charAt(0) ?? "?"}
         </div>
-        <div className="mt-3 text-lg font-black">{auth.profile?.full_name}</div>
+        <div className="mt-4 text-xl font-black tracking-tight">{auth.profile?.full_name}</div>
         <div className="text-sm text-muted-foreground">{auth.profile?.phone}</div>
       </div>
       {settings && (
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-card animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          <div className="font-bold">{settings.shop_name}</div>
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-elevated animate-fade-in-up" style={{ animationDelay: "0.08s" }}>
+          <div className="text-[15px] font-bold">{settings.shop_name}</div>
           {settings.address && (
             <div className="mt-1 text-sm text-muted-foreground">{settings.address}</div>
           )}
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {settings.whatsapp && (
               <a
                 href={`tel:${settings.whatsapp}`}
-                className="rounded-xl border border-border px-3 py-1.5 text-sm"
+                className="rounded-2xl bg-secondary px-4 py-2 text-sm font-semibold transition-all duration-200 hover:bg-muted active:scale-95"
               >
                 {settings.whatsapp}
               </a>
@@ -1014,13 +983,14 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
     </div>
   );
 }
+
 function SocialBtn({ href, label }: { href: string; label: string }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener"
-      className="rounded-xl border border-border px-3 py-1.5 text-sm"
+      className="rounded-2xl bg-secondary px-4 py-2 text-sm font-semibold transition-all duration-200 hover:bg-muted active:scale-95"
     >
       {label}
     </a>
@@ -1029,9 +999,9 @@ function SocialBtn({ href, label }: { href: string; label: string }) {
 
 function Empty({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-card/40 p-10 text-center">
+    <div className="rounded-3xl border border-dashed border-border bg-secondary/30 p-12 text-center">
       <div className="text-lg font-bold">{title}</div>
-      <div className="mt-1 text-sm text-muted-foreground">{subtitle}</div>
+      <div className="mt-1.5 text-sm text-muted-foreground">{subtitle}</div>
     </div>
   );
 }
@@ -1057,24 +1027,26 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
   }, [tab, onChange, tabs]);
 
   const items: { t: Tab; label: string; icon: React.ReactNode }[] = [
-    { t: "home", label: "الرئيسية", icon: <Home className="h-5 w-5" /> },
-    { t: "bookings", label: "حجوزاتي", icon: <CalendarDays className="h-5 w-5" /> },
-    { t: "offers", label: "العروض", icon: <Tag className="h-5 w-5" /> },
-    { t: "profile", label: "حسابي", icon: <User className="h-5 w-5" /> },
+    { t: "home", label: "الرئيسية", icon: <Home className="h-[22px]" strokeWidth={tab === "home" ? 2 : 1.5} /> },
+    { t: "bookings", label: "حجوزاتي", icon: <CalendarDays className="h-[22px]" strokeWidth={tab === "bookings" ? 2 : 1.5} /> },
+    { t: "offers", label: "العروض", icon: <Tag className="h-[22px]" strokeWidth={tab === "offers" ? 2 : 1.5} /> },
+    { t: "profile", label: "حسابي", icon: <User className="h-[22px]" strokeWidth={tab === "profile" ? 2 : 1.5} /> },
   ];
   return (
     <nav
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border glass"
+      className="fixed inset-x-0 bottom-0 z-40 glass"
     >
-      <div className="mx-auto grid max-w-2xl grid-cols-4">
+      <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1 px-2 py-1">
         {items.map((it) => (
           <button
             key={it.t}
             onClick={() => onChange(it.t)}
-            className={`flex flex-col items-center gap-1 py-3 text-xs font-bold transition-all duration-200 ${
-              tab === it.t ? "text-primary scale-105" : "text-muted-foreground hover:text-foreground"
+            className={`flex flex-col items-center gap-0.5 rounded-2xl py-2.5 text-[10px] font-semibold transition-all duration-300 ${
+              tab === it.t
+                ? "text-primary scale-105"
+                : "text-muted-foreground active:scale-95"
             }`}
           >
             {it.icon}

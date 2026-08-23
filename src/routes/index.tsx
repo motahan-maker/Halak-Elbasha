@@ -27,11 +27,11 @@ function Index() {
   if (auth.loading || !auth.user) {
     return (
       <div className="grid min-h-screen place-items-center bg-background" dir="rtl">
-        <div className="text-center">
-          <div className="mx-auto grid h-16 w-16 animate-pulse place-items-center rounded-2xl gradient-luxe shadow-luxe">
-            <Scissors className="h-8 w-8 text-primary-foreground" />
+        <div className="text-center animate-fade-in-up">
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-[1.5rem] bg-primary shadow-luxe">
+            <Scissors className="h-10 w-10 text-primary-foreground animate-pulse-soft" strokeWidth={1.5} />
           </div>
-          <div className="mt-4 text-sm text-muted-foreground">جارٍ التحميل...</div>
+          <div className="mt-6 text-sm font-medium text-muted-foreground">جارٍ التحميل...</div>
         </div>
       </div>
     );

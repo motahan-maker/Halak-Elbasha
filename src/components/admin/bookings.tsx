@@ -48,7 +48,7 @@ export function BookingsAdmin() {
 
   if (list.isLoading) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <SkeletonCard />
         <SkeletonCard />
         <SkeletonCard />
@@ -57,21 +57,21 @@ export function BookingsAdmin() {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-2">
-        <div className="flex flex-1 items-center gap-2 rounded-xl border border-input bg-card px-3">
-          <Search className="h-4 w-4 text-muted-foreground" />
+    <div className="space-y-2.5">
+      <div className="flex gap-2.5">
+        <div className="flex flex-1 items-center gap-2.5 rounded-2xl bg-secondary px-3">
+          <Search className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="بحث (اسم/جوال/رقم)"
-            className="w-full bg-transparent py-2 text-sm outline-none"
+            className="w-full bg-transparent py-2 text-[15px] outline-none"
           />
         </div>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-xl border border-input bg-card px-3 py-2 text-sm"
+          className="rounded-2xl bg-secondary px-3 py-2 text-[15px]"
         >
           <option value="all">الكل</option>
           <option value="booked">محجوز</option>
@@ -79,46 +79,46 @@ export function BookingsAdmin() {
           <option value="cancelled">ملغي</option>
         </select>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {filtered.map((b: any, i: number) => (
           <div
             key={b.id}
-            className="rounded-2xl border border-border bg-card p-4 shadow-card animate-fade-in-up transition-all duration-200 hover:shadow-luxe"
+            className="rounded-2xl border border-border bg-card p-4 shadow-card animate-fade-in-up transition-all duration-300 hover:shadow-elevated"
             style={{ animationDelay: `${0.03 * i}s` }}
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start justify-between gap-2.5">
               <div className="min-w-0 flex-1">
-                <div className="truncate font-bold">{b.customer_name}</div>
-                <div className="truncate text-xs text-muted-foreground">
+                <div className="truncate font-bold text-[15px]">{b.customer_name}</div>
+                <div className="truncate text-[13px] font-semibold text-muted-foreground">
                   {b.service_name} • {b.customer_phone}
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">
+                <div className="mt-1 text-[13px] font-semibold text-muted-foreground">
                   {arabicDate(b.booking_date)} • {formatTime(b.booking_time)}
                 </div>
               </div>
-              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+              <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">
                 {b.booking_number}
               </span>
             </div>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2.5 flex gap-2.5">
               {b.status === "booked" && (
                 <>
                   <button
                     onClick={() => update.mutate({ id: b.id, status: "completed" })}
-                    className="flex-1 rounded-lg gradient-luxe py-1.5 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-110 active:scale-95"
+                    className="flex-1 rounded-2xl bg-primary py-1.5 text-xs font-bold text-primary-foreground transition-all duration-300 hover:brightness-110 active:scale-95"
                   >
                     إكمال
                   </button>
                   <button
                     onClick={() => update.mutate({ id: b.id, status: "cancelled" })}
-                    className="flex-1 rounded-lg border border-destructive/40 py-1.5 text-xs font-bold text-destructive transition-all duration-200 hover:bg-destructive/10 active:scale-95"
+                    className="flex-1 rounded-2xl bg-destructive/10 py-1.5 text-xs font-bold text-destructive transition-all duration-300 hover:bg-destructive/20 active:scale-95"
                   >
                     إلغاء
                   </button>
                 </>
               )}
               <span
-                className={`rounded-lg px-3 py-1.5 text-xs font-bold ${b.status === "completed" ? "bg-success/15 text-success" : b.status === "cancelled" ? "bg-destructive/15 text-destructive" : "bg-primary/15 text-primary"}`}
+                className={`rounded-[0.85rem] px-3 py-1.5 text-xs font-bold ${b.status === "completed" ? "bg-success/10 text-success" : b.status === "cancelled" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}
               >
                 {b.status === "booked" ? "محجوز" : b.status === "completed" ? "مكتمل" : "ملغي"}
               </span>
