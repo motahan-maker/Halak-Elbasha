@@ -228,25 +228,25 @@
 }
 
 /* Micro-interaction utilities */
-@utility hover-lift {
+.hover-lift {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@utility hover-lift:hover {
+.hover-lift:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-elevated);
 }
 
-@utility hover-glow {
+.hover-glow {
   transition: box-shadow 0.3s ease;
 }
-@utility hover-glow:hover {
+.hover-glow:hover {
   box-shadow: var(--shadow-glow-primary);
 }
 
-@utility active-press {
+.active-press {
   transition: transform 0.15s ease;
 }
-@utility active-press:active {
+.active-press:active {
   transform: scale(0.97);
 }
 
