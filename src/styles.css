@@ -491,3 +491,15 @@
 .stagger-children > *:nth-child(6) { animation-delay: 0.18s; }
 .stagger-children > *:nth-child(7) { animation-delay: 0.21s; }
 .stagger-children > *:nth-child(8) { animation-delay: 0.24s; }
+
+@keyframes wave-pulse-dash {
+  0% {
+    stroke-dashoffset: 36;
+  }
+  100% {
+    stroke-dashoffset: -36;
+  }
+}
+.animate-wave-pulse {
+  animation: wave-pulse-dash 1.4s linear infinite;
+}

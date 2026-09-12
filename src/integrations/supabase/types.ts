@@ -16,6 +16,7 @@ export type Database = {
           end_time: string;
           id: string;
           is_active: boolean;
+          is_working: boolean;
           name: string;
           phone: string;
           slot_minutes: number;
@@ -31,6 +32,7 @@ export type Database = {
           end_time?: string;
           id?: string;
           is_active?: boolean;
+          is_working?: boolean;
           name: string;
           phone: string;
           slot_minutes?: number;
@@ -46,6 +48,7 @@ export type Database = {
           end_time?: string;
           id?: string;
           is_active?: boolean;
+          is_working?: boolean;
           name?: string;
           phone?: string;
           slot_minutes?: number;

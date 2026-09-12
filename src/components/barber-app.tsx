@@ -4,13 +4,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { savePushSubscription, cancelBookingByBarber } from "@/lib/admin.functions";
+import { savePushSubscription, cancelBookingByBarber, setBarberWorkingStatus } from "@/lib/admin.functions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SkeletonStat, SkeletonCard } from "@/components/ui/skeleton";
+import { CurvedWorkingAnimation } from "@/components/ui/curved-working-animation";
 import { arabicDate, isoDate } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
 import { toast } from "sonner";
-import { Phone, LogOut, Scissors, Calendar, Check, Star, XCircle } from "lucide-react";
+import { Phone, LogOut, Scissors, Calendar, Check, Star, XCircle, Play } from "lucide-react";
 
 interface BookingRow {
   id: string;
@@ -224,6 +225,21 @@ export function BarberApp() {
     },
   });
 
+  const workingStatusFn = useServerFn(setBarberWorkingStatus);
+  const startService = useMutation({
+    mutationFn: async () => {
+      if (!myBarber.data?.id) return;
+      await workingStatusFn({ data: { barber_id: myBarber.data.id, is_working: true } });
+    },
+    onSuccess: () => {
+      toast.success("بدأت الخدمة الآن — حالة الحلاق: مشغول");
+      qc.invalidateQueries({ queryKey: ["my-barber"] });
+      qc.invalidateQueries({ queryKey: ["barber-bookings"] });
+      qc.invalidateQueries({ queryKey: ["barbers"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const complete = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -231,10 +247,15 @@ export function BarberApp() {
         .update({ status: "completed" })
         .eq("id", id);
       if (error) throw new Error(error.message);
+      if (myBarber.data?.id) {
+        await workingStatusFn({ data: { barber_id: myBarber.data.id, is_working: false } });
+      }
     },
     onSuccess: () => {
-      toast.success("تم إنهاء الموعد");
+      toast.success("تم إنهاء الموعد — حالة الحلاق: متاح");
+      qc.invalidateQueries({ queryKey: ["my-barber"] });
       qc.invalidateQueries({ queryKey: ["barber-bookings"] });
+      qc.invalidateQueries({ queryKey: ["barbers"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -318,7 +339,20 @@ export function BarberApp() {
             </div>
             <div className="min-w-0">
               <div className="truncate text-sm font-bold text-foreground">{myBarber.data.name}</div>
-              <div className="truncate text-[11px] font-semibold text-muted-foreground">حلاق</div>
+              <div className="truncate text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                <span>حلاق</span>
+                {myBarber.data.is_working ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[9px] font-extrabold text-amber-600 dark:text-amber-400">
+                    <CurvedWorkingAnimation />
+                    <span>مشغول</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <span>متاح</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2.5">
@@ -353,8 +387,10 @@ export function BarberApp() {
             <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
               <Card
                 b={b}
+                onStart={() => startService.mutate()}
                 onComplete={() => complete.mutate(b.id)}
                 onCancel={() => setCancelTarget(b)}
+                isWorking={myBarber.data?.is_working}
               />
             </div>
           ))}
@@ -366,8 +402,10 @@ export function BarberApp() {
             <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
               <Card
                 b={b}
+                onStart={() => startService.mutate()}
                 onComplete={() => complete.mutate(b.id)}
                 onCancel={() => setCancelTarget(b)}
+                isWorking={myBarber.data?.is_working}
               />
             </div>
           ))}
@@ -462,12 +500,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Card({
   b,
+  onStart,
   onComplete,
   onCancel,
+  isWorking,
 }: {
   b: BookingRow;
+  onStart?: () => void;
   onComplete?: () => void;
   onCancel?: () => void;
+  isWorking?: boolean;
 }) {
   const getStatusBadge = () => {
     if (b.status === "completed") {
@@ -512,6 +554,14 @@ function Card({
         >
           <Phone className="h-3.5 w-3.5" strokeWidth={1.5} /> اتصال
         </a>
+        {onStart && b.status === "booked" && !isWorking && (
+          <button
+            onClick={onStart}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-500 text-white px-3 py-2 text-xs font-bold transition-all duration-200 hover:bg-amber-600 active:scale-[0.96] shadow-sm"
+          >
+            <Play className="h-3.5 w-3.5 fill-white" strokeWidth={0} /> ابدأ
+          </button>
+        )}
         {onComplete && b.status === "booked" && (
           <button
             onClick={onComplete}

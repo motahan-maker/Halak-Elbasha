@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SkeletonCard, SkeletonWizard } from "@/components/ui/skeleton";
+import { CurvedWorkingAnimation } from "@/components/ui/curved-working-animation";
 import { generateSlots, formatTime, type Slot } from "@/lib/slots";
 import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink } from "@/lib/format";
 import { cancelBookingByCustomer, notifyBarbers } from "@/lib/admin.functions";
@@ -41,6 +42,7 @@ interface Barber {
   name: string;
   specialization: string | null;
   is_active: boolean;
+  is_working?: boolean;
   working_days: number[];
   start_time: string;
   end_time: string;
@@ -351,6 +353,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   });
   const barbers = useQuery<Barber[]>({
     queryKey: ["barbers", "active"],
+    refetchInterval: 5000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("barbers")
@@ -547,7 +550,20 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     {b.name.charAt(0)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-bold text-foreground">{b.name}</div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-bold text-foreground">{b.name}</div>
+                      {b.is_working ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-600 dark:text-amber-400 shrink-0">
+                          <CurvedWorkingAnimation />
+                          <span>مشغول</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>متاح</span>
+                        </span>
+                      )}
+                    </div>
                     <div className="truncate text-xs text-muted-foreground mt-0.5">
                       {b.specialization || "حلاق"}
                     </div>

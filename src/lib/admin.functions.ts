@@ -179,6 +179,19 @@ export const cancelBookingByBarber = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Update barber working status (working / available). */
+export const setBarberWorkingStatus = createServerFn({ method: "POST" })
+  .validator((d) => z.object({ barber_id: z.string().uuid(), is_working: z.boolean() }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("barbers")
+      .update({ is_working: data.is_working })
+      .eq("id", data.barber_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 /** Customer or admin: cancel a booking via server to bypass RLS issues (fallback). */
 export const cancelBooking = createServerFn({ method: "POST" })
   .validator((d) => z.object({ booking_id: z.string().uuid() }).parse(d))
