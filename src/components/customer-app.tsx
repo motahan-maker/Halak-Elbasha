@@ -188,27 +188,26 @@ function CustomerHome({
   return (
     <div className="space-y-6">
       {/* Hero Card */}
-      <section className="relative overflow-hidden rounded-3xl gradient-hero p-6 text-white shadow-luxe border border-white/20 animate-fade-in-up animate-gradient-shift">
-        {/* Ambient lighting sphere overlays */}
-        <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/15 blur-3xl" />
-        <div className="pointer-events-none absolute -left-10 -bottom-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
-        <div className="pointer-events-none absolute right-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-400/20 blur-2xl" />
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0052D4] via-[#4364F7] to-[#6FB1FC] dark:from-[#0B132B] dark:via-[#1C2541] dark:to-[#3A506B] p-6.5 text-white shadow-luxe border border-white/20 animate-fade-in-up">
+        {/* Subtle ambient lighting glows */}
+        <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-10 -bottom-10 h-48 w-48 rounded-full bg-purple-500/20 blur-3xl" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-1.5 rounded-full glass-pill px-3 py-1 text-[10px] font-bold tracking-wider text-amber-200">
-            <Sparkles className="h-3 w-3 fill-amber-300" /> تجربة فاخرة ومعتمدة
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/25 backdrop-blur-md px-3.5 py-1 text-[11px] font-extrabold tracking-wider text-amber-300 border border-white/20 shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 fill-amber-300 text-amber-300" /> تجربة فاخرة ومعتمدة
           </div>
-          <h1 className="mt-4 text-2xl font-black leading-tight tracking-tight text-white drop-shadow-sm">
+          <h1 className="mt-3.5 text-2xl sm:text-3xl font-black leading-tight tracking-tight text-white drop-shadow-md">
             يسعدنا خدمتك في
             <br />
-            {settings?.shop_name ?? "حلاق الباشا"}
+            <span className="text-white drop-shadow-lg">{settings?.shop_name ?? "حلاق الباشا"}</span>
           </h1>
-          <p className="mt-1.5 text-xs text-white/75 font-medium">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
+          <p className="mt-2 text-xs sm:text-sm text-white/95 font-semibold drop-shadow-sm">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
           <button
             onClick={() => setWizardOpen(true)}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3.5 text-sm font-bold text-zinc-950 shadow-xl shadow-black/15 transition-all duration-300 hover:bg-white/95 hover:shadow-2xl active:scale-[0.97]"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3.5 text-sm font-extrabold text-blue-950 shadow-xl shadow-black/20 transition-all duration-300 hover:bg-white/95 hover:scale-[1.01] active:scale-[0.97]"
           >
-            <CalendarDays className="h-4.5 w-4.5 text-blue-600" strokeWidth={2} /> ابدأ الحجز الآن
+            <CalendarDays className="h-4.5 w-4.5 text-blue-600" strokeWidth={2.2} /> ابدأ الحجز الآن
           </button>
         </div>
       </section>
