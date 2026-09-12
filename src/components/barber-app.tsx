@@ -229,22 +229,8 @@ export function BarberApp() {
   const startService = useMutation({
     mutationFn: async () => {
       if (!myBarber.data?.id) return;
-      // Update via client Supabase directly first for instant reflection
-      const { error: dbErr } = await supabase
-        .from("barbers")
-        .update({ is_working: true } as any)
-        .eq("id", myBarber.data.id);
-      
-      // Also trigger server RPC function to ensure schema cache reloaded
-      try {
-        await workingStatusFn({ data: { barber_id: myBarber.data.id, is_working: true } });
-      } catch (err) {
-        console.warn("RPC working status update notice:", err);
-      }
-
-      if (dbErr && dbErr.message.includes("is_working")) {
-        throw new Error("عفواً، يرجى إعادة محاولة الضغط مرة أخرى أو تحديث الصفحة.");
-      }
+      // Execute working status change on server
+      await workingStatusFn({ data: { barber_id: myBarber.data.id, is_working: true } });
     },
     onSuccess: () => {
       toast.success("بدأت الخدمة الآن — حالة الحلاق: مشغول");
@@ -252,7 +238,10 @@ export function BarberApp() {
       qc.invalidateQueries({ queryKey: ["barber-bookings"] });
       qc.invalidateQueries({ queryKey: ["barbers"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      console.error("Start service error:", e);
+      toast.error("حدثت مشكلة أثناء البدء، يرجى المحاولة مرة أخرى");
+    },
   });
 
   const complete = useMutation({
@@ -406,6 +395,7 @@ export function BarberApp() {
                 onComplete={() => complete.mutate(b.id)}
                 onCancel={() => setCancelTarget(b)}
                 isWorking={myBarber.data?.is_working}
+                isStarting={startService.isPending}
               />
             </div>
           ))}
@@ -421,6 +411,7 @@ export function BarberApp() {
                 onComplete={() => complete.mutate(b.id)}
                 onCancel={() => setCancelTarget(b)}
                 isWorking={myBarber.data?.is_working}
+                isStarting={startService.isPending}
               />
             </div>
           ))}
@@ -519,12 +510,14 @@ function Card({
   onComplete,
   onCancel,
   isWorking,
+  isStarting,
 }: {
   b: BookingRow;
   onStart?: () => void;
   onComplete?: () => void;
   onCancel?: () => void;
   isWorking?: boolean;
+  isStarting?: boolean;
 }) {
   const getStatusBadge = () => {
     if (b.status === "completed") {
@@ -571,10 +564,11 @@ function Card({
         </a>
         {onStart && b.status === "booked" && !isWorking && (
           <button
+            disabled={isStarting}
             onClick={onStart}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-500 text-white px-3 py-2 text-xs font-bold transition-all duration-200 hover:bg-amber-600 active:scale-[0.96] shadow-sm"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-500 text-white px-3 py-2 text-xs font-bold transition-all duration-200 hover:bg-amber-600 active:scale-[0.96] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Play className="h-3.5 w-3.5 fill-white" strokeWidth={0} /> ابدأ
+            <Play className="h-3.5 w-3.5 fill-white" strokeWidth={0} /> {isStarting ? "جاري البدء..." : "ابدأ"}
           </button>
         )}
         {onComplete && b.status === "booked" && (
