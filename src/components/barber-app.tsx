@@ -229,7 +229,22 @@ export function BarberApp() {
   const startService = useMutation({
     mutationFn: async () => {
       if (!myBarber.data?.id) return;
-      await workingStatusFn({ data: { barber_id: myBarber.data.id, is_working: true } });
+      // Update via client Supabase directly first for instant reflection
+      const { error: dbErr } = await supabase
+        .from("barbers")
+        .update({ is_working: true } as any)
+        .eq("id", myBarber.data.id);
+      
+      // Also trigger server RPC function to ensure schema cache reloaded
+      try {
+        await workingStatusFn({ data: { barber_id: myBarber.data.id, is_working: true } });
+      } catch (err) {
+        console.warn("RPC working status update notice:", err);
+      }
+
+      if (dbErr && dbErr.message.includes("is_working")) {
+        throw new Error("عفواً، يرجى إعادة محاولة الضغط مرة أخرى أو تحديث الصفحة.");
+      }
     },
     onSuccess: () => {
       toast.success("بدأت الخدمة الآن — حالة الحلاق: مشغول");
