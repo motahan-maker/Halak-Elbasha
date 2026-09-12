@@ -5,7 +5,7 @@
 
 -- ENUMS
 CREATE TYPE public.app_role AS ENUM ('admin', 'barber', 'customer');
-CREATE TYPE public.booking_status AS ENUM ('booked', 'completed', 'cancelled');
+CREATE TYPE public.booking_status AS ENUM ('booked', 'completed', 'cancelled', 'cancelled_by_customer', 'cancelled_by_barber');
 
 -- =========================================================
 -- PROFILES

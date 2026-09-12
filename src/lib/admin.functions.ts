@@ -153,7 +153,33 @@ export const deleteBarberAccount = createServerFn({ method: "POST" })
 
 export const staffEmailFor = staffEmail;
 
-/** Customer or admin: cancel a booking via server to bypass RLS issues. */
+/** Customer cancel a booking via server. */
+export const cancelBookingByCustomer = createServerFn({ method: "POST" })
+  .validator((d) => z.object({ booking_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("bookings")
+      .update({ status: "cancelled_by_customer" as any })
+      .eq("id", data.booking_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Barber or admin cancel a booking via server. */
+export const cancelBookingByBarber = createServerFn({ method: "POST" })
+  .validator((d) => z.object({ booking_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("bookings")
+      .update({ status: "cancelled_by_barber" as any })
+      .eq("id", data.booking_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Customer or admin: cancel a booking via server to bypass RLS issues (fallback). */
 export const cancelBooking = createServerFn({ method: "POST" })
   .validator((d) => z.object({ booking_id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {

@@ -1,15 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { savePushSubscription } from "@/lib/admin.functions";
+import { savePushSubscription, cancelBookingByBarber } from "@/lib/admin.functions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SkeletonStat, SkeletonCard } from "@/components/ui/skeleton";
 import { arabicDate, isoDate } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
 import { toast } from "sonner";
-import { Phone, LogOut, Scissors, Calendar, Check, Star } from "lucide-react";
+import { Phone, LogOut, Scissors, Calendar, Check, Star, XCircle } from "lucide-react";
 
 interface BookingRow {
   id: string;
@@ -20,7 +21,7 @@ interface BookingRow {
   service_price: number;
   booking_date: string;
   booking_time: string;
-  status: "booked" | "completed" | "cancelled";
+  status: "booked" | "completed" | "cancelled" | "cancelled_by_customer" | "cancelled_by_barber";
 }
 
 let notifInterval: ReturnType<typeof setInterval> | null = null;
@@ -114,6 +115,7 @@ export function BarberApp() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const prevIdsRef = useRef<Set<string>>(new Set());
+  const [cancelTarget, setCancelTarget] = useState<BookingRow | null>(null);
 
   useEffect(() => {
     if (!auth.user) return;
@@ -237,6 +239,19 @@ export function BarberApp() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const cancelFn = useServerFn(cancelBookingByBarber);
+  const cancelByBarber = useMutation({
+    mutationFn: async (id: string) => {
+      await cancelFn({ data: { booking_id: id } });
+    },
+    onSuccess: () => {
+      toast.success("تم إلغاء الحجز بنجاح");
+      qc.invalidateQueries({ queryKey: ["barber-bookings"] });
+      qc.invalidateQueries({ queryKey: ["booked"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const signOut = async () => {
     await supabase.auth.signOut();
     qc.clear();
@@ -245,12 +260,13 @@ export function BarberApp() {
 
   const today = isoDate(new Date());
   const todays = (bookings.data ?? []).filter(
-    (b) => b.booking_date === today && b.status !== "cancelled",
+    (b) => b.booking_date === today && b.status === "booked",
   );
   const upcoming = (bookings.data ?? []).filter(
     (b) => b.booking_date > today && b.status === "booked",
   );
-  const completed = (bookings.data ?? []).filter((b) => b.status === "completed");
+  const history = (bookings.data ?? []).filter((b) => b.status !== "booked");
+  const completedCount = (bookings.data ?? []).filter((b) => b.status === "completed").length;
   const avg = reviews.data?.length
     ? reviews.data.reduce((s, r) => s + (r as any).rating, 0) / reviews.data.length
     : 0;
@@ -321,7 +337,7 @@ export function BarberApp() {
       <main className="mx-auto max-w-2xl space-y-5 px-5 pt-5">
         <section className="grid grid-cols-3 gap-2.5 animate-fade-in-up stagger-children">
           <Stat label="اليوم" value={todays.length} colorClass="text-primary" gradientClass="from-primary/10 to-primary/5" />
-          <Stat label="مكتملة" value={completed.length} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
+          <Stat label="مكتملة" value={completedCount} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
           <Stat
             label="التقييم"
             value={avg ? avg.toFixed(1) : "—"}
@@ -335,7 +351,11 @@ export function BarberApp() {
           {todays.length === 0 && <Empty msg="لا توجد مواعيد اليوم" />}
           {todays.map((b, i) => (
             <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
-              <Card b={b} onComplete={() => complete.mutate(b.id)} />
+              <Card
+                b={b}
+                onComplete={() => complete.mutate(b.id)}
+                onCancel={() => setCancelTarget(b)}
+              />
             </div>
           ))}
         </Section>
@@ -344,20 +364,65 @@ export function BarberApp() {
           {upcoming.length === 0 && <Empty msg="لا توجد مواعيد قادمة" />}
           {upcoming.map((b, i) => (
             <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
-              <Card b={b} onComplete={() => complete.mutate(b.id)} />
+              <Card
+                b={b}
+                onComplete={() => complete.mutate(b.id)}
+                onCancel={() => setCancelTarget(b)}
+              />
             </div>
           ))}
         </Section>
 
-        <Section title="المكتملة">
-          {completed.length === 0 && <Empty msg="لا يوجد سجل" />}
-          {completed.slice(0, 10).map((b, i) => (
+        <Section title="سجل المواعيد">
+          {history.length === 0 && <Empty msg="لا يوجد سجل" />}
+          {history.slice(0, 15).map((b, i) => (
             <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
               <Card b={b} />
             </div>
           ))}
         </Section>
       </main>
+
+      {/* Confirmation Modal */}
+      {cancelTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-2xl border border-border text-center space-y-4 animate-scale-in" dir="rtl">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-destructive/10 text-destructive">
+              <XCircle className="h-7 w-7" strokeWidth={2} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">هل أنت متأكد من إلغاء هذا الحجز؟</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground font-semibold leading-relaxed">
+                العميل: {cancelTarget.customer_name}
+                <br />
+                الخدمة: {cancelTarget.service_name} • {formatTime(cancelTarget.booking_time)}
+                <br />
+                التاريخ: {arabicDate(cancelTarget.booking_date)}
+              </p>
+            </div>
+            <div className="flex gap-2.5 pt-2">
+              <button
+                disabled={cancelByBarber.isPending}
+                onClick={() => {
+                  cancelByBarber.mutate(cancelTarget.id, {
+                    onSettled: () => setCancelTarget(null),
+                  });
+                }}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-destructive py-3 text-sm font-bold text-destructive-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.97] disabled:opacity-50"
+              >
+                {cancelByBarber.isPending ? "جارٍ الإلغاء..." : "إلغاء الحجز"}
+              </button>
+              <button
+                disabled={cancelByBarber.isPending}
+                onClick={() => setCancelTarget(null)}
+                className="flex flex-1 items-center justify-center rounded-xl bg-secondary py-3 text-sm font-bold text-foreground transition-all duration-200 hover:bg-secondary/80 active:scale-[0.97] disabled:opacity-50"
+              >
+                رجوع
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -395,7 +460,31 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
+function Card({
+  b,
+  onComplete,
+  onCancel,
+}: {
+  b: BookingRow;
+  onComplete?: () => void;
+  onCancel?: () => void;
+}) {
+  const getStatusBadge = () => {
+    if (b.status === "completed") {
+      return <span className="rounded-full bg-success/10 px-2 py-0.5 text-[9px] font-bold text-success shrink-0">مكتمل</span>;
+    }
+    if (b.status === "cancelled_by_barber") {
+      return <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-[9px] font-bold text-destructive shrink-0">ملغي بواسطة الحلاق</span>;
+    }
+    if (b.status === "cancelled_by_customer") {
+      return <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-[9px] font-bold text-destructive shrink-0">ملغي بواسطة العميل</span>;
+    }
+    if (b.status === "cancelled") {
+      return <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-[9px] font-bold text-destructive shrink-0">ملغي</span>;
+    }
+    return <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary shrink-0">{b.booking_number}</span>;
+  };
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
       <div className="flex items-start justify-between gap-2.5">
@@ -409,11 +498,14 @@ function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
             {arabicDate(b.booking_date)}
           </div>
         </div>
-        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary shrink-0">
-          {b.booking_number}
-        </span>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          {getStatusBadge()}
+          {b.status === "booked" && b.booking_number && (
+            <span className="text-[10px] font-bold text-muted-foreground/60">{b.booking_number}</span>
+          )}
+        </div>
       </div>
-      <div className="mt-3.5 flex gap-2.5">
+      <div className="mt-3.5 flex flex-wrap gap-2">
         <a
           href={`tel:${b.customer_phone}`}
           className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-border/80 bg-card px-3 py-2 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.96]"
@@ -426,6 +518,14 @@ function Card({ b, onComplete }: { b: BookingRow; onComplete?: () => void }) {
             className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.96]"
           >
             <Check className="h-3.5 w-3.5" strokeWidth={1.5} /> إنهاء
+          </button>
+        )}
+        {onCancel && b.status === "booked" && (
+          <button
+            onClick={onCancel}
+            className="flex flex-1 items-center justify-center gap-1 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-bold text-destructive transition-all duration-200 hover:bg-destructive/10 active:scale-[0.96]"
+          >
+            <XCircle className="h-3.5 w-3.5" strokeWidth={1.5} /> إلغاء الحجز
           </button>
         )}
       </div>

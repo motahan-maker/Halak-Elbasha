@@ -489,7 +489,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "barber", "customer"],
-      booking_status: ["booked", "completed", "cancelled"],
+      booking_status: ["booked", "completed", "cancelled", "cancelled_by_customer", "cancelled_by_barber"],
     },
   },
 } as const;

@@ -76,6 +76,8 @@ export function BookingsAdmin() {
           <option value="all">الكل</option>
           <option value="booked">محجوز</option>
           <option value="completed">مكتمل</option>
+          <option value="cancelled_by_barber">ملغي بواسطة الحلاق</option>
+          <option value="cancelled_by_customer">ملغي بواسطة العميل</option>
           <option value="cancelled">ملغي</option>
         </select>
       </div>
@@ -110,7 +112,7 @@ export function BookingsAdmin() {
                     إكمال
                   </button>
                   <button
-                    onClick={() => update.mutate({ id: b.id, status: "cancelled" })}
+                    onClick={() => update.mutate({ id: b.id, status: "cancelled_by_barber" })}
                     className="flex-1 rounded-xl bg-destructive/10 border border-destructive/20 py-2 text-xs font-bold text-destructive transition-all duration-200 hover:bg-destructive/20 active:scale-[0.96]"
                   >
                     إلغاء
@@ -118,9 +120,23 @@ export function BookingsAdmin() {
                 </>
               )}
               <span
-                className={`rounded-xl px-3 py-1.5 text-xs font-bold ${b.status === "completed" ? "bg-success/10 text-success border border-success/20" : b.status === "cancelled" ? "bg-destructive/10 text-destructive border border-destructive/20" : "bg-primary/10 text-primary border border-primary/20"}`}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold ${
+                  b.status === "completed"
+                    ? "bg-success/10 text-success border border-success/20"
+                    : String(b.status).startsWith("cancelled")
+                    ? "bg-destructive/10 text-destructive border border-destructive/20"
+                    : "bg-primary/10 text-primary border border-primary/20"
+                }`}
               >
-                {b.status === "booked" ? "محجوز" : b.status === "completed" ? "مكتمل" : "ملغي"}
+                {b.status === "booked"
+                  ? "محجوز"
+                  : b.status === "completed"
+                  ? "مكتمل"
+                  : b.status === "cancelled_by_barber"
+                  ? "ملغي بواسطة الحلاق"
+                  : b.status === "cancelled_by_customer"
+                  ? "ملغي بواسطة العميل"
+                  : "ملغي"}
               </span>
             </div>
           </div>

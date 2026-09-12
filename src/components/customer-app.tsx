@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SkeletonCard, SkeletonWizard } from "@/components/ui/skeleton";
 import { generateSlots, formatTime, type Slot } from "@/lib/slots";
 import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink } from "@/lib/format";
-import { cancelBooking, notifyBarbers } from "@/lib/admin.functions";
+import { cancelBookingByCustomer, notifyBarbers } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import {
   Scissors,
@@ -748,14 +748,15 @@ function BookingsList() {
     },
   });
 
-  const cancelFn = useServerFn(cancelBooking);
+  const cancelFn = useServerFn(cancelBookingByCustomer);
   const cancel = useMutation({
     mutationFn: async (id: string) => {
       await cancelFn({ data: { booking_id: id } });
     },
     onSuccess: () => {
-      toast.success("تم إلغاء الحجز");
+      toast.success("تم إلغاء الحجز بنجاح");
       qc.invalidateQueries({ queryKey: ["my-bookings"] });
+      qc.invalidateQueries({ queryKey: ["booked"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -846,13 +847,14 @@ function BookingCard({
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const status = b.status === "booked" ? "محجوز" : b.status === "completed" ? "مكتمل" : "ملغي";
-  const statusClass =
-    b.status === "booked"
-      ? "bg-primary/10 text-primary"
-      : b.status === "completed"
-        ? "bg-success/10 text-success"
-        : "bg-destructive/10 text-destructive";
+  const getStatusInfo = () => {
+    if (b.status === "booked") return { label: "محجوز", cls: "bg-primary/10 text-primary" };
+    if (b.status === "completed") return { label: "مكتمل", cls: "bg-success/10 text-success" };
+    if (b.status === "cancelled_by_barber") return { label: "ملغي بواسطة الحلاق", cls: "bg-destructive/10 text-destructive" };
+    if (b.status === "cancelled_by_customer") return { label: "ملغي بواسطة العميل", cls: "bg-destructive/10 text-destructive" };
+    return { label: "ملغي", cls: "bg-destructive/10 text-destructive" };
+  };
+  const { label: status, cls: statusClass } = getStatusInfo();
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">

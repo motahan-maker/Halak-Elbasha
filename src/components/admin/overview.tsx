@@ -27,7 +27,7 @@ export function Overview() {
       const bookings = (bookingsRes.data ?? []) as any[];
       const todayBookings = bookings.filter((x) => x.booking_date === today);
       const completed = bookings.filter((x) => x.status === "completed");
-      const cancelled = bookings.filter((x) => x.status === "cancelled");
+      const cancelled = bookings.filter((x) => String(x.status).startsWith("cancelled"));
       const revDay = completed
         .filter((x) => x.booking_date === today)
         .reduce((a, x) => a + Number(x.service_price), 0);
