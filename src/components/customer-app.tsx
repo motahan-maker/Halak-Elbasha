@@ -702,8 +702,8 @@ function SuccessCard({
   const wa = buildWhatsAppLink(settings.whatsapp, waMessage);
   return (
     <div className="space-y-5 text-center animate-spring-in">
-      <div className="mx-auto grid h-24 w-24 place-items-center rounded-full gradient-success shadow-glow-success animate-success-bounce">
-        <Check className="h-12 w-12 text-white" strokeWidth={2.5} />
+      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-xl shadow-emerald-500/30 animate-success-bounce border border-emerald-400/30">
+        <Check className="h-10 w-10 text-white stroke-[3]" />
       </div>
       <h2 className="text-2xl font-black tracking-tight text-foreground">تم الحجز بنجاح</h2>
       <div className="rounded-2xl glass-card p-5">
