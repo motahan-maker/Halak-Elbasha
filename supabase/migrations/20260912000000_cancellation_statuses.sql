@@ -86,3 +86,55 @@ USING (
   OR public.has_role(auth.uid(), 'admin')
   OR EXISTS (SELECT 1 FROM public.barbers b WHERE b.id = bookings.barber_id AND b.user_id = auth.uid())
 );
+
+-- RPC Functions to cancel bookings safely and reload schema cache
+CREATE OR REPLACE FUNCTION public.cancel_booking_by_customer(_booking_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- Ensure enum value exists
+  BEGIN
+    ALTER TYPE public.booking_status ADD VALUE IF NOT EXISTS 'cancelled_by_customer';
+    PERFORM pg_notify('pgrst', 'reload schema');
+  EXCEPTION WHEN OTHERS THEN NULL;
+  END;
+
+  UPDATE public.bookings
+  SET status = 'cancelled_by_customer'::public.booking_status
+  WHERE id = _booking_id;
+EXCEPTION WHEN OTHERS THEN
+  UPDATE public.bookings
+  SET status = 'cancelled'::public.booking_status
+  WHERE id = _booking_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.cancel_booking_by_barber(_booking_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  BEGIN
+    ALTER TYPE public.booking_status ADD VALUE IF NOT EXISTS 'cancelled_by_barber';
+    PERFORM pg_notify('pgrst', 'reload schema');
+  EXCEPTION WHEN OTHERS THEN NULL;
+  END;
+
+  UPDATE public.bookings
+  SET status = 'cancelled_by_barber'::public.booking_status
+  WHERE id = _booking_id;
+EXCEPTION WHEN OTHERS THEN
+  UPDATE public.bookings
+  SET status = 'cancelled'::public.booking_status
+  WHERE id = _booking_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.cancel_booking_by_customer(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.cancel_booking_by_barber(uuid) TO authenticated, service_role;
+

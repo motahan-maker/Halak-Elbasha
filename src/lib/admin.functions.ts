@@ -158,11 +158,26 @@ export const cancelBookingByCustomer = createServerFn({ method: "POST" })
   .validator((d) => z.object({ booking_id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("bookings")
-      .update({ status: "cancelled_by_customer" as any })
-      .eq("id", data.booking_id);
-    if (error) throw new Error(error.message);
+    // Try RPC or update with fallback
+    const { error: rpcErr } = await supabaseAdmin.rpc("cancel_booking_by_customer" as any, {
+      _booking_id: data.booking_id,
+    });
+    if (rpcErr) {
+      // Fallback direct update
+      let { error } = await supabaseAdmin
+        .from("bookings")
+        .update({ status: "cancelled_by_customer" as any })
+        .eq("id", data.booking_id);
+      if (error && error.message.includes("booking_status")) {
+        // Fallback to legacy status 'cancelled'
+        const res = await supabaseAdmin
+          .from("bookings")
+          .update({ status: "cancelled" as any })
+          .eq("id", data.booking_id);
+        error = res.error;
+      }
+      if (error) throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -171,11 +186,23 @@ export const cancelBookingByBarber = createServerFn({ method: "POST" })
   .validator((d) => z.object({ booking_id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("bookings")
-      .update({ status: "cancelled_by_barber" as any })
-      .eq("id", data.booking_id);
-    if (error) throw new Error(error.message);
+    const { error: rpcErr } = await supabaseAdmin.rpc("cancel_booking_by_barber" as any, {
+      _booking_id: data.booking_id,
+    });
+    if (rpcErr) {
+      let { error } = await supabaseAdmin
+        .from("bookings")
+        .update({ status: "cancelled_by_barber" as any })
+        .eq("id", data.booking_id);
+      if (error && error.message.includes("booking_status")) {
+        const res = await supabaseAdmin
+          .from("bookings")
+          .update({ status: "cancelled" as any })
+          .eq("id", data.booking_id);
+        error = res.error;
+      }
+      if (error) throw new Error(error.message);
+    }
     return { ok: true };
   });
 
