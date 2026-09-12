@@ -1,41 +1,42 @@
 export function CurvedWorkingAnimation() {
   return (
     <svg
-      width="28"
-      height="12"
-      viewBox="0 0 28 12"
+      width="32"
+      height="14"
+      viewBox="0 0 32 14"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="inline-block shrink-0 overflow-visible align-middle"
+      className="inline-block shrink-0 align-middle"
     >
-      <defs>
-        <linearGradient id="curved-wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.2" />
-          <stop offset="50%" stopColor="#f59e0b" stopOpacity="1" />
-          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.2" />
-        </linearGradient>
-      </defs>
-      {/* Background smooth wave curve */}
+      <style>{`
+        @keyframes wave-beam-move {
+          0% { stroke-dashoffset: 40; }
+          100% { stroke-dashoffset: 0; }
+        }
+      `}</style>
+      {/* Background soft curved path */}
       <path
-        d="M 2 6 C 6 1, 10 11, 14 6 C 18 1, 22 11, 26 6"
+        d="M 2 7 Q 8 1, 16 7 T 30 7"
         stroke="#f59e0b"
-        strokeWidth="1.8"
+        strokeWidth="2"
         strokeLinecap="round"
-        className="opacity-30"
+        opacity="0.3"
       />
-      {/* Animated glowing wave beam moving along curve */}
+      {/* Glowing animated wave beam path */}
       <path
-        d="M 2 6 C 6 1, 10 11, 14 6 C 18 1, 22 11, 26 6"
-        stroke="url(#curved-wave-gradient)"
-        strokeWidth="2.8"
+        d="M 2 7 Q 8 1, 16 7 T 30 7"
+        stroke="#f59e0b"
+        strokeWidth="3.2"
         strokeLinecap="round"
         style={{
-          strokeDasharray: "10 20",
-          animation: "wave-pulse-dash 1.2s linear infinite",
+          strokeDasharray: "12 16",
+          animation: "wave-beam-move 1.2s linear infinite",
+          filter: "drop-shadow(0 0 3px rgba(245, 158, 11, 0.8))",
         }}
       />
     </svg>
   );
 }
+
 
 
