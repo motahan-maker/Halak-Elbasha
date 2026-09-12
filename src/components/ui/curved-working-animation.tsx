@@ -1,42 +1,43 @@
 export function CurvedWorkingAnimation() {
   return (
     <svg
-      width="32"
-      height="14"
-      viewBox="0 0 32 14"
+      width="34"
+      height="16"
+      viewBox="0 0 34 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="inline-block shrink-0 align-middle"
+      className="inline-block shrink-0 align-middle overflow-visible"
     >
       <style>{`
-        @keyframes wave-beam-move {
-          0% { stroke-dashoffset: 40; }
+        @keyframes wave-pulse-motion {
+          0% { stroke-dashoffset: 48; }
           100% { stroke-dashoffset: 0; }
         }
       `}</style>
-      {/* Background soft curved path */}
+      {/* Background glowing curve line */}
       <path
-        d="M 2 7 Q 8 1, 16 7 T 30 7"
-        stroke="#f59e0b"
-        strokeWidth="2"
+        d="M 2 8 C 6 1, 11 15, 17 8 C 23 1, 28 15, 32 8"
+        stroke="#d97706"
+        strokeWidth="2.5"
         strokeLinecap="round"
-        opacity="0.3"
+        opacity="0.35"
       />
-      {/* Glowing animated wave beam path */}
+      {/* Animated active wave pulse beam */}
       <path
-        d="M 2 7 Q 8 1, 16 7 T 30 7"
+        d="M 2 8 C 6 1, 11 15, 17 8 C 23 1, 28 15, 32 8"
         stroke="#f59e0b"
-        strokeWidth="3.2"
+        strokeWidth="3.5"
         strokeLinecap="round"
         style={{
-          strokeDasharray: "12 16",
-          animation: "wave-beam-move 1.2s linear infinite",
-          filter: "drop-shadow(0 0 3px rgba(245, 158, 11, 0.8))",
+          strokeDasharray: "14 18",
+          animation: "wave-pulse-motion 1.1s linear infinite",
+          filter: "drop-shadow(0 0 4px #f59e0b)",
         }}
       />
     </svg>
   );
 }
+
 
 
 

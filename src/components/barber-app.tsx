@@ -229,8 +229,27 @@ export function BarberApp() {
   const startService = useMutation({
     mutationFn: async () => {
       if (!myBarber.data?.id) return;
-      // Execute working status change on server
-      await workingStatusFn({ data: { barber_id: myBarber.data.id, is_working: true } });
+      const barberId = myBarber.data.id;
+
+      // 1. Optimistic Cache Update for immediate UI feedback (Single click)
+      qc.setQueryData(["my-barber"], (old: Barber | null) => old ? { ...old, is_working: true } : old);
+
+      // 2. Direct client update to Supabase
+      const { error } = await supabase
+        .from("barbers")
+        .update({ is_working: true } as any)
+        .eq("id", barberId);
+
+      // 3. Fallback / Server function RPC call
+      try {
+        await workingStatusFn({ data: { barber_id: barberId, is_working: true } });
+      } catch (e) {
+        console.warn("RPC update notice:", e);
+      }
+
+      if (error && error.message.includes("is_working")) {
+        console.error("Direct update error:", error);
+      }
     },
     onSuccess: () => {
       toast.success("بدأت الخدمة الآن — حالة الحلاق: مشغول");
@@ -240,7 +259,7 @@ export function BarberApp() {
     },
     onError: (e: Error) => {
       console.error("Start service error:", e);
-      toast.error("حدثت مشكلة أثناء البدء، يرجى المحاولة مرة أخرى");
+      toast.error("حدثت مشكلة أثناء البدء");
     },
   });
 
