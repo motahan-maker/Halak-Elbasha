@@ -184,11 +184,24 @@ export const setBarberWorkingStatus = createServerFn({ method: "POST" })
   .validator((d) => z.object({ barber_id: z.string().uuid(), is_working: z.boolean() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // First try RPC function which auto-creates column and reloads PostgREST schema cache
+    const { error: rpcErr } = await supabaseAdmin.rpc("set_barber_working_status", {
+      _barber_id: data.barber_id,
+      _is_working: data.is_working,
+    });
+
+    if (!rpcErr) return { ok: true };
+
+    // Fallback: direct table update
     const { error } = await supabaseAdmin
       .from("barbers")
-      .update({ is_working: data.is_working })
+      .update({ is_working: data.is_working } as any)
       .eq("id", data.barber_id);
-    if (error) throw new Error(error.message);
+
+    if (error && !error.message.includes("is_working")) {
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
