@@ -258,6 +258,7 @@ function CustomerHome({
 function BarbersShowcase() {
   const barbers = useQuery<(Barber & { avg: number; cnt: number })[]>({
     queryKey: ["barbers", "showcase"],
+    refetchInterval: 3000,
     queryFn: async () => {
       const { data: list } = await supabase.from("barbers").select("*").eq("is_active", true);
       const ids = (list ?? []).map((b) => b.id);
@@ -290,21 +291,38 @@ function BarbersShowcase() {
   return (
     <section>
       <h2 className="ios-grouped-section-title">فريق الحلاقين</h2>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2.5">
         {barbers.data.map((b, i) => (
           <div
             key={b.id}
-            className="rounded-xl border border-border bg-card p-4 shadow-card animate-scale-in transition-all duration-300 hover:shadow-elevated active:scale-[0.98]"
+            className={`rounded-2xl border p-4 shadow-card animate-scale-in transition-all duration-300 ${
+              b.is_working
+                ? "border-amber-500/30 bg-amber-500/[0.03] dark:bg-amber-500/[0.05]"
+                : "border-border bg-card"
+            }`}
             style={{ animationDelay: `${0.04 * i}s` }}
           >
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-[17px] font-bold text-primary">
-              {b.name.charAt(0)}
+            <div className="flex items-start justify-between gap-2">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-[17px] font-bold text-primary">
+                {b.name.charAt(0)}
+              </div>
+              {b.is_working ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 text-[10px] font-extrabold text-amber-600 dark:text-amber-400 shrink-0">
+                  <CurvedWorkingAnimation />
+                  <span>مشغول</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>متاح</span>
+                </span>
+              )}
             </div>
             <div className="mt-3 truncate text-sm font-bold text-foreground">{b.name}</div>
             <div className="truncate text-xs text-muted-foreground mt-0.5">
               {b.specialization || "حلاق"}
             </div>
-            <div className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+            <div className="mt-2.5 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
               <Star className="h-3 w-3 fill-amber-400 text-amber-400" strokeWidth={0} />
               <span className="font-bold text-foreground">{b.avg ? b.avg.toFixed(1) : "جديد"}</span>
               {b.cnt > 0 && <span>({b.cnt} تقييم)</span>}
