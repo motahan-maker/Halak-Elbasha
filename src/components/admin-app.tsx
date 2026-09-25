@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SkeletonStat } from "@/components/ui/skeleton";
-import { LogOut, Users, Scissors, CalendarDays, Tag, Star, Settings as Cog, TrendingUp } from "lucide-react";
+import { LogOut, Users, Scissors, CalendarDays, Tag, Star, Settings as Cog, TrendingUp, SlidersHorizontal } from "lucide-react";
 
 const Overview = lazy(() => import("./admin/overview").then((m) => ({ default: m.Overview })));
 const BarbersAdmin = lazy(() => import("./admin/barbers").then((m) => ({ default: m.BarbersAdmin })));
@@ -13,6 +13,7 @@ const ServicesAdmin = lazy(() => import("./admin/services").then((m) => ({ defau
 const BookingsAdmin = lazy(() => import("./admin/bookings").then((m) => ({ default: m.BookingsAdmin })));
 const OffersAdmin = lazy(() => import("./admin/offers").then((m) => ({ default: m.OffersAdmin })));
 const ReviewsAdmin = lazy(() => import("./admin/reviews").then((m) => ({ default: m.ReviewsAdmin })));
+const SettingsAdmin = lazy(() => import("./admin/settings").then((m) => ({ default: m.SettingsAdmin })));
 
 type AdminTab =
   | "overview"
@@ -20,7 +21,8 @@ type AdminTab =
   | "services"
   | "bookings"
   | "offers"
-  | "reviews";
+  | "reviews"
+  | "settings";
 
 function TabLoader() {
   return (
@@ -53,6 +55,7 @@ export function AdminApp() {
     { k: "bookings", label: "الحجوزات", icon: <CalendarDays className="h-4 w-4" strokeWidth={1.5} /> },
     { k: "offers", label: "العروض", icon: <Tag className="h-4 w-4" strokeWidth={1.5} /> },
     { k: "reviews", label: "التقييمات", icon: <Star className="h-4 w-4" strokeWidth={1.5} /> },
+    { k: "settings", label: "الإعدادات", icon: <SlidersHorizontal className="h-4 w-4" strokeWidth={1.5} /> },
   ];
 
   return (
@@ -76,7 +79,7 @@ export function AdminApp() {
               <button
                 onClick={signOut}
                 aria-label="خروج"
-                className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:shadow-glow-primary active:scale-90"
+                className="grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:shadow-glow-primary active:scale-90"
               >
                 <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
               </button>
@@ -88,7 +91,7 @@ export function AdminApp() {
                 <button
                   key={t.k}
                   onClick={() => setTab(t.k)}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-300 active:scale-[0.96] ${
+                  className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-300 active:scale-[0.96] ${
                     tab === t.k
                       ? "bg-card text-foreground shadow-card border border-border/20"
                       : "text-muted-foreground hover:text-foreground hover:bg-card/50"
@@ -111,6 +114,7 @@ export function AdminApp() {
           {tab === "bookings" && <BookingsAdmin />}
           {tab === "offers" && <OffersAdmin />}
           {tab === "reviews" && <ReviewsAdmin />}
+          {tab === "settings" && <SettingsAdmin />}
         </Suspense>
       </main>
     </div>

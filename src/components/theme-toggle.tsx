@@ -14,7 +14,8 @@ export function ThemeToggle() {
           key={o.v}
           onClick={() => setMode(o.v)}
           aria-label={o.label}
-          className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${
+          aria-pressed={mode === o.v}
+          className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition-all duration-300 active:scale-90 ${
             mode === o.v
               ? "bg-card text-foreground shadow-card"
               : "text-muted-foreground hover:text-foreground"

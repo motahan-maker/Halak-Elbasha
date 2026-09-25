@@ -112,10 +112,15 @@ export function BarbersAdmin() {
                 }
               }}
               onDelete={async () => {
-                if (!confirm(`حذف ${b.name}؟`)) return;
+                if (
+                  !confirm(
+                    `إيقاف حساب ${b.name} وحذف وصوله للدخول؟\nسيبقى سجل مواعيده وتقييماته محفوظاً.`,
+                  )
+                )
+                  return;
                 try {
                   await del({ data: { barber_id: b.id } });
-                  toast.success("تم الحذف");
+                  toast.success("تم إيقاف الحلاق وحذف وصوله");
                   qc.invalidateQueries({ queryKey: ["admin-barbers"] });
                 } catch (e: any) {
                   toast.error(e.message);
@@ -270,9 +275,9 @@ function BarberRow({
         </button>
         <button
           onClick={onDelete}
-          className="flex items-center gap-1 rounded-xl bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive border border-destructive/20 transition-all duration-200 hover:bg-destructive/20 active:scale-95"
+          className="flex cursor-pointer items-center gap-1 rounded-xl bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive border border-destructive/20 transition-all duration-200 hover:bg-destructive/20 active:scale-95"
         >
-          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} /> حذف
+          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} /> إيقاف وحذف الوصول
         </button>
       </div>
       {resetting && (

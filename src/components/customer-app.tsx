@@ -7,9 +7,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SkeletonCard, SkeletonWizard } from "@/components/ui/skeleton";
 import { CurvedWorkingAnimation } from "@/components/ui/curved-working-animation";
-import { generateSlots, formatTime, type Slot } from "@/lib/slots";
-import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink } from "@/lib/format";
+import { generateSlots, formatTime, hasRemainingTime, type Slot } from "@/lib/slots";
+import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink, digitsOnly } from "@/lib/format";
 import { cancelBookingByCustomer, notifyBarbers } from "@/lib/admin.functions";
+import { disablePushNotifications, enablePushNotifications, getPushState, type PushState } from "@/lib/push";
 import { toast } from "sonner";
 import {
   Scissors,
@@ -25,6 +26,10 @@ import {
   Check,
   Sparkles,
   MessageCircle,
+  BellRing,
+  BellOff,
+  MapPin,
+  Navigation,
 } from "lucide-react";
 
 type Tab = "home" | "bookings" | "offers" | "profile";
@@ -58,6 +63,8 @@ interface Booking {
   booking_time: string;
   status: string;
   barber_id: string;
+  started_at?: string | null;
+  completed_at?: string | null;
 }
 interface Offer {
   id: string;
@@ -76,6 +83,8 @@ interface Settings {
   start_time: string;
   end_time: string;
   slot_minutes: number;
+  break_start: string | null;
+  break_end: string | null;
 }
 
 export function CustomerApp() {
@@ -131,7 +140,7 @@ export function CustomerApp() {
             <button
               onClick={signOut}
               aria-label="خروج"
-              className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:shadow-glow-primary active:scale-90"
+              className="grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:shadow-glow-primary active:scale-90"
             >
               <LogOut className="h-4 w-4" strokeWidth={1.5} />
             </button>
@@ -141,7 +150,7 @@ export function CustomerApp() {
 
       {/* Content */}
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 pt-3">
-        {tab === "home" && <CustomerHome settings={settings.data} onBook={() => setTab("home")} />}
+        {tab === "home" && <CustomerHome settings={settings.data} onBook={() => setTab("bookings")} />}
         {tab === "bookings" && <BookingsList />}
         {tab === "offers" && <OffersList />}
         {tab === "profile" && <ProfileView settings={settings.data} />}
@@ -256,9 +265,11 @@ function CustomerHome({
 }
 
 function BarbersShowcase() {
+  const qc = useQueryClient();
   const barbers = useQuery<(Barber & { avg: number; cnt: number })[]>({
     queryKey: ["barbers", "showcase"],
-    refetchInterval: 3000,
+    // Realtime pushes changes; polling is only a slow safety net.
+    refetchInterval: 30000,
     queryFn: async () => {
       const { data: list } = await supabase.from("barbers").select("*").eq("is_active", true);
       const ids = (list ?? []).map((b) => b.id);
@@ -279,6 +290,21 @@ function BarbersShowcase() {
       }));
     },
   });
+  useEffect(() => {
+    const channel = supabase
+      .channel("public-barbers-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "barbers" }, () =>
+        qc.invalidateQueries({ queryKey: ["barbers"] }),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "reviews" }, () =>
+        qc.invalidateQueries({ queryKey: ["barbers"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
   if (barbers.isLoading) {
     return (
       <div className="space-y-2.5">
@@ -287,7 +313,16 @@ function BarbersShowcase() {
       </div>
     );
   }
-  if (!barbers.data?.length) return null;
+  if (!barbers.data?.length) {
+    return (
+      <section>
+        <h2 className="ios-grouped-section-title">فريق الحلاقين</h2>
+        <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-6 text-center text-xs font-medium text-muted-foreground">
+          لا يوجد حلاقون متاحون حالياً
+        </div>
+      </section>
+    );
+  }
   return (
     <section>
       <h2 className="ios-grouped-section-title">فريق الحلاقين</h2>
@@ -335,11 +370,6 @@ function BarbersShowcase() {
 }
 
 /* -------- WIZARD -------- */
-function toMinTime(t: string) {
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + m;
-}
-
 function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () => void }) {
   const auth = useAuth();
   const [step, setStep] = useState<Step>("service");
@@ -384,24 +414,40 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   });
 
   const workingDays = barber?.working_days ?? settings.working_days;
+  const cfg = useMemo(
+    () => ({
+      start_time: barber?.start_time ?? settings.start_time ?? "10:00",
+      end_time: barber?.end_time ?? settings.end_time ?? "23:00",
+      slot_minutes: barber?.slot_minutes ?? settings.slot_minutes ?? 40,
+      break_start: settings.break_start,
+      break_end: settings.break_end,
+    }),
+    [barber, settings],
+  );
+
   const dates = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayIso = isoDate(today);
+    const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+    const todayOpen = hasRemainingTime(cfg, nowMin);
+    const days = workingDays ?? [];
     const out: { iso: string; date: Date; available: boolean; isToday: boolean }[] = [];
     for (let i = 0; i < 14; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
       const iso = isoDate(d);
+      const isToday = iso === todayIso;
+      const worksToday = days.length === 0 || days.includes(d.getDay());
       out.push({
         iso,
         date: d,
-        isToday: iso === todayIso,
-        available: iso === todayIso && (workingDays ?? []).includes(d.getDay()),
+        isToday,
+        available: worksToday && (!isToday || todayOpen),
       });
     }
     return out;
-  }, [workingDays]);
+  }, [workingDays, cfg]);
 
   const bookedQ = useQuery<string[]>({
     queryKey: ["booked", barber?.id, date],
@@ -418,39 +464,14 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
   const slots: Slot[] = useMemo(() => {
     if (!date || !barber) return [];
-    const cfg = {
-      start_time: barber.start_time ?? settings?.start_time ?? "10:00",
-      end_time: barber.end_time ?? settings?.end_time ?? "23:00",
-      slot_minutes: barber.slot_minutes ?? settings?.slot_minutes ?? 40,
-    };
-    const allSlots = generateSlots(cfg, bookedQ.data ?? []);
-    const today = isoDate(new Date());
-    if (date === today) {
-      const now = new Date();
-      const nowMin = now.getHours() * 60 + now.getMinutes();
-      const startMin = toMinTime(cfg.start_time);
-      const endMin = toMinTime(cfg.end_time);
-      const isOvernight = startMin >= endMin;
-      return allSlots.map((s) => {
-        if (s.kind === "available") {
-          const slotMin = toMinTime(s.time);
-          let isPast = false;
-          if (isOvernight) {
-            if (nowMin >= startMin) {
-              isPast = slotMin >= startMin && slotMin < nowMin;
-            } else {
-              isPast = slotMin >= startMin || slotMin < nowMin;
-            }
-          } else {
-            isPast = slotMin < nowMin;
-          }
-          if (isPast) return { ...s, kind: "past" as const };
-        }
-        return s;
-      });
-    }
-    return allSlots;
-  }, [date, barber, settings, bookedQ.data]);
+    const isToday = date === isoDate(new Date());
+    const nowMin = isToday
+      ? new Date().getHours() * 60 + new Date().getMinutes()
+      : null;
+    return generateSlots(cfg, bookedQ.data ?? [], nowMin);
+  }, [date, barber, cfg, bookedQ.data]);
+
+  const hasFreeSlot = slots.some((s) => s.kind === "available");
 
   const confirm = useMutation({
     mutationFn: async () => {
@@ -555,14 +576,16 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
               </p>
             )}
             <div className="ios-grouped-card">
-              {barbers.data?.map((b) => (
+              {[...(barbers.data ?? [])]
+                .sort((a, b) => Number(!!a.is_working) - Number(!!b.is_working))
+                .map((b) => (
                 <button
                   key={b.id}
                   onClick={() => {
                     setBarber(b);
                     goNext("date");
                   }}
-                  className="ios-list-item w-full text-right flex items-center gap-3.5 focus:bg-secondary/40 active:bg-secondary/60 transition-colors"
+                  className="ios-list-item w-full text-right flex items-center gap-3.5 focus:bg-secondary/40 active:bg-secondary/60 transition-colors cursor-pointer"
                 >
                   <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
                     {b.name.charAt(0)}
@@ -629,10 +652,12 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
         {step === "time" && (
           <div>
             <h2 className="mb-3.5 px-1 text-2xl font-bold tracking-tight">اختر الوقت</h2>
-            {slots.length === 0 ? (
+            {slots.length === 0 || !hasFreeSlot ? (
               <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-10 text-center">
                 <div className="text-base font-bold text-foreground">لا توجد مواعيد متاحة</div>
-                <div className="mt-1 text-xs text-muted-foreground">لا يوجد وقت متاح لهذا اليوم</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {slots.length === 0 ? "لا يوجد وقت متاح لهذا اليوم" : "كل المواعيد محجوزة أو انتهى وقتها"}
+                </div>
                 <button
                   onClick={() => setStep("date")}
                   className="mt-4 rounded-xl bg-secondary px-4 py-2.5 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted active:scale-95"
@@ -646,10 +671,12 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                   const disabled = s.kind !== "available";
                   const styles =
                     s.kind === "available"
-                      ? "border-border bg-card text-foreground hover:border-primary/50 shadow-card active:scale-[0.96]"
+                      ? "border-border bg-card text-foreground hover:border-primary/50 shadow-card active:scale-[0.96] cursor-pointer"
                       : s.kind === "booked"
                         ? "border-border/40 bg-muted/30 text-muted-foreground/40"
-                        : "border-border/40 bg-muted/30 text-muted-foreground/30";
+                        : s.kind === "break"
+                          ? "border-dashed border-border/50 bg-muted/20 text-muted-foreground/40"
+                          : "border-border/40 bg-muted/30 text-muted-foreground/30";
                   return (
                     <button
                       key={s.time}
@@ -665,6 +692,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                         <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0 shadow-sm" />
                       )}
                       {s.kind === "booked" && <span className="text-[9px] font-medium opacity-60">محجوز</span>}
+                      {s.kind === "break" && <span className="text-[9px] font-medium opacity-60">استراحة</span>}
                       {s.kind === "past" && <span className="text-[9px] font-medium opacity-55">منتهي</span>}
                     </button>
                   );
@@ -697,7 +725,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
         )}
 
         {step === "success" && created && (
-          <SuccessCard booking={created} settings={settings} onDone={onDone} />
+          <SuccessCard booking={created} barberName={barber?.name ?? ""} settings={settings} onDone={onDone} />
         )}
       </div>
     </div>
@@ -716,12 +744,58 @@ function AppleRow({ label, value, icon }: { label: string; value: string; icon: 
   );
 }
 
+function icsEscape(s: string) {
+  return s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+}
+
+function downloadBookingIcs(booking: Booking, barberName: string, shopName: string, address?: string) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const floating = (d: Date) =>
+    `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  const start = new Date(`${booking.booking_date}T${booking.booking_time}`);
+  if (Number.isNaN(start.getTime())) return false;
+  const end = new Date(start.getTime() + 45 * 60000);
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Halak Elbasha//Booking//AR",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${booking.id}@halak-elbasha`,
+    `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")}`,
+    `DTSTART:${floating(start)}`,
+    `DTEND:${floating(end)}`,
+    `SUMMARY:${icsEscape(`${shopName} — ${booking.service_name}`)}`,
+    `DESCRIPTION:${icsEscape(`رقم الحجز: ${booking.booking_number ?? "—"}\nالحلاق: ${barberName}\nالسعر: ${booking.service_price} ج.م`)}`,
+    ...(address ? [`LOCATION:${icsEscape(address)}`] : []),
+    "BEGIN:VALARM",
+    "TRIGGER:-PT30M",
+    "ACTION:DISPLAY",
+    `DESCRIPTION:${icsEscape("تذكير بموعدك")}`,
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ];
+  const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `booking-${booking.booking_number ?? booking.id}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return true;
+}
+
 function SuccessCard({
   booking,
+  barberName,
   settings,
   onDone,
 }: {
   booking: Booking;
+  barberName: string;
   settings: Settings;
   onDone: () => void;
 }) {
@@ -734,6 +808,14 @@ function SuccessCard({
 التاريخ: ${arabicDate(booking.booking_date)}
 الوقت: ${booking.booking_time}`;
   const wa = buildWhatsAppLink(settings.whatsapp, waMessage);
+  const digits = digitsOnly(settings.whatsapp);
+
+  const addToCalendar = () => {
+    const ok = downloadBookingIcs(booking, barberName, settings.shop_name, settings.address);
+    if (ok) toast.success("تم تنزيل ملف الموعد — أضفه لتقويمك");
+    else toast.error("تعذّر إنشاء ملف التقويم");
+  };
+
   return (
     <div className="space-y-5 text-center animate-spring-in">
       <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-xl shadow-emerald-500/30 animate-success-bounce border border-emerald-400/30">
@@ -744,20 +826,53 @@ function SuccessCard({
         <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">رقم الحجز</div>
         <div className="mt-1 text-3xl font-black text-gradient-gold">{booking.booking_number}</div>
       </div>
+
+      <div className="ios-grouped-card text-start">
+        <AppleRow label="الحلاق" value={barberName} icon={<User className="h-4 w-4" strokeWidth={1.5} />} />
+        <AppleRow label="الخدمة" value={`${booking.service_name} • ${booking.service_price} ج.م`} icon={<Scissors className="h-4 w-4" strokeWidth={1.5} />} />
+        <AppleRow label="التاريخ" value={arabicDate(booking.booking_date)} icon={<CalendarDays className="h-4 w-4" strokeWidth={1.5} />} />
+        <AppleRow label="الوقت" value={formatTime(booking.booking_time)} icon={<Clock className="h-4 w-4" strokeWidth={1.5} />} />
+      </div>
+
+      <div className="rounded-2xl border border-primary/15 bg-primary/8 p-3.5 text-start text-[12px] font-semibold leading-relaxed text-primary">
+        تم إشعار الحلاق بحجزك، وسيصلك تنبيه فور بدء الخدمة.
+      </div>
+
       <p className="text-xs text-muted-foreground/80 font-medium leading-relaxed">
         يرجى الحضور قبل موعدك بـ ٥ دقائق.
         <br />
         في حالة التأخير أكثر من ١٠ دقائق قد يتم إلغاء الموعد تلقائياً.
       </p>
-      <a
-        href={wa}
-        target="_blank"
-        rel="noopener"
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#34C759] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#34C759]/20 transition-all duration-300 hover:brightness-105 hover:shadow-xl active:scale-[0.97]"
+
+      <div className="space-y-2.5">
+        <a
+          href={wa}
+          target="_blank"
+          rel="noopener"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#34C759] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#34C759]/20 transition-all duration-300 hover:brightness-105 hover:shadow-xl active:scale-[0.97]"
+        >
+          <MessageCircle className="h-4.5 w-4.5" strokeWidth={1.5} /> تأكيد عبر واتساب
+        </a>
+        <button
+          onClick={addToCalendar}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-secondary py-3.5 text-sm font-bold text-foreground border border-border/40 transition-all duration-300 hover:bg-muted active:scale-[0.97]"
+        >
+          <CalendarDays className="h-4.5 w-4.5" strokeWidth={1.5} /> أضف الموعد للتقويم
+        </button>
+        {digits.length > 5 && (
+          <a
+            href={`tel:${digits}`}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-secondary py-3.5 text-sm font-bold text-foreground border border-border/40 transition-all duration-300 hover:bg-muted active:scale-[0.97]"
+          >
+            <Phone className="h-4.5 w-4.5" strokeWidth={1.5} /> اتصل بالصالون
+          </a>
+        )}
+      </div>
+
+      <button
+        onClick={onDone}
+        className="mx-auto block cursor-pointer py-1 text-xs font-semibold text-primary transition-transform duration-200 active:scale-95"
       >
-        <MessageCircle className="h-4.5 w-4.5" strokeWidth={1.5} /> تأكيد عبر واتساب
-      </a>
-      <button onClick={onDone} className="text-xs font-semibold text-primary block mx-auto py-1 active:scale-95 transition-transform duration-200">
         العودة للرئيسية
       </button>
     </div>
@@ -781,6 +896,65 @@ function BookingsList() {
       return (data ?? []) as Booking[];
     },
   });
+
+  const reviewedQ = useQuery<Set<string>>({
+    queryKey: ["my-reviews", auth.user?.id],
+    enabled: !!auth.user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("reviews")
+        .select("booking_id")
+        .eq("customer_id", auth.user!.id);
+      return new Set(
+        (data ?? []).map((r) => r.booking_id).filter((id): id is string => !!id),
+      );
+    },
+  });
+
+  // Live sync with the barber's actions (start / finish / cancel).
+  useEffect(() => {
+    if (!auth.user) return;
+    const uid = auth.user.id;
+    const channel = supabase
+      .channel(`customer-bookings-${uid}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bookings", filter: `customer_id=eq.${uid}` },
+        () => qc.invalidateQueries({ queryKey: ["my-bookings", uid] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [auth.user, qc]);
+
+  const prevRef = useRef<Map<string, { status: string; started: boolean }>>(new Map());
+  useEffect(() => {
+    if (!list.data) return;
+    const prev = prevRef.current;
+    if (prev.size > 0) {
+      for (const b of list.data) {
+        const before = prev.get(b.id);
+        if (!before) continue;
+        if (!before.started && b.started_at && b.status === "booked") {
+          toast.success("بدأ حلاقك الخدمة", {
+            description: `${b.service_name} — أهلاً بك!`,
+          });
+        }
+        if (before.status === "booked" && b.status === "completed") {
+          toast.success("تم إنهاء موعدك", {
+            description: "لا تنسَ تقييم الخدمة من الأسفل",
+          });
+        }
+        if (before.status === "booked" && b.status.startsWith("cancelled")) {
+          toast.error("تم إلغاء موعدك", { description: `${b.service_name} — ${arabicDate(b.booking_date)}` });
+        }
+      }
+    }
+    prevRef.current = new Map(
+      list.data.map((b) => [b.id, { status: b.status, started: !!b.started_at }]),
+    );
+  }, [list.data]);
 
   const cancelFn = useServerFn(cancelBookingByCustomer);
   const cancel = useMutation({
@@ -829,17 +1003,33 @@ function BookingsList() {
   if (!list.data?.length) {
     return <Empty title="لا توجد حجوزات" subtitle="ابدأ بحجز موعدك الأول" />;
   }
-  const upcoming = list.data.filter((b) => b.status === "booked");
-  const past = list.data.filter((b) => b.status !== "booked");
+  const ts = (b: Booking) => new Date(`${b.booking_date}T${b.booking_time}`).getTime();
+  const active = list.data.filter(
+    (b) => b.status === "booked" && !!b.started_at && !b.completed_at,
+  );
+  const activeIds = new Set(active.map((b) => b.id));
+  // Nearest appointment first — the one you care about is always on top.
+  const upcoming = list.data
+    .filter((b) => b.status === "booked" && !activeIds.has(b.id))
+    .sort((a, b) => ts(a) - ts(b));
+  const past = list.data
+    .filter((b) => b.status !== "booked")
+    .sort((a, b) => ts(b) - ts(a));
 
   return (
     <div className="space-y-6">
-      {upcoming.length > 0 && (
+      {(active.length > 0 || upcoming.length > 0) && (
         <section>
           <h2 className="ios-grouped-section-title">القادمة</h2>
           <div className="space-y-3">
-            {upcoming.map((b) => (
-              <BookingCard key={b.id} b={b} onCancel={() => cancel.mutate(b.id)} />
+            {[...active, ...upcoming].map((b) => (
+              <BookingCard
+                key={b.id}
+                b={b}
+                inService={activeIds.has(b.id)}
+                onCancel={() => cancel.mutate(b.id)}
+                isCancelling={cancel.isPending && cancel.variables === b.id}
+              />
             ))}
           </div>
         </section>
@@ -852,13 +1042,18 @@ function BookingsList() {
               <BookingCard
                 key={b.id}
                 b={b}
+                canReview={b.status === "completed" && !reviewedQ.data?.has(b.id)}
+                alreadyReviewed={reviewedQ.data?.has(b.id) ?? false}
                 onReview={(r, c) =>
-                  reviewMut.mutate({
-                    booking_id: b.id,
-                    barber_id: b.barber_id,
-                    rating: r,
-                    comment: c,
-                  })
+                  reviewMut.mutate(
+                    {
+                      booking_id: b.id,
+                      barber_id: b.barber_id,
+                      rating: r,
+                      comment: c,
+                    },
+                    { onSuccess: () => reviewedQ.refetch() },
+                  )
                 }
               />
             ))}
@@ -871,17 +1066,27 @@ function BookingsList() {
 
 function BookingCard({
   b,
+  inService,
   onCancel,
+  isCancelling,
   onReview,
+  canReview,
+  alreadyReviewed,
 }: {
   b: Booking;
+  inService?: boolean;
   onCancel?: () => void;
+  isCancelling?: boolean;
   onReview?: (rating: number, comment: string) => void;
+  canReview?: boolean;
+  alreadyReviewed?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const getStatusInfo = () => {
+    if (inService) return { label: "جارٍ الخدمة الآن", cls: "bg-amber-500/12 text-amber-600 dark:text-amber-400" };
     if (b.status === "booked") return { label: "محجوز", cls: "bg-primary/10 text-primary" };
     if (b.status === "completed") return { label: "مكتمل", cls: "bg-success/10 text-success" };
     if (b.status === "cancelled_by_barber") return { label: "ملغي بواسطة الحلاق", cls: "bg-destructive/10 text-destructive" };
@@ -891,7 +1096,11 @@ function BookingCard({
   const { label: status, cls: statusClass } = getStatusInfo();
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
+    <div
+      className={`rounded-xl border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated ${
+        inService ? "border-amber-500/40" : "border-border hover:border-primary/15"
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold text-foreground">{b.service_name}</div>
@@ -901,34 +1110,80 @@ function BookingCard({
           </div>
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-bold tracking-wider ${statusClass}`}>
+          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-bold tracking-wider ${statusClass}`}>
+            {inService && <CurvedWorkingAnimation />}
             {status}
           </span>
           <span className="text-[10px] font-bold text-muted-foreground/60">{b.booking_number}</span>
         </div>
       </div>
-      {onCancel && (
-        <button
-          onClick={onCancel}
-          className="mt-3.5 w-full rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-2.5 text-xs font-bold text-destructive transition-all duration-200 hover:bg-destructive/10 active:scale-[0.98]"
-        >
-          إلغاء الحجز
-        </button>
+
+      {inService && (
+        <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/8 px-3.5 py-2.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
+          حلاقك بدأ الخدمة الآن — أهلاً بك!
+        </div>
       )}
-      {onReview && (
+
+      {onCancel &&
+        (!confirmCancel ? (
+          <button
+            onClick={() => setConfirmCancel(true)}
+            className="mt-3.5 w-full cursor-pointer rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-2.5 text-xs font-bold text-destructive transition-all duration-200 hover:bg-destructive/10 active:scale-[0.98]"
+          >
+            إلغاء الحجز
+          </button>
+        ) : (
+          <div className="mt-3.5 space-y-2 rounded-xl border border-destructive/25 bg-destructive/5 p-3 animate-scale-in">
+            <p className="text-center text-[11px] font-bold text-destructive">
+              سيتم إلغاء الموعد وإشعار الحلاق — هل أنت متأكد؟
+            </p>
+            <div className="flex gap-2">
+              <button
+                disabled={isCancelling}
+                onClick={() => {
+                  onCancel();
+                  setConfirmCancel(false);
+                }}
+                className="flex-1 cursor-pointer rounded-xl bg-destructive px-4 py-2.5 text-xs font-bold text-destructive-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.98] disabled:opacity-50"
+              >
+                {isCancelling ? "جارٍ الإلغاء..." : "نعم، إلغاء"}
+              </button>
+              <button
+                disabled={isCancelling}
+                onClick={() => setConfirmCancel(false)}
+                className="flex-1 cursor-pointer rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.98] disabled:opacity-50"
+              >
+                تراجع
+              </button>
+            </div>
+          </div>
+        ))}
+
+      {alreadyReviewed && !onReview && (
+        <div className="mt-3 rounded-xl bg-success/10 px-4 py-2.5 text-center text-[11px] font-bold text-success">
+          شكراً لك، تم إرسال تقييمك
+        </div>
+      )}
+
+      {onReview && canReview && (
         <div className="mt-3">
           {!open ? (
             <button
               onClick={() => setOpen(true)}
-              className="w-full rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.98]"
+              className="w-full cursor-pointer rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.98]"
             >
-              تقييم الخدمة
+              قيّم الخدمة
             </button>
           ) : (
             <div className="space-y-3.5 rounded-xl bg-secondary/35 border border-border/40 p-4 animate-scale-in">
               <div className="flex items-center justify-center gap-1.5">
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <button key={n} onClick={() => setRating(n)} className="transition-transform duration-150 active:scale-125">
+                  <button
+                    key={n}
+                    onClick={() => setRating(n)}
+                    aria-label={`${n} نجوم`}
+                    className="cursor-pointer transition-transform duration-150 active:scale-125"
+                  >
                     <Star
                       className={`h-7 w-7 transition-colors duration-200 ${n <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
                       strokeWidth={n <= rating ? 0 : 1.5}
@@ -949,7 +1204,7 @@ function BookingCard({
                   setOpen(false);
                   setComment("");
                 }}
-                className="w-full rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.98]"
+                className="w-full cursor-pointer rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.98]"
               >
                 إرسال التقييم
               </button>
@@ -1006,6 +1261,33 @@ function OffersList() {
 /* -------- PROFILE -------- */
 function ProfileView({ settings }: { settings: Settings | undefined }) {
   const auth = useAuth();
+  const [push, setPush] = useState<PushState | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    getPushState().then(setPush).catch(() => setPush(null));
+  }, []);
+
+  const togglePush = async () => {
+    if (!push || busy) return;
+    setBusy(true);
+    try {
+      const next = push.subscribed ? await disablePushNotifications() : await enablePushNotifications();
+      setPush(next);
+      if (next.subscribed) toast.success("تم تفعيل الإشعارات", { description: "سنذكرك بموعدك قبل وقت كافٍ" });
+      else if (next.permission === "denied") toast.error("الإشعارات محظورة من إعدادات المتصفح");
+      else toast.message("تم إيقاف الإشعارات");
+    } catch {
+      toast.error("تعذّر تحديث إعدادات الإشعارات");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const whatsapp = settings?.whatsapp
+    ? buildWhatsAppLink(settings.whatsapp, `مرحباً ${settings.shop_name}، أريد الاستفسار عن موعد.`)
+    : null;
+
   return (
     <div className="space-y-5">
       <div className="rounded-xl border border-border bg-card p-5 text-center shadow-card animate-fade-in-up">
@@ -1015,25 +1297,85 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
         <div className="mt-3 text-base font-bold text-foreground tracking-tight">{auth.profile?.full_name}</div>
         <div className="text-xs text-muted-foreground font-medium mt-0.5">{auth.profile?.phone}</div>
       </div>
+
+      {push?.supported && (
+        <button
+          onClick={togglePush}
+          disabled={busy}
+          className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-card p-5 text-start shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/20 active:scale-[0.99] disabled:opacity-60 animate-fade-in-up"
+          style={{ animationDelay: "0.05s" }}
+        >
+          <span className="flex min-w-0 items-center gap-3">
+            <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${push.subscribed ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
+              {push.subscribed ? <BellRing className="h-5 w-5" strokeWidth={1.6} /> : <BellOff className="h-5 w-5" strokeWidth={1.6} />}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-bold text-foreground">إشعارات الموعد</span>
+              <span className="mt-0.5 block text-[11px] font-semibold text-muted-foreground">
+                {busy
+                  ? "جارٍ التحديث..."
+                  : push.subscribed
+                    ? "مُفعّلة — نذكرك عند بدء حلاقك الخدمة"
+                    : "فعّلها لتصلك تنبيهات موعدك فوراً"}
+              </span>
+            </span>
+          </span>
+          <span
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-300 ${push.subscribed ? "bg-primary" : "bg-muted-foreground/25"}`}
+          >
+            <span
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-300 ${push.subscribed ? "start-0.5" : "start-[22px]"}`}
+            />
+          </span>
+        </button>
+      )}
+
       {settings && (
-        <div className="rounded-xl border border-border bg-card p-5 shadow-card animate-fade-in-up" style={{ animationDelay: "0.08s" }}>
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <div className="text-sm font-bold text-foreground">{settings.shop_name}</div>
           {settings.address && (
-            <div className="mt-1 text-xs text-muted-foreground font-semibold">{settings.address}</div>
+            <div className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground font-semibold">
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.6} />
+              <span>{settings.address}</span>
+            </div>
           )}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {settings.whatsapp && (
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            {whatsapp && (
               <a
-                href={`tel:${settings.whatsapp}`}
-                className="rounded-xl bg-secondary px-3.5 py-2 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted active:scale-95 border border-border/30"
+                href={whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-[#34C759]/10 border border-[#34C759]/25 px-3 text-xs font-bold text-[#1F9E45] dark:text-[#4ADE80] transition-all duration-200 hover:bg-[#34C759]/18 active:scale-[0.97]"
               >
-                {settings.whatsapp}
+                <MessageCircle className="h-4 w-4" strokeWidth={1.8} /> واتساب
               </a>
             )}
-            {settings.facebook && <SocialBtn href={settings.facebook} label="فيسبوك" />}
-            {settings.instagram && <SocialBtn href={settings.instagram} label="انستجرام" />}
-            {settings.tiktok && <SocialBtn href={settings.tiktok} label="تيك توك" />}
+            {settings.whatsapp && (
+              <a
+                href={`tel:${digitsOnly(settings.whatsapp)}`}
+                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-secondary px-3 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.97]"
+              >
+                <Phone className="h-4 w-4" strokeWidth={1.6} /> اتصال
+              </a>
+            )}
+            {settings.address && (
+              <a
+                href={`https://maps.google.com/?q=${encodeURIComponent(settings.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-secondary px-3 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.97]"
+              >
+                <Navigation className="h-4 w-4" strokeWidth={1.6} /> الموقع
+              </a>
+            )}
           </div>
+          {(settings.facebook || settings.instagram || settings.tiktok) && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {settings.facebook && <SocialBtn href={settings.facebook} label="فيسبوك" />}
+              {settings.instagram && <SocialBtn href={settings.instagram} label="انستجرام" />}
+              {settings.tiktok && <SocialBtn href={settings.tiktok} label="تيك توك" />}
+            </div>
+          )}
         </div>
       )}
     </div>

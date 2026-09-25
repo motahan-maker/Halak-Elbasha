@@ -182,6 +182,7 @@ function AuthPage() {
                   placeholder="الاسم بالكامل"
                   value={cName}
                   onChange={setCName}
+                  autoComplete="name"
                 />
                 <AppleField
                   icon={<Phone className="h-[18px]" strokeWidth={1.5} />}
@@ -189,17 +190,9 @@ function AuthPage() {
                   type="tel"
                   value={cPhone}
                   onChange={setCPhone}
+                  autoComplete="tel"
                 />
-                <button
-                  disabled={cLoading}
-                  className="w-full rounded-xl gradient-luxe py-3.5 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
-                >
-                  {cLoading ? (
-                    <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
-                  ) : (
-                    "دخول / تسجيل"
-                  )}
-                </button>
+                <SubmitButton loading={cLoading} label="دخول / تسجيل" />
                 <p className="text-center text-[11px] text-muted-foreground/70 font-medium">
                   لا حاجة لكلمة مرور — الرقم هو هويتك
                 </p>
@@ -214,6 +207,7 @@ function AuthPage() {
                   type="tel"
                   value={sPhone}
                   onChange={setSPhone}
+                  autoComplete="username"
                 />
                 <AppleField
                   icon={<Lock className="h-[18px]" strokeWidth={1.5} />}
@@ -221,17 +215,9 @@ function AuthPage() {
                   type="password"
                   value={sPwd}
                   onChange={setSPwd}
+                  autoComplete="current-password"
                 />
-                <button
-                  disabled={sLoading}
-                  className="w-full rounded-xl gradient-luxe py-3.5 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
-                >
-                  {sLoading ? (
-                    <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
-                  ) : (
-                    "دخول"
-                  )}
-                </button>
+                <SubmitButton loading={sLoading} label="دخول" />
               </form>
             )}
 
@@ -246,6 +232,7 @@ function AuthPage() {
                   placeholder="اسم المستخدم"
                   value={aUser}
                   onChange={setAUser}
+                  autoComplete="username"
                 />
                 <AppleField
                   icon={<Lock className="h-[18px]" strokeWidth={1.5} />}
@@ -253,17 +240,9 @@ function AuthPage() {
                   type="password"
                   value={aPwd}
                   onChange={setAPwd}
+                  autoComplete="current-password"
                 />
-                <button
-                  disabled={aLoading}
-                  className="w-full rounded-xl gradient-luxe py-3.5 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center"
-                >
-                  {aLoading ? (
-                    <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
-                  ) : (
-                    "دخول كمدير"
-                  )}
-                </button>
+                <SubmitButton loading={aLoading} label="دخول كمدير" />
               </form>
             )}
           </div>
@@ -284,23 +263,43 @@ function AppleField({
   value,
   onChange,
   type = "text",
+  autoComplete,
 }: {
   icon: React.ReactNode;
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
+  autoComplete?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-3.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary/50 focus-within:bg-card focus-within:shadow-glow-primary">
-      <span className="text-muted-foreground shrink-0 transition-colors duration-200 peer-focus:text-primary">{icon}</span>
+    <label className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-3.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary/50 focus-within:bg-card focus-within:shadow-glow-primary">
+      <span className="text-muted-foreground shrink-0 transition-colors duration-200">{icon}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
+        autoComplete={autoComplete}
         className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground/40 font-medium"
       />
-    </div>
+    </label>
+  );
+}
+
+function SubmitButton({ loading, label }: { loading: boolean; label: string }) {
+  return (
+    <button
+      type="submit"
+      disabled={loading}
+      aria-busy={loading}
+      className="w-full rounded-xl gradient-luxe py-3.5 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center cursor-pointer"
+    >
+      {loading ? (
+        <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
+      ) : (
+        label
+      )}
+    </button>
   );
 }

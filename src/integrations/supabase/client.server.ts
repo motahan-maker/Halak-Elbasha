@@ -2,12 +2,12 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { SUPABASE_CONFIG } from "./config";
+import { SERVER_SECRETS } from "./config.server";
 
 function createSupabaseAdminClient() {
   const SUPABASE_URL =
     process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || SUPABASE_CONFIG.url;
-  const SUPABASE_SERVICE_ROLE_KEY =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_CONFIG.serviceRoleKey;
+  const SUPABASE_SERVICE_ROLE_KEY = SERVER_SECRETS.serviceRoleKey;
 
   if (!SUPABASE_SERVICE_ROLE_KEY) {
     console.warn(

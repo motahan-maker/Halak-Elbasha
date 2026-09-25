@@ -1,5 +1,7 @@
-// Service worker: push notifications + background polling
-const POLL_INTERVAL = 10000;
+// Service worker: background polling + notification display.
+// Web Push subscriptions are created from the page (src/lib/push.ts) so the
+// browser permission prompt is tied to a real user gesture.
+const POLL_INTERVAL = 60000;
 let pollTimer = null;
 let barberId = null;
 let supabaseUrl = null;
@@ -27,8 +29,6 @@ self.addEventListener("message", (e) => {
       })
     );
     startPolling();
-    // Subscribe to push notifications
-    subscribeToPush(e.data.vapidPublicKey, e.data.supabaseUrl, e.data.supabaseAnonKey);
   } else if (type === "STOP") {
     stopPolling();
   } else if (type === "SHOW_NOTIFICATION") {
@@ -36,59 +36,36 @@ self.addEventListener("message", (e) => {
   }
 });
 
-// Web Push subscription
-async function subscribeToPush(vapidPublicKey, apiUrl, anonKey) {
-  try {
-    const registration = await self.registration;
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") return;
-
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-    });
-
-    // Send subscription to server via the page client
-    const clients = await self.clients.matchAll();
-    for (const client of clients) {
-      client.postMessage({
-        type: "SAVE_SUBSCRIPTION",
-        subscription: subscription.toJSON(),
-      });
-    }
-  } catch (err) {
-    console.error("Push subscription failed:", err);
-  }
-}
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; i++) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
 // Push event handler
 self.addEventListener("push", (e) => {
   if (!e.data) return;
-  const { title, body } = e.data.json();
-  e.waitUntil(showNotif(title || "حجز جديد!", body || ""));
+  let payload = {};
+  try {
+    payload = e.data.json();
+  } catch {
+    payload = { body: e.data.text() };
+  }
+  const title = payload.title || "حجز جديد!";
+  const body = payload.body || "";
+  e.waitUntil(showNotif(title, body, payload.url));
 });
 
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
+  const target = e.notification.data?.url || "/";
   e.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
         if (client.url.includes(self.location.origin) && "focus" in client) {
+          if ("navigate" in client) {
+            try {
+              client.navigate(target);
+            } catch {}
+          }
           return client.focus();
         }
       }
-      return self.clients.openWindow("/");
+      return self.clients.openWindow(target);
     })
   );
 });
@@ -127,12 +104,15 @@ async function poll() {
   } catch {}
 }
 
-function showNotif(title, body) {
+function showNotif(title, body, url) {
   self.registration.showNotification(title, {
     body,
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
+    icon: "/icon.svg",
+    badge: "/icon-maskable.svg",
     tag: "new-booking",
+    dir: "rtl",
+    lang: "ar",
     requireInteraction: true,
+    data: { url: url || "/" },
   });
 }

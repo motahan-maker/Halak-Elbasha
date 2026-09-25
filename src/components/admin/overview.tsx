@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SkeletonStat } from "@/components/ui/skeleton";
-import { arabicDate } from "@/lib/format";
+import { arabicDate, isoDate } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
 import { Scissors, Star } from "lucide-react";
 
@@ -11,9 +11,9 @@ export function Overview() {
     queryKey: ["admin-overview"],
     staleTime: 30000,
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
-      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
-      const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
+      const today = isoDate(new Date());
+      const weekAgo = isoDate(new Date(Date.now() - 7 * 86400000));
+      const monthAgo = isoDate(new Date(Date.now() - 30 * 86400000));
       const [bookingsRes, c, s, barbersRes, reviewAgg] = await Promise.all([
         supabase
           .from("bookings")

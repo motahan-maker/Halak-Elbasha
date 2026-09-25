@@ -65,6 +65,7 @@ export type Database = {
           booking_date: string;
           booking_number: string | null;
           booking_time: string;
+          completed_at: string | null;
           created_at: string;
           customer_id: string;
           customer_name: string;
@@ -73,6 +74,7 @@ export type Database = {
           service_id: string;
           service_name: string;
           service_price: number;
+          started_at: string | null;
           status: Database["public"]["Enums"]["booking_status"];
         };
         Insert: {
@@ -80,6 +82,7 @@ export type Database = {
           booking_date: string;
           booking_number?: string | null;
           booking_time: string;
+          completed_at?: string | null;
           created_at?: string;
           customer_id: string;
           customer_name: string;
@@ -88,6 +91,7 @@ export type Database = {
           service_id: string;
           service_name: string;
           service_price?: number;
+          started_at?: string | null;
           status?: Database["public"]["Enums"]["booking_status"];
         };
         Update: {
@@ -95,6 +99,7 @@ export type Database = {
           booking_date?: string;
           booking_number?: string | null;
           booking_time?: string;
+          completed_at?: string | null;
           created_at?: string;
           customer_id?: string;
           customer_name?: string;
@@ -103,6 +108,7 @@ export type Database = {
           service_id?: string;
           service_name?: string;
           service_price?: number;
+          started_at?: string | null;
           status?: Database["public"]["Enums"]["booking_status"];
         };
         Relationships: [
@@ -167,6 +173,33 @@ export type Database = {
           full_name?: string;
           id?: string;
           phone?: string;
+        };
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          auth: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          p256dh: string;
+          user_id: string;
+        };
+        Insert: {
+          auth: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          p256dh: string;
+          user_id: string;
+        };
+        Update: {
+          auth?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          p256dh?: string;
+          user_id?: string;
         };
         Relationships: [];
       };
@@ -322,6 +355,25 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      cancel_booking_by_barber: {
+        Args: {
+          _booking_id: string;
+          _reason?: string;
+        };
+        Returns: Json;
+      };
+      cancel_booking_by_customer: {
+        Args: {
+          _booking_id: string;
+        };
+        Returns: Json;
+      };
+      complete_booking_service: {
+        Args: {
+          _booking_id: string;
+        };
+        Returns: Json;
+      };
       create_booking: {
         Args: {
           _barber_id: string;
@@ -334,6 +386,7 @@ export type Database = {
           booking_date: string;
           booking_number: string | null;
           booking_time: string;
+          completed_at: string | null;
           created_at: string;
           customer_id: string;
           customer_name: string;
@@ -342,6 +395,7 @@ export type Database = {
           service_id: string;
           service_name: string;
           service_price: number;
+          started_at: string | null;
           status: Database["public"]["Enums"]["booking_status"];
         };
         SetofOptions: {
@@ -355,6 +409,15 @@ export type Database = {
         Args: never;
         Returns: Database["public"]["Enums"]["app_role"];
       };
+      get_booked_times: {
+        Args: {
+          _barber_id: string;
+          _booking_date: string;
+        };
+        Returns: {
+          booking_time: string;
+        }[];
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -362,10 +425,28 @@ export type Database = {
         };
         Returns: boolean;
       };
+      set_barber_working_status: {
+        Args: {
+          _barber_id: string;
+          _is_working: boolean;
+        };
+        Returns: undefined;
+      };
+      start_booking_service: {
+        Args: {
+          _booking_id: string;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       app_role: "admin" | "barber" | "customer";
-      booking_status: "booked" | "completed" | "cancelled";
+      booking_status:
+        | "booked"
+        | "completed"
+        | "cancelled"
+        | "cancelled_by_customer"
+        | "cancelled_by_barber";
     };
     CompositeTypes: {
       [_ in never]: never;
