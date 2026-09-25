@@ -52,15 +52,16 @@ export function SettingsAdmin() {
   if (settings.isLoading) {
     return (
       <div className="space-y-3.5">
-        <div className="h-24 animate-pulse rounded-xl border border-border bg-card" />
-        <div className="h-24 animate-pulse rounded-xl border border-border bg-card" />
+        <div className="h-24 animate-pulse rounded-2xl border border-border/70 bg-card" />
+        <div className="h-24 animate-pulse rounded-2xl border border-border/70 bg-card" />
       </div>
     );
   }
   if (!s) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-secondary/15 p-6 text-center text-xs font-medium text-muted-foreground">
-        لا يمكن قراءة الإعدادات — تأكد من صلاحيات حسابك
+      <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-8 text-center">
+        <div className="font-display text-[0.82rem] font-extrabold text-foreground">لا يمكن قراءة الإعدادات</div>
+        <div className="mt-1 text-[11px] font-medium text-muted-foreground">تأكد من صلاحيات حسابك</div>
       </div>
     );
   }
@@ -121,7 +122,7 @@ function SettingsForm({
 
   return (
     <div className="space-y-3.5">
-      <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-xs font-semibold text-primary">
+      <div className="rounded-2xl border border-gold/25 bg-gold/10 p-3.5 text-[11.5px] font-bold leading-relaxed text-accent-foreground">
         النظام يُولِّد المواعيد تلقائياً من ساعات العمل وأيام العمل والاستراحة ومدة الموعد. لا حاجة لإنشاء مواعيد يدوياً.
       </div>
 
@@ -155,10 +156,10 @@ function SettingsForm({
               key={i}
               type="button"
               onClick={() => toggleDay(i)}
-              className={`cursor-pointer rounded-lg px-3 py-2 text-xs font-bold transition-all duration-200 active:scale-95 ${
+              className={`press cursor-pointer rounded-lg px-3 py-2 text-[11.5px] font-bold transition-all duration-200 ${
                 (f.working_days ?? []).includes(i)
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-secondary text-muted-foreground hover:bg-muted border border-border/30"
+                  ? "gradient-gold text-gold-foreground shadow-glow-gold"
+                  : "border border-border/70 bg-card text-muted-foreground hover:border-gold/35 hover:text-foreground"
               }`}
             >
               {d}
@@ -188,17 +189,17 @@ function SettingsForm({
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-bold text-muted-foreground">مدة الموعد (دقيقة)</label>
+          <label className="mb-1 block text-[10.5px] font-bold text-muted-foreground">مدة الموعد (دقيقة)</label>
           <div className="flex gap-1.5">
             {[20, 30, 40, 45, 60].map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => set("slot_minutes", m)}
-                className={`flex-1 cursor-pointer rounded-xl px-2 py-2 text-xs font-bold transition-all duration-200 active:scale-95 ${
+                className={`press flex-1 cursor-pointer rounded-xl px-2 py-2 text-[11.5px] font-bold transition-all duration-200 ${
                   Number(f.slot_minutes) === m
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-secondary text-muted-foreground hover:bg-muted border border-border/30"
+                    ? "gradient-gold text-gold-foreground shadow-glow-gold"
+                    : "border border-border/70 bg-card text-muted-foreground hover:border-gold/35 hover:text-foreground"
                 }`}
               >
                 {m}
@@ -223,8 +224,8 @@ function SettingsForm({
                 ? setF((x) => ({ ...x, break_start: null, break_end: null }))
                 : setF((x) => ({ ...x, break_start: x.break_start ?? "19:00", break_end: x.break_end ?? "20:00" }))
             }
-            className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-300 ${
-              hasBreak ? "bg-primary" : "bg-muted-foreground/25"
+            className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-all duration-300 ${
+              hasBreak ? "gradient-gold shadow-glow-gold" : "bg-muted-foreground/25"
             }`}
           >
             <span
@@ -255,7 +256,7 @@ function SettingsForm({
       <button
         onClick={save}
         disabled={saving}
-        className="w-full cursor-pointer rounded-2xl gradient-luxe px-4 py-3.5 font-bold text-primary-foreground shadow-glow-primary transition-all duration-300 hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+        className="press w-full cursor-pointer rounded-2xl gradient-gold px-4 py-3.5 font-display text-sm font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-60"
       >
         {saving ? "جارٍ الحفظ..." : "حفظ الإعدادات"}
       </button>
@@ -265,9 +266,15 @@ function SettingsForm({
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-2.5 rounded-xl border border-border bg-card p-4 shadow-card hover:shadow-elevated transition-all duration-200">
-      <div className="ios-grouped-section-title px-0 pb-1">{title}</div>
-      {children}
+    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card transition-all duration-300 hover:border-gold/45 hover:shadow-elevated">
+      <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+      <div className="relative space-y-2.5">
+        <div className="flex items-center gap-2 pb-1">
+          <span aria-hidden className="h-3.5 w-1 shrink-0 rounded-full gradient-gold" />
+          <span className="font-display text-[0.95rem] font-extrabold tracking-tight text-foreground">{title}</span>
+        </div>
+        {children}
+      </div>
     </div>
   );
 }
@@ -287,13 +294,13 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-bold text-muted-foreground">{label}</label>
+      <label className="mb-1 block text-[10.5px] font-bold text-muted-foreground">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type={type}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2.5 text-xs font-semibold outline-none transition-all duration-200 focus:border-primary focus:bg-card focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/45"
+        className="w-full rounded-xl border border-border/70 bg-secondary/30 px-3 py-2.5 text-[11.5px] font-semibold text-foreground outline-none transition-all duration-200 focus:border-gold/45 focus:bg-card focus:ring-2 focus:ring-gold/20 placeholder:text-muted-foreground/45"
       />
     </div>
   );

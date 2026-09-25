@@ -88,30 +88,49 @@ export function Overview() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up stagger-children">
-        <KPI label="حجوزات اليوم" value={d?.todayCount ?? "—"} colorClass="text-primary" gradientClass="from-primary/10 to-primary/5" />
-        <KPI label="مكتملة" value={d?.completedCount ?? "—"} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
-        <KPI label="ملغية" value={d?.cancelledCount ?? "—"} colorClass="text-destructive" gradientClass="from-destructive/10 to-destructive/5" />
-        <KPI label="العملاء" value={d?.customers ?? "—"} />
-        <KPI label="الحلاقون" value={d?.barbers ?? "—"} />
-        <KPI label="الخدمات" value={d?.services ?? "—"} />
+      <div className="grid grid-cols-3 gap-2.5">
+        <KPI label="حجوزات اليوم" value={d?.todayCount ?? "—"} tone="gold" delay={0} />
+        <KPI label="مكتملة" value={d?.completedCount ?? "—"} tone="success" delay={0.03} />
+        <KPI label="ملغية" value={d?.cancelledCount ?? "—"} tone="danger" delay={0.06} />
+        <KPI label="العملاء" value={d?.customers ?? "—"} delay={0.09} />
+        <KPI label="الحلاقون" value={d?.barbers ?? "—"} delay={0.12} />
+        <KPI label="الخدمات" value={d?.services ?? "—"} delay={0.15} />
       </div>
-      <h3 className="ios-grouped-section-title px-1 pt-2">الإيرادات</h3>
-      <div className="grid grid-cols-3 gap-2.5 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-        <KPI label="اليوم" value={`${d?.revDay ?? 0} ج.م`} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
-        <KPI label="الأسبوع" value={`${d?.revWeek ?? 0} ج.م`} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
-        <KPI label="الشهر" value={`${d?.revMonth ?? 0} ج.م`} colorClass="text-success" gradientClass="from-success/10 to-success/5" />
-      </div>
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+
+      <section className="panel-ink grain animate-fade-in-up p-5" style={{ animationDelay: "0.18s" }}>
+        <span aria-hidden className="absolute inset-x-5 top-0 h-px gold-rule" />
+        <div className="relative">
+          <div className="eyebrow text-ink-foreground/55">إيرادات مكتملة</div>
+          <div className="mt-3.5 grid grid-cols-3">
+            {[
+              { label: "اليوم", v: d?.revDay ?? 0 },
+              { label: "الأسبوع", v: d?.revWeek ?? 0 },
+              { label: "الشهر", v: d?.revMonth ?? 0 },
+            ].map((r, i) => (
+              <div key={r.label} className={i > 0 ? "border-s border-white/10 text-center" : "text-center"}>
+                <div className="text-[10.5px] font-bold text-ink-foreground/55">{r.label}</div>
+                <div className="mt-2 font-display text-[1.15rem] font-black leading-none tnum text-gradient-gold">
+                  {r.v}
+                  <span className="ms-1 text-[0.6rem] font-bold">ج.م</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         <StatCard
           title="الأكثر طلباً"
           value={d?.topService ?? "—"}
-          icon={<Scissors className="h-4.5 w-4.5" strokeWidth={1.5} />}
+          delay={0.21}
+          icon={<Scissors className="h-4 w-4" strokeWidth={1.8} />}
         />
         <StatCard
           title="أفضل حلاق تقييماً"
           value={d?.topBarber ?? "—"}
-          icon={<Star className="h-4.5 w-4.5 text-amber-500 fill-amber-500" strokeWidth={0} />}
+          delay={0.24}
+          icon={<Star className="h-4 w-4 fill-current" strokeWidth={0} />}
         />
       </div>
     </div>
@@ -121,31 +140,55 @@ export function Overview() {
 function KPI({
   label,
   value,
-  colorClass = "text-foreground",
-  gradientClass = "",
+  tone = "neutral",
+  delay = 0,
 }: {
   label: string;
   value: string | number;
-  colorClass?: string;
-  gradientClass?: string;
+  tone?: "neutral" | "gold" | "success" | "danger";
+  delay?: number;
 }) {
+  const hair = {
+    neutral: "via-border",
+    gold: "via-gold/60",
+    success: "via-success/55",
+    danger: "via-destructive/55",
+  }[tone];
+
   return (
-    <div className={`rounded-2xl border border-border bg-card p-3.5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15 active:scale-[0.98] bg-gradient-to-br ${gradientClass}`}>
-      <div className={`text-xl font-black ${colorClass} animate-counter-up`}>{value}</div>
-      <div className="mt-1 text-[11px] font-bold text-muted-foreground">{label}</div>
+    <div
+      className="relative overflow-hidden rounded-2xl border border-border/70 bg-card px-3.5 py-3 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated animate-fade-in-up"
+      style={{ animationDelay: `${delay}s` }}
+    >
+      <span aria-hidden className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent ${hair}`} />
+      <div className="truncate font-display text-[1.35rem] font-black leading-none tnum text-foreground">{value}</div>
+      <div className="mt-1.5 truncate text-[10.5px] font-bold text-muted-foreground">{label}</div>
     </div>
   );
 }
 
-function StatCard({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
+function StatCard({
+  title,
+  value,
+  icon,
+  delay = 0,
+}: {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  delay?: number;
+}) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl glass-card p-4 transition-all duration-300 hover:shadow-elevated active:scale-[0.98]">
-      <div className="grid h-10 w-10 place-items-center rounded-xl gradient-luxe text-white shadow-luxe shrink-0 border border-white/15">
+    <div
+      className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated animate-fade-in-up"
+      style={{ animationDelay: `${delay}s` }}
+    >
+      <div className="grid h-10 w-10 shrink-0 place-items-center squircle bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25">
         {icon}
       </div>
-      <div>
-        <div className="text-[11px] font-bold text-muted-foreground">{title}</div>
-        <div className="text-sm font-bold text-foreground mt-0.5">{value}</div>
+      <div className="min-w-0">
+        <div className="eyebrow text-accent-foreground">{title}</div>
+        <div className="mt-1 truncate font-display text-[0.9rem] font-extrabold text-foreground">{value}</div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
+import { AlertTriangle } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { PwaInstallBanner } from "../components/pwa-install-banner";
@@ -16,14 +17,14 @@ import { OfflineIndicator } from "../components/offline-indicator";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
-      <div className="max-w-md text-center animate-fade-in-up">
-        <h1 className="text-8xl font-black text-gradient-gold animate-float">٤٠٤</h1>
-        <h2 className="mt-5 text-xl font-bold text-foreground">الصفحة غير موجودة</h2>
-        <p className="mt-2 text-sm text-muted-foreground font-medium">الصفحة التي تبحث عنها غير موجودة.</p>
+      <div className="max-w-md animate-fade-in-up text-center">
+        <h1 className="font-display text-8xl font-black text-gradient-gold animate-float">٤٠٤</h1>
+        <h2 className="mt-5 font-display text-xl font-extrabold text-foreground">الصفحة غير موجودة</h2>
+        <p className="mt-2 text-sm font-medium text-muted-foreground">الصفحة التي تبحث عنها غير موجودة.</p>
         <div className="mt-8">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-xl gradient-luxe px-8 py-3 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-300 hover:brightness-110 hover:shadow-elevated active:scale-[0.97]"
+            className="press inline-flex items-center justify-center rounded-2xl gradient-gold px-8 py-3.5 font-display text-sm font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-110"
           >
             الرئيسية
           </Link>
@@ -39,22 +40,25 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
-      <div className="max-w-md text-center animate-fade-in-up">
-        <h1 className="text-2xl font-black text-foreground">حدث خطأ</h1>
-        <p className="mt-2 text-sm text-muted-foreground font-medium">حاول إعادة المحاولة</p>
+      <div className="max-w-md animate-fade-in-up text-center">
+        <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-destructive/25 bg-destructive/10 text-destructive shadow-card">
+          <AlertTriangle className="h-7 w-7" strokeWidth={1.7} />
+        </div>
+        <h1 className="mt-5 font-display text-2xl font-black text-foreground">حدث خطأ</h1>
+        <p className="mt-2 text-sm font-medium text-muted-foreground">حاول إعادة المحاولة</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="rounded-xl gradient-luxe px-6 py-3 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
+            className="press rounded-2xl gradient-gold px-6 py-3 font-display text-sm font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-110"
           >
             إعادة المحاولة
           </button>
           <a
             href="/"
-            className="rounded-xl bg-secondary px-6 py-3 text-sm font-bold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
+            className="press rounded-2xl border border-border/70 bg-secondary px-6 py-3 text-sm font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
           >
             الرئيسية
           </a>

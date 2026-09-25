@@ -62,9 +62,9 @@ export function ServicesAdmin() {
     <div className="space-y-2.5">
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-luxe px-4 py-3.5 font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
+        className="press flex w-full items-center justify-center gap-2 rounded-2xl gradient-gold px-4 py-3.5 font-display text-sm font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-110"
       >
-        <Plus className="h-4 w-4" strokeWidth={1.5} /> إضافة خدمة
+        <Plus className="h-4 w-4" strokeWidth={2.2} /> إضافة خدمة
       </button>
       {open && <ServiceForm onCancel={() => setOpen(false)} onSave={(d) => create.mutate(d)} />}
       {list.data?.map((s: any, i: number) => (
@@ -74,7 +74,7 @@ export function ServicesAdmin() {
             onToggle={() => update.mutate({ id: s.id, is_active: !s.is_active })}
             onSave={(d: any) => update.mutate({ id: s.id, ...d })}
             onDelete={() => {
-              if (confirm("حذف؟")) del.mutate(s.id);
+              if (confirm(`حذف خدمة «${s.name}» نهائياً؟`)) del.mutate(s.id);
             }}
           />
         </div>
@@ -96,7 +96,7 @@ function ServiceForm({
   const [desc, setDesc] = useState(initial?.description ?? "");
   const [price, setPrice] = useState(initial?.price ?? 0);
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card animate-scale-in">
+    <div className="animate-scale-in space-y-3 rounded-2xl border border-gold/25 bg-card p-4 shadow-elevated">
       <Input label="اسم الخدمة" value={name} onChange={setName} />
       <Input label="الوصف" value={desc} onChange={setDesc} />
       <Input
@@ -109,11 +109,11 @@ function ServiceForm({
         <button
           onClick={() => onSave({ name, description: desc, price })}
           disabled={!name}
-          className="flex-1 rounded-xl bg-primary py-2.5 font-bold text-primary-foreground disabled:opacity-50 transition-all duration-200 hover:brightness-105 active:scale-95 shadow-sm"
+          className="press flex-1 rounded-xl bg-primary py-2.5 font-display text-sm font-extrabold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-105 disabled:opacity-50"
         >
           حفظ
         </button>
-        <button onClick={onCancel} className="rounded-xl bg-secondary px-4 py-2.5 font-semibold transition-all duration-200 hover:bg-muted active:scale-95 border border-border/30">
+        <button onClick={onCancel} className="press rounded-xl border border-border/70 bg-secondary px-4 py-2.5 text-[12px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground">
           إلغاء
         </button>
       </div>
@@ -135,37 +135,40 @@ function ServiceRow({ s, onToggle, onSave, onDelete }: any) {
       />
     );
   return (
-    <div className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/15">
-      <div className="grid h-9.5 w-9.5 place-items-center squircle glass-icon text-primary shrink-0">
-        <Scissors className="h-4.5 w-4.5" strokeWidth={1.5} />
+    <div className="group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated">
+      <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+      <div className="relative grid h-9.5 w-9.5 place-items-center rounded-xl bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25 shrink-0">
+        <Scissors className="h-4.5 w-4.5" strokeWidth={1.7} />
       </div>
-      <div className="min-w-0 flex-1">
-        <div className="truncate font-bold text-sm text-foreground">{s.name}</div>
-        <div className="truncate text-xs font-semibold text-muted-foreground mt-0.5">
-          {s.description || "—"} • {s.price} ج.م
+      <div className="relative min-w-0 flex-1">
+        <div className="truncate font-display text-[0.9rem] font-extrabold text-foreground">{s.name}</div>
+        <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11.5px] font-semibold text-muted-foreground">
+          <span className="truncate">{s.description || "—"}</span>
+          <span aria-hidden className="text-border">|</span>
+          <span className="shrink-0 tnum font-bold text-accent-foreground">{s.price} ج.م</span>
         </div>
       </div>
-      <div className="flex shrink-0 gap-1.5">
+      <div className="relative flex shrink-0 gap-1.5">
         <button
           onClick={() => setEdit(true)}
           aria-label="تعديل"
-          className="grid h-8 w-8 place-items-center rounded-xl bg-secondary text-muted-foreground transition-all duration-200 hover:bg-muted active:scale-90 border border-border/30"
+          className="press grid h-8 w-8 place-items-center rounded-xl border border-border/70 bg-secondary text-muted-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
         >
-          <Edit2 className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <Edit2 className="h-3.5 w-3.5" strokeWidth={1.8} />
         </button>
         <button
           onClick={onToggle}
           aria-label="تفعيل"
-          className={`grid h-8 w-8 place-items-center rounded-xl transition-all duration-200 active:scale-90 border ${s.is_active ? "bg-success/10 text-success border-success/20" : "bg-secondary text-muted-foreground border-border/30"}`}
+          className={`press grid h-8 w-8 place-items-center rounded-xl border transition-all duration-200 ${s.is_active ? "border-success/25 bg-success/10 text-success" : "border-border/70 bg-secondary text-muted-foreground"}`}
         >
-          <Power className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <Power className="h-3.5 w-3.5" strokeWidth={1.8} />
         </button>
         <button
           onClick={onDelete}
           aria-label="حذف"
-          className="grid h-8 w-8 place-items-center rounded-xl bg-destructive/10 text-destructive border border-destructive/20 transition-all duration-200 hover:bg-destructive/20 active:scale-90"
+          className="press grid h-8 w-8 place-items-center rounded-xl border border-destructive/25 bg-destructive/[0.06] text-destructive transition-all duration-200 hover:bg-destructive/12"
         >
-          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.8} />
         </button>
       </div>
     </div>
@@ -185,12 +188,12 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-bold text-muted-foreground">{label}</label>
+      <label className="mb-1 block text-[10.5px] font-bold text-muted-foreground">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type={type}
-        className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 focus:bg-card focus:border-primary transition-all duration-200"
+        className="w-full rounded-xl border border-border/70 bg-secondary/30 px-3 py-2 text-[11.5px] font-semibold text-foreground outline-none transition-all duration-200 focus:border-gold/45 focus:bg-card focus:ring-2 focus:ring-gold/20"
       />
     </div>
   );

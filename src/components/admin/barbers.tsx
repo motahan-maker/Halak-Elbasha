@@ -16,6 +16,7 @@ import {
   Edit2,
   Power,
   CalendarDays,
+  Clock,
 } from "lucide-react";
 
 export function BarbersAdmin() {
@@ -85,9 +86,9 @@ export function BarbersAdmin() {
     <div className="space-y-2.5">
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-luxe px-4 py-3.5 font-bold text-primary-foreground shadow-glow-primary transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
+        className="press flex w-full items-center justify-center gap-2 rounded-2xl gradient-gold px-4 py-3.5 font-display text-sm font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-110"
       >
-        <Plus className="h-4 w-4" strokeWidth={1.5} /> إضافة حلاق
+        <Plus className="h-4 w-4" strokeWidth={2.2} /> إضافة حلاق
       </button>
       {open && (
         <NewBarberForm
@@ -148,7 +149,7 @@ function NewBarberForm({
     [password, setPassword] = useState(""),
     [spec, setSpec] = useState("");
   return (
-    <div className="space-y-2.5 rounded-2xl border border-border bg-card p-4 shadow-card animate-scale-in">
+    <div className="animate-scale-in space-y-2.5 rounded-2xl border border-gold/25 bg-card p-4 shadow-elevated">
       <Input label="الاسم" value={name} onChange={setName} />
       <Input label="رقم الجوال" value={phone} onChange={setPhone} type="tel" />
       <Input label="كلمة المرور" value={password} onChange={setPassword} type="password" />
@@ -157,11 +158,11 @@ function NewBarberForm({
         <button
           onClick={() => onSave({ name, phone, password, specialization: spec })}
           disabled={loading || !name || !phone || password.length < 6}
-          className="flex-1 rounded-2xl bg-primary py-2 font-bold text-primary-foreground disabled:opacity-50 transition-all duration-300 hover:brightness-110 active:scale-95"
+          className="press flex-1 rounded-2xl bg-primary py-2.5 font-display text-sm font-extrabold text-primary-foreground shadow-card transition-all duration-300 hover:brightness-110 disabled:opacity-50"
         >
           {loading ? "..." : "حفظ"}
         </button>
-        <button onClick={onCancel} className="rounded-2xl bg-secondary px-4 py-2 font-bold transition-all duration-300 hover:bg-accent active:scale-95">
+        <button onClick={onCancel} className="press rounded-2xl border border-border/70 bg-secondary px-4 py-2.5 text-[12px] font-bold text-foreground transition-all duration-300 hover:border-gold/45 hover:text-accent-foreground">
           إلغاء
         </button>
       </div>
@@ -201,18 +202,21 @@ function BarberRow({
     setSched({ ...sched, working_days: Array.from(set).sort() });
   };
   return (
-    <div className="rounded-2xl glass-card p-4 transition-all duration-300 hover:shadow-elevated">
-      <div className="flex items-start justify-between gap-2.5">
+    <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated">
+      <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+      <div className="relative flex items-start justify-between gap-2.5">
         <div className="min-w-0 flex-1">
           {!edit ? (
             <>
-              <div className="truncate font-bold text-[15px]">{b.name}</div>
-              <div className="truncate text-[13px] font-semibold text-muted-foreground">
-                {b.specialization || "—"} • {b.phone}
+              <div className="truncate font-display text-[0.95rem] font-extrabold text-foreground">{b.name}</div>
+              <div className="mt-0.5 truncate text-[12px] font-semibold text-muted-foreground">
+                {b.specialization || "—"} • <span className="tnum" dir="ltr">{b.phone}</span>
               </div>
-              <div className="mt-1 text-[13px] font-semibold text-muted-foreground">
-                {(b.start_time ?? "10:00").slice(0, 5)} - {(b.end_time ?? "23:00").slice(0, 5)} • كل{" "}
-                {b.slot_minutes ?? 40} د
+              <div className="mt-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold text-muted-foreground">
+                <Clock className="h-3 w-3 shrink-0 text-accent-foreground/70" strokeWidth={1.8} />
+                <span className="tnum">{(b.start_time ?? "10:00").slice(0, 5)} - {(b.end_time ?? "23:00").slice(0, 5)}</span>
+                <span aria-hidden className="text-border">|</span>
+                <span>كل {b.slot_minutes ?? 40} د</span>
               </div>
             </>
           ) : (
@@ -222,19 +226,18 @@ function BarberRow({
             </div>
           )}
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[9px] font-bold tracking-wider ${b.is_active ? "bg-success/10 text-success border border-success/20" : "bg-secondary text-muted-foreground border border-border/40"}`}
-        >
+        <span className={`chip shrink-0 ${b.is_active ? "chip-success" : "chip-muted"}`}>
+          {b.is_active && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />}
           {b.is_active ? "نشط" : "موقوف"}
         </span>
       </div>
-      <div className="mt-3.5 flex flex-wrap gap-2">
+      <div className="relative mt-3.5 flex flex-wrap gap-2">
         {!edit ? (
           <button
             onClick={() => setEdit(true)}
-            className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
+            className="press flex items-center gap-1 rounded-xl border border-border/70 bg-secondary px-3 py-1.5 text-[11.5px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
           >
-            <Edit2 className="h-3.5 w-3.5" strokeWidth={1.5} /> تعديل
+            <Edit2 className="h-3.5 w-3.5" strokeWidth={1.8} /> تعديل
           </button>
         ) : (
           <>
@@ -243,13 +246,13 @@ function BarberRow({
                 onSave({ name, specialization: spec });
                 setEdit(false);
               }}
-              className="rounded-xl bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-95 shadow-sm"
+              className="press rounded-xl bg-primary px-3.5 py-1.5 text-[11.5px] font-extrabold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-105"
             >
               حفظ
             </button>
             <button
               onClick={() => setEdit(false)}
-              className="rounded-xl bg-secondary px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 hover:bg-muted active:scale-95 border border-border/30"
+              className="press rounded-xl border border-border/70 bg-secondary px-3.5 py-1.5 text-[11.5px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
             >
               إلغاء
             </button>
@@ -257,37 +260,37 @@ function BarberRow({
         )}
         <button
           onClick={() => setScheduling((s) => !s)}
-          className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
+          className="press flex items-center gap-1 rounded-xl border border-border/70 bg-secondary px-3 py-1.5 text-[11.5px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
         >
-          <CalendarDays className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} /> المواعيد
+          <CalendarDays className="h-3.5 w-3.5 text-accent-foreground" strokeWidth={1.8} /> المواعيد
         </button>
         <button
           onClick={onToggle}
-          className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
+          className="press flex items-center gap-1 rounded-xl border border-border/70 bg-secondary px-3 py-1.5 text-[11.5px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
         >
-          <Power className="h-3.5 w-3.5" strokeWidth={1.5} /> {b.is_active ? "إيقاف" : "تفعيل"}
+          <Power className="h-3.5 w-3.5" strokeWidth={1.8} /> {b.is_active ? "إيقاف" : "تفعيل"}
         </button>
         <button
           onClick={() => setResetting((s) => !s)}
-          className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-1.5 text-xs font-semibold text-foreground border border-border/30 transition-all duration-200 hover:bg-muted active:scale-95"
+          className="press flex items-center gap-1 rounded-xl border border-border/70 bg-secondary px-3 py-1.5 text-[11.5px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
         >
-          <KeyRound className="h-3.5 w-3.5" strokeWidth={1.5} /> كلمة المرور
+          <KeyRound className="h-3.5 w-3.5" strokeWidth={1.8} /> كلمة المرور
         </button>
         <button
           onClick={onDelete}
-          className="flex cursor-pointer items-center gap-1 rounded-xl bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive border border-destructive/20 transition-all duration-200 hover:bg-destructive/20 active:scale-95"
+          className="press flex cursor-pointer items-center gap-1 rounded-xl border border-destructive/25 bg-destructive/[0.06] px-3 py-1.5 text-[11.5px] font-bold text-destructive transition-all duration-200 hover:bg-destructive/12"
         >
-          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} /> إيقاف وحذف الوصول
+          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.8} /> إيقاف وحذف الوصول
         </button>
       </div>
       {resetting && (
-        <div className="mt-3 flex gap-2 animate-scale-in">
+        <div className="animate-scale-in relative mt-3 flex gap-2">
           <input
             value={pwd}
             onChange={(e) => setPwd(e.target.value)}
             placeholder="كلمة المرور الجديدة"
             type="password"
-            className="flex-1 rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 focus:bg-card focus:border-primary transition-all"
+            className="flex-1 rounded-xl border border-border/70 bg-secondary/30 px-3 py-2 text-[11.5px] font-semibold outline-none transition-all duration-200 focus:border-gold/45 focus:bg-card focus:ring-2 focus:ring-gold/20"
           />
           <button
             onClick={() => {
@@ -296,26 +299,26 @@ function BarberRow({
               setPwd("");
               setResetting(false);
             }}
-            className="rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-95"
+            className="press rounded-xl bg-primary px-3.5 py-2 text-[11.5px] font-extrabold text-primary-foreground transition-all duration-200 hover:brightness-105"
           >
             تأكيد
           </button>
         </div>
       )}
       {scheduling && (
-        <div className="mt-3 space-y-3 rounded-xl border border-border/60 bg-muted/20 p-3.5 animate-scale-in">
-          <div className="rounded-xl bg-primary/10 border border-primary/15 p-2.5 text-xs font-semibold text-primary">
+        <div className="animate-scale-in relative mt-3 space-y-3 rounded-xl border border-border/70 bg-secondary/30 p-3.5">
+          <div className="rounded-xl border border-gold/25 bg-gold/10 p-2.5 text-[11.5px] font-bold text-accent-foreground">
             يولّد النظام مواعيد كل {sched.slot_minutes} دقيقة من بداية العمل حتى نهايته.
           </div>
           <div>
-            <div className="mb-1.5 text-xs font-bold text-muted-foreground">أيام العمل</div>
+            <div className="mb-1.5 text-[10.5px] font-bold text-muted-foreground">أيام العمل</div>
             <div className="flex flex-wrap gap-1.5">
               {days.map((d, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => toggleDay(i)}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all duration-200 active:scale-95 ${sched.working_days.includes(i) ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary text-muted-foreground hover:bg-muted border border-border/30"}`}
+                  className={`press rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all duration-200 ${sched.working_days.includes(i) ? "gradient-gold text-gold-foreground shadow-glow-gold" : "border border-border/70 bg-card text-muted-foreground hover:border-gold/35 hover:text-foreground"}`}
                 >
                   {d}
                 </button>
@@ -353,13 +356,13 @@ function BarberRow({
                 });
                 setScheduling(false);
               }}
-              className="flex-1 rounded-xl bg-primary py-2.5 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-95 shadow-sm"
+              className="press flex-1 rounded-xl bg-primary py-2.5 text-[11.5px] font-extrabold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-105"
             >
               حفظ المواعيد
             </button>
             <button
               onClick={() => setScheduling(false)}
-              className="rounded-xl bg-secondary px-4 py-2.5 text-xs font-semibold transition-all duration-200 hover:bg-muted active:scale-95 border border-border/30"
+              className="press rounded-xl border border-border/70 bg-secondary px-4 py-2.5 text-[11.5px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
             >
               إلغاء
             </button>
@@ -383,12 +386,12 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-bold text-muted-foreground">{label}</label>
+      <label className="mb-1 block text-[10.5px] font-bold text-muted-foreground">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type={type}
-        className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 focus:bg-card focus:border-primary transition-all duration-200"
+        className="w-full rounded-xl border border-border/70 bg-secondary/30 px-3 py-2 text-[11.5px] font-semibold text-foreground outline-none transition-all duration-200 focus:border-gold/45 focus:bg-card focus:ring-2 focus:ring-gold/20"
       />
     </div>
   );

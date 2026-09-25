@@ -15,9 +15,9 @@ export function ThemeToggle() {
           onClick={() => setMode(o.v)}
           aria-label={o.label}
           aria-pressed={mode === o.v}
-          className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition-all duration-300 active:scale-90 ${
+          className={`grid h-8 w-8 cursor-pointer place-items-center rounded-full transition-all duration-300 press ${
             mode === o.v
-              ? "bg-card text-foreground shadow-card"
+              ? "bg-accent text-accent-foreground ring-1 ring-inset ring-gold/30 shadow-card"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >

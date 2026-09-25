@@ -59,19 +59,19 @@ export function BookingsAdmin() {
   return (
     <div className="space-y-3">
       <div className="flex gap-2.5">
-        <div className="flex flex-1 items-center gap-2.5 rounded-xl border border-border bg-muted/30 px-3.5 transition-all focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-card focus-within:border-primary">
-          <Search className="h-4 w-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
+        <div className="flex flex-1 items-center gap-2.5 rounded-2xl border border-border/70 bg-secondary/30 px-3.5 transition-all duration-200 focus-within:border-gold/45 focus-within:bg-card focus-within:ring-2 focus-within:ring-gold/20">
+          <Search className="h-4 w-4 text-muted-foreground shrink-0" strokeWidth={1.8} />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="بحث (اسم / جوال / رقم)"
-            className="w-full bg-transparent py-2 text-xs font-semibold outline-none placeholder:text-muted-foreground/60"
+            className="w-full bg-transparent py-2.5 text-[11.5px] font-semibold outline-none placeholder:text-muted-foreground/60"
           />
         </div>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold outline-none text-foreground cursor-pointer transition-all focus:border-primary"
+          className="cursor-pointer rounded-2xl border border-border/70 bg-card px-3.5 py-2 text-[11.5px] font-bold text-foreground outline-none transition-all duration-200 focus:border-gold/45 focus:ring-2 focus:ring-gold/20"
         >
           <option value="all">الكل</option>
           <option value="booked">محجوز</option>
@@ -85,49 +85,55 @@ export function BookingsAdmin() {
         {filtered.map((b: any, i: number) => (
           <div
             key={b.id}
-            className="rounded-xl border border-border bg-card p-4 shadow-card animate-fade-in-up transition-all duration-300 hover:shadow-elevated hover:border-primary/15"
+            className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated"
             style={{ animationDelay: `${0.03 * i}s` }}
           >
-            <div className="flex items-start justify-between gap-2.5">
+            <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+            <div className="relative flex items-start justify-between gap-2.5">
               <div className="min-w-0 flex-1">
-                <div className="truncate font-bold text-sm text-foreground">{b.customer_name}</div>
-                <div className="truncate text-xs font-semibold text-muted-foreground mt-0.5">
-                  {b.service_name} • {b.customer_phone}
+                <div className="truncate font-display text-[0.9rem] font-extrabold text-foreground">{b.customer_name}</div>
+                <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11.5px] font-semibold text-muted-foreground">
+                  <span className="truncate">{b.service_name}</span>
+                  <span aria-hidden className="text-border">|</span>
+                  <span className="tnum shrink-0" dir="ltr">{b.customer_phone}</span>
                 </div>
-                <div className="mt-1 text-xs font-medium text-muted-foreground/80">
-                  {arabicDate(b.booking_date)} • {formatTime(b.booking_time)}
+                <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground/85">
+                  <span>{arabicDate(b.booking_date)}</span>
+                  <span aria-hidden className="text-border">|</span>
+                  <span className="tnum font-bold text-foreground/80">{formatTime(b.booking_time)}</span>
                 </div>
               </div>
-              <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-[9px] font-bold text-primary">
-                {b.booking_number}
-              </span>
+              <span className="chip chip-gold tnum shrink-0">{b.booking_number}</span>
             </div>
-            <div className="mt-3 flex gap-2.5">
+            <div className="relative mt-3 flex items-center gap-2.5">
               {b.status === "booked" && (
                 <>
                   <button
                     onClick={() => update.mutate({ id: b.id, status: "completed" })}
-                    className="flex-1 rounded-xl gradient-luxe py-2 text-xs font-bold text-primary-foreground transition-all duration-200 hover:brightness-110 active:scale-[0.96]"
+                    className="press flex-1 rounded-xl gradient-gold py-2 text-[11.5px] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-200 hover:brightness-110"
                   >
                     إكمال
                   </button>
                   <button
                     onClick={() => update.mutate({ id: b.id, status: "cancelled_by_barber" })}
-                    className="flex-1 rounded-xl bg-destructive/10 border border-destructive/20 py-2 text-xs font-bold text-destructive transition-all duration-200 hover:bg-destructive/20 active:scale-[0.96]"
+                    className="press flex-1 rounded-xl border border-destructive/25 bg-destructive/[0.06] py-2 text-[11.5px] font-bold text-destructive transition-all duration-200 hover:bg-destructive/12"
                   >
                     إلغاء
                   </button>
                 </>
               )}
               <span
-                className={`rounded-xl px-3 py-1.5 text-xs font-bold ${
+                className={`chip ${
                   b.status === "completed"
-                    ? "bg-success/10 text-success border border-success/20"
+                    ? "chip-success"
                     : String(b.status).startsWith("cancelled")
-                    ? "bg-destructive/10 text-destructive border border-destructive/20"
-                    : "bg-primary/10 text-primary border border-primary/20"
+                    ? "chip-danger"
+                    : "chip-gold"
                 }`}
               >
+                {b.status === "completed" && (
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />
+                )}
                 {b.status === "booked"
                   ? "محجوز"
                   : b.status === "completed"
@@ -141,6 +147,12 @@ export function BookingsAdmin() {
             </div>
           </div>
         ))}
+        {filtered.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-8 text-center">
+            <div className="font-display text-[0.82rem] font-extrabold text-foreground">لا توجد حجوزات مطابقة</div>
+            <div className="mt-1 text-[11px] font-medium text-muted-foreground">جرّب تغيير كلمة البحث أو الفلتر</div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Smartphone, X } from "lucide-react";
 
 declare global {
   interface WindowEventMap {
@@ -58,26 +59,39 @@ export function PwaInstallBanner() {
 
   return (
     <div className="pwa-banner-animate fixed bottom-4 right-4 left-4 z-50 md:left-auto md:w-96">
-      <div className="rounded-2xl glass-card p-4 shadow-elevated border border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl gradient-luxe text-white shadow-luxe">
-            <span className="text-2xl">📲</span>
+      <div className="relative overflow-hidden rounded-2xl border border-gold/25 bg-card p-4 shadow-elevated">
+        <span
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/55 to-transparent"
+        />
+        <button
+          onClick={handleDismiss}
+          aria-label="إغلاق"
+          className="press absolute end-3 top-3 grid h-7 w-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" strokeWidth={1.8} />
+        </button>
+        <div className="flex items-center gap-3 pe-7">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl gradient-gold text-gold-foreground shadow-glow-gold ring-1 ring-inset ring-gold/35">
+            <Smartphone className="h-5.5 w-5.5" strokeWidth={1.7} />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-foreground">تثبيت حلاق الباشا</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">أضف التطبيق إلى شاشة هاتفك للوصول السريع</p>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-[0.88rem] font-extrabold text-foreground">تثبيت حلاق الباشا</p>
+            <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-muted-foreground">
+              أضف التطبيق إلى شاشة هاتفك للوصول السريع
+            </p>
           </div>
         </div>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3.5 flex gap-2">
           <button
             onClick={handleInstall}
-            className="flex-1 rounded-xl gradient-luxe px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-110 active:scale-95"
+            className="press flex-1 rounded-xl gradient-gold px-4 py-2.5 font-display text-[12.5px] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-200 hover:brightness-110"
           >
             تثبيت الآن
           </button>
           <button
             onClick={handleDismiss}
-            className="rounded-xl bg-secondary px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted active:scale-95 border border-border/30"
+            className="press rounded-xl border border-border/70 bg-secondary px-4 py-2.5 text-[12px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
           >
             لاحقاً
           </button>

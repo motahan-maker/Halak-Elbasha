@@ -6,7 +6,7 @@ import { useAuth, customerEmail, customerPassword, staffEmail } from "@/hooks/us
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ensureDefaultAdmin, signUpCustomer, ADMIN_EMAIL, ADMIN_DEFAULT_PASSWORD } from "@/lib/admin.functions";
 import { toast } from "sonner";
-import { Scissors, User, Lock, Phone, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Scissors, User, Lock, Phone, ShieldCheck, Sparkles, Store, Crown } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -19,6 +19,27 @@ export const Route = createFileRoute("/auth")({
 });
 
 type Tab = "customer" | "staff" | "admin";
+
+const ROLES: { key: Tab; label: string; icon: React.ReactNode }[] = [
+  { key: "customer", label: "عميل", icon: <User className="h-4 w-4" strokeWidth={1.75} /> },
+  { key: "staff", label: "حلاق", icon: <Store className="h-4 w-4" strokeWidth={1.75} /> },
+  { key: "admin", label: "مدير", icon: <Crown className="h-4 w-4" strokeWidth={1.75} /> },
+];
+
+const COPY: Record<Tab, { title: string; body: string }> = {
+  customer: {
+    title: "احجز موعدك في دقيقة",
+    body: "ادخل باسمك ورقمك فقط — لا حاجة لكلمة مرور. رقمك هو هويتك في الصالون.",
+  },
+  staff: {
+    title: "لوحة الحلاق",
+    body: "سجّل دخولك لمتابعة طابور اليوم، وبدء وإنهاء الخدمات لحظة بلحظة.",
+  },
+  admin: {
+    title: "لوحة الإدارة",
+    body: "تحكم كامل في الحلاقين والخدمات والحجوزات والعروض من مكان واحد.",
+  },
+};
 
 function msg(e: unknown): string {
   if (e === null || e === undefined) return "حدث خطأ غير متوقع";
@@ -134,122 +155,172 @@ function AuthPage() {
     }
   };
 
+  const copy = COPY[tab];
+
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <div className="fixed top-4 left-4 z-10">
+    <div dir="rtl" className="relative min-h-screen overflow-hidden gradient-hero grain text-ink-foreground">
+      {/* Ambient gold blooms */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 start-1/2 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full bg-gold/22 blur-[110px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-48 -end-24 h-[22rem] w-[22rem] rounded-full bg-gold/12 blur-[120px]"
+      />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-gold/60 to-transparent" />
+
+      <div className="fixed top-4 end-4 z-20">
         <ThemeToggle />
       </div>
-      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
-        {/* Logo & Brand */}
-        <div className="text-center animate-fade-in-up">
-          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[1.6rem] gradient-luxe shadow-glow-primary animate-float border border-white/20 transition-transform duration-300 hover:scale-105 active:scale-95">
-            <Scissors className="h-12 w-12 text-white" strokeWidth={1.5} />
+
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[26rem] flex-col justify-center px-6 py-14">
+        {/* Brand */}
+        <header className="animate-fade-in-up text-center">
+          <div className="relative mx-auto grid h-24 w-24 place-items-center">
+            <span aria-hidden className="absolute inset-0 rounded-[1.75rem] border border-gold/30 animate-ring-expand" />
+            <span
+              aria-hidden
+              className="absolute inset-0 rounded-[1.75rem] bg-gold/25 blur-2xl animate-glow-pulse"
+            />
+            <span className="relative grid h-24 w-24 place-items-center rounded-[1.75rem] gradient-gold text-gold-foreground shadow-glow-gold ring-1 ring-inset ring-white/40">
+              <Scissors className="h-11 w-11" strokeWidth={1.4} />
+            </span>
           </div>
-          <h1 className="mt-6 text-3xl font-black tracking-tight text-foreground">حلاق الباشا</h1>
-          <p className="mt-2 text-sm text-muted-foreground font-medium">حجز المواعيد بكل سهولة ورقي</p>
+
+          <h1 className="mt-7 display-xl text-gradient-gold">حلاق الباشا</h1>
+
+          <div className="mx-auto mt-4 flex items-center justify-center gap-3">
+            <span className="h-px w-10 bg-gradient-to-l from-transparent to-gold/70" />
+            <p className="eyebrow !text-ink-foreground/55">صالون رجالي · حجز فوري</p>
+            <span className="h-px w-10 bg-gradient-to-r from-transparent to-gold/70" />
+          </div>
+        </header>
+
+        {/* Role switch */}
+        <div className="mt-9 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+          <div
+            role="tablist"
+            aria-label="نوع الحساب"
+            className="flex gap-1 rounded-full border border-white/10 bg-white/[0.06] p-1.5 backdrop-blur-xl"
+          >
+            {ROLES.map((r) => {
+              const active = tab === r.key;
+              return (
+                <button
+                  key={r.key}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setTab(r.key)}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-[0.8rem] font-bold transition-all duration-300 press ${
+                    active
+                      ? "gradient-gold text-gold-foreground shadow-glow-gold"
+                      : "text-ink-foreground/55 hover:text-ink-foreground/85"
+                  }`}
+                >
+                  {r.icon}
+                  {r.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Segmented Control */}
-        <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          <div className="ios-segmented-control">
-            {(
-              [
-                ["customer", "عميل"],
-                ["staff", "موظف"],
-                ["admin", "مدير"],
-              ] as [Tab, string][]
-            ).map(([k, lbl]) => (
-              <button
-                key={k}
-                onClick={() => setTab(k)}
-                className={`ios-segmented-btn ${
-                  tab === k ? "ios-segmented-btn-active" : ""
-                }`}
-              >
-                {lbl}
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Card */}
+        <div className="mt-5 animate-fade-in-up" style={{ animationDelay: "0.16s" }}>
+          <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-white/[0.055] p-6 backdrop-blur-2xl shadow-[0_24px_70px_-30px_rgba(0,0,0,0.85)]">
+            <span aria-hidden className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-l from-transparent via-gold/60 to-transparent" />
 
-        {/* Form Card */}
-        <div className="mt-5 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
-          <div className="rounded-2xl glass-card p-6">
-            {tab === "customer" && (
-              <form onSubmit={customerSubmit} className="space-y-4">
-                <AppleField
-                  icon={<User className="h-[18px]" strokeWidth={1.5} />}
-                  placeholder="الاسم بالكامل"
-                  value={cName}
-                  onChange={setCName}
-                  autoComplete="name"
-                />
-                <AppleField
-                  icon={<Phone className="h-[18px]" strokeWidth={1.5} />}
-                  placeholder="رقم الجوال"
-                  type="tel"
-                  value={cPhone}
-                  onChange={setCPhone}
-                  autoComplete="tel"
-                />
-                <SubmitButton loading={cLoading} label="دخول / تسجيل" />
-                <p className="text-center text-[11px] text-muted-foreground/70 font-medium">
-                  لا حاجة لكلمة مرور — الرقم هو هويتك
-                </p>
-              </form>
-            )}
+            <div key={tab} className="animate-fade-in">
+              <h2 className="font-display text-lg font-extrabold leading-snug text-ink-foreground">
+                {copy.title}
+              </h2>
+              <p className="mt-1.5 text-[0.78rem] font-medium leading-relaxed text-ink-foreground/55">
+                {copy.body}
+              </p>
 
-            {tab === "staff" && (
-              <form onSubmit={staffSubmit} className="space-y-4">
-                <AppleField
-                  icon={<Phone className="h-[18px]" strokeWidth={1.5} />}
-                  placeholder="رقم الجوال"
-                  type="tel"
-                  value={sPhone}
-                  onChange={setSPhone}
-                  autoComplete="username"
-                />
-                <AppleField
-                  icon={<Lock className="h-[18px]" strokeWidth={1.5} />}
-                  placeholder="كلمة المرور"
-                  type="password"
-                  value={sPwd}
-                  onChange={setSPwd}
-                  autoComplete="current-password"
-                />
-                <SubmitButton loading={sLoading} label="دخول" />
-              </form>
-            )}
+              <div className="mt-5">
+                {tab === "customer" && (
+                  <form onSubmit={customerSubmit} className="space-y-3.5">
+                    <Field
+                      icon={<User className="h-[18px]" strokeWidth={1.6} />}
+                      placeholder="الاسم بالكامل"
+                      value={cName}
+                      onChange={setCName}
+                      autoComplete="name"
+                    />
+                    <Field
+                      icon={<Phone className="h-[18px]" strokeWidth={1.6} />}
+                      placeholder="رقم الجوال"
+                      type="tel"
+                      value={cPhone}
+                      onChange={setCPhone}
+                      autoComplete="tel"
+                    />
+                    <Submit loading={cLoading} label="دخول / تسجيل" />
+                    <p className="flex items-center justify-center gap-1.5 pt-0.5 text-[0.68rem] font-semibold text-ink-foreground/40">
+                      <Sparkles className="h-3.5 w-3.5" strokeWidth={1.8} />
+                      لا حاجة لكلمة مرور — رقمك هو هويتك
+                    </p>
+                  </form>
+                )}
 
-            {tab === "admin" && (
-              <form onSubmit={adminSubmit} className="space-y-4">
-                <div className="flex items-center gap-2.5 rounded-xl glass-icon px-3.5 py-2.5 text-xs font-semibold text-accent-foreground">
-                  <ShieldCheck className="h-4.5 w-4.5 shrink-0" strokeWidth={1.5} />
-                  <span>دخول المدير الافتراضي</span>
-                </div>
-                <AppleField
-                  icon={<User className="h-[18px]" strokeWidth={1.5} />}
-                  placeholder="اسم المستخدم"
-                  value={aUser}
-                  onChange={setAUser}
-                  autoComplete="username"
-                />
-                <AppleField
-                  icon={<Lock className="h-[18px]" strokeWidth={1.5} />}
-                  placeholder="كلمة المرور"
-                  type="password"
-                  value={aPwd}
-                  onChange={setAPwd}
-                  autoComplete="current-password"
-                />
-                <SubmitButton loading={aLoading} label="دخول كمدير" />
-              </form>
-            )}
+                {tab === "staff" && (
+                  <form onSubmit={staffSubmit} className="space-y-3.5">
+                    <Field
+                      icon={<Phone className="h-[18px]" strokeWidth={1.6} />}
+                      placeholder="رقم الجوال"
+                      type="tel"
+                      value={sPhone}
+                      onChange={setSPhone}
+                      autoComplete="username"
+                    />
+                    <Field
+                      icon={<Lock className="h-[18px]" strokeWidth={1.6} />}
+                      placeholder="كلمة المرور"
+                      type="password"
+                      value={sPwd}
+                      onChange={setSPwd}
+                      autoComplete="current-password"
+                    />
+                    <Submit loading={sLoading} label="دخول لوحة الحلاق" />
+                  </form>
+                )}
+
+                {tab === "admin" && (
+                  <form onSubmit={adminSubmit} className="space-y-3.5">
+                    <div className="flex items-center gap-2.5 rounded-2xl border border-gold/25 bg-gold/10 px-4 py-3 text-[0.7rem] font-bold text-gold">
+                      <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+                      <span>دخول المدير الافتراضي — صلاحيات كاملة</span>
+                    </div>
+                    <Field
+                      icon={<User className="h-[18px]" strokeWidth={1.6} />}
+                      placeholder="اسم المستخدم"
+                      value={aUser}
+                      onChange={setAUser}
+                      autoComplete="username"
+                    />
+                    <Field
+                      icon={<Lock className="h-[18px]" strokeWidth={1.6} />}
+                      placeholder="كلمة المرور"
+                      type="password"
+                      value={aPwd}
+                      onChange={setAPwd}
+                      autoComplete="current-password"
+                    />
+                    <Submit loading={aLoading} label="دخول كمدير" />
+                  </form>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-[10px] font-semibold text-muted-foreground/40 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
+        <p
+          className="mt-9 animate-fade-in-up text-center text-[0.62rem] font-semibold tracking-wide text-ink-foreground/28"
+          style={{ animationDelay: "0.26s" }}
+        >
           Powered by Eng /Mohamed Eltahan &amp; Eng /Kamel Elmahy
         </p>
       </div>
@@ -257,7 +328,7 @@ function AuthPage() {
   );
 }
 
-function AppleField({
+function Field({
   icon,
   placeholder,
   value,
@@ -273,30 +344,32 @@ function AppleField({
   autoComplete?: string;
 }) {
   return (
-    <label className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-3.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary/50 focus-within:bg-card focus-within:shadow-glow-primary">
-      <span className="text-muted-foreground shrink-0 transition-colors duration-200">{icon}</span>
+    <label className="group flex items-center gap-3 rounded-2xl border border-white/12 bg-white/[0.04] px-4 transition-all duration-300 focus-within:border-gold/55 focus-within:bg-white/[0.075] focus-within:ring-2 focus-within:ring-gold/25">
+      <span className="shrink-0 text-ink-foreground/35 transition-colors duration-200 group-focus-within:text-gold">
+        {icon}
+      </span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
         autoComplete={autoComplete}
-        className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground/40 font-medium"
+        className="w-full bg-transparent py-3.5 text-sm font-medium text-ink-foreground outline-none placeholder:text-ink-foreground/30"
       />
     </label>
   );
 }
 
-function SubmitButton({ loading, label }: { loading: boolean; label: string }) {
+function Submit({ loading, label }: { loading: boolean; label: string }) {
   return (
     <button
       type="submit"
       disabled={loading}
       aria-busy={loading}
-      className="w-full rounded-xl gradient-luxe py-3.5 text-sm font-bold text-primary-foreground shadow-glow-primary transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-50 flex items-center justify-center cursor-pointer"
+      className="mt-1 flex w-full items-center justify-center rounded-2xl gradient-gold py-3.5 text-[0.82rem] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-[1.06] active:scale-[0.975] disabled:opacity-55 press"
     >
       {loading ? (
-        <span className="inline-block animate-spin h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full" />
+        <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-gold-foreground/25 border-t-gold-foreground" />
       ) : (
         label
       )}

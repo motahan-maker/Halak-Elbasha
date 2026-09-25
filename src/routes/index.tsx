@@ -27,13 +27,14 @@ function Index() {
   if (auth.loading || !auth.user) {
     return (
       <div className="grid min-h-screen place-items-center bg-background" dir="rtl">
-        <div className="text-center animate-fade-in-up">
-          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[1.6rem] gradient-luxe shadow-glow-primary animate-glow-pulse">
-            <Scissors className="h-12 w-12 text-white animate-pulse-soft" strokeWidth={1.5} />
+        <div className="animate-fade-in-up text-center">
+          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[1.6rem] gradient-gold shadow-glow-gold ring-1 ring-inset ring-gold/35 animate-glow-pulse">
+            <Scissors className="h-12 w-12 text-gold-foreground animate-pulse-soft" strokeWidth={1.5} />
           </div>
-          <div className="mt-6 text-sm font-semibold text-muted-foreground">جارٍ التحميل...</div>
-          <div className="mt-3 mx-auto h-1 w-32 rounded-full bg-muted overflow-hidden">
-            <div className="h-full w-full animate-shimmer rounded-full" />
+          <div className="mt-6 font-display text-sm font-extrabold text-foreground">حلاق الباشا</div>
+          <div className="mt-1 text-[11px] font-semibold text-muted-foreground">جارٍ التحميل...</div>
+          <div className="mx-auto mt-4 h-1 w-32 overflow-hidden rounded-full bg-secondary">
+            <div className="h-full w-full animate-shimmer rounded-full gradient-gold" />
           </div>
         </div>
       </div>

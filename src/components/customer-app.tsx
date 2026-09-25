@@ -30,6 +30,7 @@ import {
   BellOff,
   MapPin,
   Navigation,
+  Store,
 } from "lucide-react";
 
 type Tab = "home" | "bookings" | "offers" | "profile";
@@ -115,41 +116,38 @@ export function CustomerApp() {
     <div className="flex min-h-screen flex-col bg-background pb-28">
       {/* Header */}
       <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center squircle gradient-luxe text-white shadow-luxe border border-white/20">
-              <Scissors className="h-5 w-5" strokeWidth={1.5} />
+            <div className="relative grid h-11 w-11 shrink-0 place-items-center squircle gradient-gold text-gold-foreground shadow-glow-gold">
+              <Scissors className="h-[22px] w-[22px]" strokeWidth={1.6} />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <div className="truncate text-sm font-bold text-foreground">
-                  {settings.data?.shop_name ?? "حلاق الباشا"}
-                </div>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  مفتوح
-                </span>
+              <div className="truncate font-display text-[15px] font-extrabold leading-tight text-foreground">
+                {settings.data?.shop_name ?? "حلاق الباشا"}
               </div>
-              <div className="truncate text-[11px] font-semibold text-muted-foreground mt-0.5">
-                مرحباً، {auth.profile?.full_name ?? "صديقنا"}
+              <div className="mt-0.5 flex items-center gap-1.5">
+                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-success shadow-[0_0_0_3px_color-mix(in_oklab,var(--success)_18%,transparent)] animate-pulse" />
+                <span className="truncate text-[11px] font-semibold text-muted-foreground">
+                  مرحباً، {auth.profile?.full_name ?? "صديقنا"}
+                </span>
               </div>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             <ThemeToggle />
             <button
               onClick={signOut}
               aria-label="خروج"
-              className="grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-secondary text-muted-foreground transition-all duration-300 hover:bg-destructive/10 hover:text-destructive hover:shadow-glow-primary active:scale-90"
+              className="hit-area grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-border/70 bg-card/60 text-muted-foreground transition-all duration-300 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive press"
             >
-              <LogOut className="h-4 w-4" strokeWidth={1.5} />
+              <LogOut className="h-4 w-4" strokeWidth={1.6} />
             </button>
           </div>
         </div>
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-2xl flex-1 px-5 pt-3">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4">
         {tab === "home" && <CustomerHome settings={settings.data} onBook={() => setTab("bookings")} />}
         {tab === "bookings" && <BookingsList />}
         {tab === "offers" && <OffersList />}
@@ -199,58 +197,87 @@ function CustomerHome({
   return (
     <div className="space-y-6">
       {/* Hero Card */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0052D4] via-[#4364F7] to-[#6FB1FC] dark:from-[#0B132B] dark:via-[#1C2541] dark:to-[#3A506B] p-6.5 text-white shadow-luxe border border-white/20 animate-fade-in-up">
-        {/* Subtle ambient lighting glows */}
-        <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -left-10 -bottom-10 h-48 w-48 rounded-full bg-purple-500/20 blur-3xl" />
-
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/25 backdrop-blur-md px-3.5 py-1 text-[11px] font-extrabold tracking-wider text-amber-300 border border-white/20 shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 fill-amber-300 text-amber-300" /> تجربة فاخرة ومعتمدة
+      <section className="panel-ink grain spotlight animate-fade-in-up">
+        <div className="relative z-10 p-6">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/12 px-3 py-1 text-[10px] font-extrabold text-gold">
+            <Sparkles className="h-3.5 w-3.5" strokeWidth={2} /> تجربة فاخرة ومضمونة
           </div>
-          <h1 className="mt-3.5 text-2xl sm:text-3xl font-black leading-tight tracking-tight text-white drop-shadow-md">
+
+          <h1 className="mt-4 display-lg text-ink-foreground">
             يسعدنا خدمتك في
             <br />
-            <span className="text-white drop-shadow-lg">{settings?.shop_name ?? "حلاق الباشا"}</span>
+            <span className="text-gradient-gold">{settings?.shop_name ?? "حلاق الباشا"}</span>
           </h1>
-          <p className="mt-2 text-xs sm:text-sm text-white/95 font-semibold drop-shadow-sm">احجز موعدك بضغطة واحدة. مواعيدنا مرتبة ودقيقة.</p>
+
+          <p className="mt-2.5 max-w-[22rem] text-[0.8rem] font-medium leading-relaxed text-ink-foreground/60">
+            احجز موعدك بضغطة واحدة — مواعيد مرتّبة، وبلا انتظار.
+          </p>
+
           <button
             onClick={() => setWizardOpen(true)}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3.5 text-sm font-extrabold text-blue-950 shadow-xl shadow-black/20 transition-all duration-300 hover:bg-white/95 hover:scale-[1.01] active:scale-[0.97]"
+            className="mt-6 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl gradient-gold py-4 text-[0.84rem] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-[1.06] press"
           >
-            <CalendarDays className="h-4.5 w-4.5 text-blue-600" strokeWidth={2.2} /> ابدأ الحجز الآن
+            <CalendarDays className="h-4.5 w-4.5" strokeWidth={2.2} /> ابدأ الحجز الآن
           </button>
+
+          <div className="mt-4 grid grid-cols-2 gap-2.5">
+            <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.05] px-3.5 py-3">
+              <div className="flex items-center gap-1.5 text-[9.5px] font-bold text-ink-foreground/45">
+                <Clock className="h-3 w-3" strokeWidth={2} /> ساعات العمل
+              </div>
+              <div className="mt-1.5 truncate font-display text-[13px] font-extrabold tnum text-ink-foreground">
+                {formatTime(settings?.start_time ?? "10:00")} — {formatTime(settings?.end_time ?? "23:00")}
+              </div>
+            </div>
+            <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.05] px-3.5 py-3">
+              <div className="flex items-center gap-1.5 text-[9.5px] font-bold text-ink-foreground/45">
+                <MapPin className="h-3 w-3" strokeWidth={2} /> العنوان
+              </div>
+              <div className="mt-1.5 truncate font-display text-[13px] font-extrabold text-ink-foreground">
+                {settings?.address || "فرعنا الرئيسي"}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Offers */}
       {(offers.data?.length ?? 0) > 0 && (
         <section className="animate-fade-in-up" style={{ animationDelay: "0.08s" }}>
-          <h2 className="ios-grouped-section-title">العروض الحالية</h2>
-          <div className="ios-grouped-card">
+          <SectionTitle eyebrow="لفترة محدودة">العروض الحالية</SectionTitle>
+          <div className="space-y-2.5">
             {offers.data!.slice(0, 3).map((o, i) => (
-              <div
+              <article
                 key={o.id}
-                className="ios-list-item"
+                className="relative flex items-center gap-3.5 overflow-hidden rounded-2xl border border-border/70 bg-card px-4 py-3.5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated"
                 style={{ animationDelay: `${0.04 * (i + 1)}s` }}
               >
-                <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                  <div className="grid h-9.5 w-9.5 shrink-0 place-items-center squircle bg-primary/10 text-primary border border-primary/15">
-                    <Tag className="h-4.5 w-4.5" strokeWidth={1.5} />
+                <span aria-hidden className="absolute inset-y-3 start-0 w-[3px] rounded-full gradient-gold" />
+                <div className="grid h-10 w-10 shrink-0 place-items-center squircle bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25">
+                  <Tag className="h-4.5 w-4.5" strokeWidth={1.7} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-display text-[0.9rem] font-extrabold text-foreground">
+                    {o.title}
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-[14px] font-bold text-foreground">{o.title}</div>
-                    {o.description && (
-                      <div className="truncate text-xs text-muted-foreground mt-0.5">{o.description}</div>
-                    )}
-                  </div>
+                  {o.description && (
+                    <div className="mt-0.5 truncate text-[11.5px] font-medium text-muted-foreground">
+                      {o.description}
+                    </div>
+                  )}
                 </div>
                 {o.discount_percent != null && (
-                  <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20">
-                    -{o.discount_percent}٪
-                  </span>
+                  <div className="shrink-0 border-s border-dashed border-border ps-3.5 text-center">
+                    <div className="font-display text-[1.35rem] font-black leading-none tnum text-accent-foreground">
+                      {o.discount_percent}
+                      <span className="text-[0.65rem] font-extrabold">٪</span>
+                    </div>
+                    <div className="mt-1 text-[8.5px] font-bold text-muted-foreground">
+                      خصم
+                    </div>
+                  </div>
                 )}
-              </div>
+              </article>
             ))}
           </div>
         </section>
@@ -316,7 +343,7 @@ function BarbersShowcase() {
   if (!barbers.data?.length) {
     return (
       <section>
-        <h2 className="ios-grouped-section-title">فريق الحلاقين</h2>
+        <SectionTitle eyebrow="نخبة الحلاقين">فريقنا</SectionTitle>
         <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-6 text-center text-xs font-medium text-muted-foreground">
           لا يوجد حلاقون متاحون حالياً
         </div>
@@ -325,44 +352,57 @@ function BarbersShowcase() {
   }
   return (
     <section>
-      <h2 className="ios-grouped-section-title">فريق الحلاقين</h2>
+      <SectionTitle eyebrow="نخبة الحلاقين">فريقنا</SectionTitle>
       <div className="grid grid-cols-2 gap-2.5">
         {barbers.data.map((b, i) => (
-          <div
+          <article
             key={b.id}
-            className={`rounded-2xl border p-4 shadow-card animate-scale-in transition-all duration-300 ${
+            className={`relative animate-scale-in overflow-hidden rounded-2xl border p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elevated ${
               b.is_working
-                ? "border-amber-500/30 bg-amber-500/[0.03] dark:bg-amber-500/[0.05]"
-                : "border-border bg-card"
+                ? "border-warning/30 bg-warning/[0.045]"
+                : "border-border/70 bg-card"
             }`}
             style={{ animationDelay: `${0.04 * i}s` }}
           >
+            <span
+              aria-hidden
+              className={`absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent to-transparent ${
+                b.is_working ? "via-warning/60" : "via-gold/55"
+              }`}
+            />
+
             <div className="flex items-start justify-between gap-2">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-[17px] font-bold text-primary">
+              <div className="grid h-12 w-12 shrink-0 place-items-center squircle bg-accent font-display text-[19px] font-black text-accent-foreground ring-1 ring-inset ring-gold/25">
                 {b.name.charAt(0)}
               </div>
               {b.is_working ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 text-[10px] font-extrabold text-amber-600 dark:text-amber-400 shrink-0">
+                <span className="chip chip-warn shrink-0">
                   <CurvedWorkingAnimation />
-                  <span>مشغول</span>
+                  مشغول
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>متاح</span>
+                <span className="chip chip-success shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                  متاح
                 </span>
               )}
             </div>
-            <div className="mt-3 truncate text-sm font-bold text-foreground">{b.name}</div>
-            <div className="truncate text-xs text-muted-foreground mt-0.5">
+
+            <div className="mt-3.5 truncate font-display text-[0.92rem] font-extrabold text-foreground">
+              {b.name}
+            </div>
+            <div className="mt-0.5 truncate text-[11.5px] font-medium text-muted-foreground">
               {b.specialization || "حلاق"}
             </div>
-            <div className="mt-2.5 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" strokeWidth={0} />
-              <span className="font-bold text-foreground">{b.avg ? b.avg.toFixed(1) : "جديد"}</span>
-              {b.cnt > 0 && <span>({b.cnt} تقييم)</span>}
+
+            <div className="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-2.5 text-[11px] font-semibold text-muted-foreground">
+              <Star className="h-3 w-3 fill-gold text-gold" strokeWidth={0} />
+              <span className="font-display font-extrabold tnum text-foreground">
+                {b.avg ? b.avg.toFixed(1) : "جديد"}
+              </span>
+              {b.cnt > 0 && <span className="tnum">({b.cnt})</span>}
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </section>
@@ -511,104 +551,131 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   return (
     <div className="space-y-4">
       {/* Nav Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
         <button
           onClick={() => {
             if (step === "service" || step === "success") onDone();
             else goBack();
           }}
-          className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-foreground transition-all duration-200 hover:bg-muted active:scale-90"
+          aria-label="رجوع"
+          className="hit-area grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-border/70 bg-card/70 text-foreground transition-all duration-300 hover:border-gold/45 hover:text-accent-foreground press"
         >
           <ChevronLeft className="h-4.5 w-4.5 rotate-180" strokeWidth={2} />
         </button>
-        {step !== "success" && (
-          <div className="flex gap-1.5">
-            {[0, 1, 2, 3, 4].map((i) => (
+        {step !== "success" ? (
+          <>
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
               <div
-                key={i}
-                className={`h-[4px] rounded-full transition-all duration-300 ease-out ${
-                  i <= stepIndex ? "w-6 bg-primary" : i === stepIndex + 1 ? "w-4 bg-muted" : "w-2 bg-muted"
-                }`}
+                className="h-full rounded-full gradient-gold transition-all duration-500 ease-out"
+                style={{ width: `${((stepIndex + 1) / 5) * 100}%` }}
               />
-            ))}
-          </div>
+            </div>
+            <span className="shrink-0 text-[11px] font-bold tnum text-muted-foreground">
+              {stepIndex + 1}/5
+            </span>
+          </>
+        ) : (
+          <div className="flex-1" />
         )}
-        <div className="w-9" />
       </div>
 
       {/* Step Content */}
       <div key={step} className="wizard-step-enter">
         {step === "service" && (
           <div>
-            <h2 className="mb-3.5 px-1 text-2xl font-bold tracking-tight">اختر الخدمة</h2>
-            <div className="ios-grouped-card">
-              {services.data?.map((s) => (
+            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">اختر الخدمة</h2>
+            <div className="space-y-2.5">
+              {services.data?.map((s, i) => (
                 <button
                   key={s.id}
                   onClick={() => {
                     setService(s);
                     goNext("barber");
                   }}
-                  className="ios-list-item w-full text-right flex items-center gap-3.5 focus:bg-secondary/40 active:bg-secondary/60 transition-colors"
+                  className="group flex w-full cursor-pointer animate-fade-in-up items-center gap-3.5 rounded-2xl border border-border/70 bg-card px-4 py-3.5 text-right shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated press"
+                  style={{ animationDelay: `${0.03 * i}s` }}
                 >
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground">
-                    <Scissors className="h-4 w-4" strokeWidth={1.5} />
+                  <div className="grid h-11 w-11 shrink-0 place-items-center squircle bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25 transition-transform duration-300 group-hover:scale-105">
+                    <Scissors className="h-5 w-5" strokeWidth={1.7} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-bold text-foreground">{s.name}</div>
+                    <div className="truncate font-display text-[0.95rem] font-extrabold text-foreground">
+                      {s.name}
+                    </div>
                     {s.description && (
-                      <div className="truncate text-xs text-muted-foreground mt-0.5">{s.description}</div>
+                      <div className="mt-0.5 truncate text-[11.5px] font-medium text-muted-foreground">
+                        {s.description}
+                      </div>
                     )}
                   </div>
-                  <div className="shrink-0 text-sm font-bold text-primary">{s.price} ج.م</div>
+                  <div className="shrink-0 text-start">
+                    <div className="font-display text-[0.95rem] font-black tnum text-accent-foreground">
+                      {s.price}
+                    </div>
+                    <div className="text-[8.5px] font-bold text-muted-foreground">
+                      ج.م
+                    </div>
+                  </div>
                 </button>
               ))}
+              {!services.data?.length && (
+                <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-8 text-center text-xs font-medium text-muted-foreground">
+                  لا توجد خدمات متاحة حالياً
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {step === "barber" && (
           <div>
-            <h2 className="mb-3.5 px-1 text-2xl font-bold tracking-tight">اختر الحلاق</h2>
+            <h2 className="mb-1.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">اختر الحلاق</h2>
+            <p className="mb-3.5 px-1 text-[11.5px] font-medium text-muted-foreground">
+              الحلاق المتاح يبدأ بخدمتك فور وصولك — والمشغول يمكنك الحجز معه لاحقاً.
+            </p>
             {!barbers.data?.length && (
-              <p className="rounded-xl border border-border bg-card p-5 text-center text-sm text-muted-foreground">
+              <p className="rounded-2xl border border-dashed border-border bg-secondary/15 p-8 text-center text-xs font-medium text-muted-foreground">
                 لم يقم المدير بإضافة حلاقين بعد.
               </p>
             )}
-            <div className="ios-grouped-card">
+            <div className="space-y-2.5">
               {[...(barbers.data ?? [])]
                 .sort((a, b) => Number(!!a.is_working) - Number(!!b.is_working))
-                .map((b) => (
+                .map((b, i) => (
                 <button
                   key={b.id}
                   onClick={() => {
                     setBarber(b);
                     goNext("date");
                   }}
-                  className="ios-list-item w-full text-right flex items-center gap-3.5 focus:bg-secondary/40 active:bg-secondary/60 transition-colors cursor-pointer"
+                  className="group flex w-full cursor-pointer animate-fade-in-up items-center gap-3.5 rounded-2xl border border-border/70 bg-card px-4 py-3.5 text-right shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated press"
+                  style={{ animationDelay: `${0.03 * i}s` }}
                 >
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center squircle bg-accent font-display text-[17px] font-black text-accent-foreground ring-1 ring-inset ring-gold/25 transition-transform duration-300 group-hover:scale-105">
                     {b.name.charAt(0)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-sm font-bold text-foreground">{b.name}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="truncate font-display text-[0.95rem] font-extrabold text-foreground">
+                        {b.name}
+                      </div>
                       {b.is_working ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-600 dark:text-amber-400 shrink-0">
+                        <span className="chip chip-warn shrink-0">
                           <CurvedWorkingAnimation />
-                          <span>مشغول</span>
+                          مشغول
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>متاح</span>
+                        <span className="chip chip-success shrink-0">
+                          <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                          متاح
                         </span>
                       )}
                     </div>
-                    <div className="truncate text-xs text-muted-foreground mt-0.5">
+                    <div className="mt-0.5 truncate text-[11.5px] font-medium text-muted-foreground">
                       {b.specialization || "حلاق"}
                     </div>
                   </div>
+                  <ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform duration-300 group-hover:-translate-x-0.5 group-hover:text-accent-foreground" strokeWidth={2} />
                 </button>
               ))}
             </div>
@@ -617,7 +684,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
         {step === "date" && (
           <div>
-            <h2 className="mb-3.5 px-1 text-2xl font-bold tracking-tight">اختر التاريخ</h2>
+            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">اختر التاريخ</h2>
             <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
               {dates.map((d) => (
                 <button
@@ -627,22 +694,26 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     setDate(d.iso);
                     goNext("time");
                   }}
-                  className={`relative rounded-2xl border p-3.5 text-center transition-all duration-200 active:scale-95 flex flex-col items-center justify-center ${
+                  className={`relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border p-3.5 text-center transition-all duration-300 ${
                     !d.available
-                      ? "border-border/50 bg-muted/25 opacity-35 cursor-not-allowed"
-                      : "border-border bg-card hover:border-primary/50 shadow-card hover:shadow-elevated"
+                      ? "cursor-not-allowed border-border/45 bg-muted/25 opacity-40"
+                      : d.isToday
+                        ? "cursor-pointer border-gold/50 bg-accent/60 shadow-card hover:-translate-y-0.5 hover:shadow-glow-gold press"
+                        : "cursor-pointer border-border/70 bg-card shadow-card hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated press"
                   }`}
                 >
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  {d.isToday && d.available && (
+                    <span aria-hidden className="absolute inset-x-3 top-0 h-px gold-rule" />
+                  )}
+                  <div className="text-[9.5px] font-bold text-muted-foreground">
                     {d.isToday ? "اليوم" : ARABIC_DAYS[d.date.getDay()]}
                   </div>
-                  <div className="mt-1 text-2xl font-black text-foreground">{d.date.getDate()}</div>
-                  <div className="text-[9.5px] font-semibold text-muted-foreground/75 mt-0.5">
+                  <div className="mt-1 font-display text-[1.5rem] font-black leading-none tnum text-foreground">
+                    {d.date.getDate()}
+                  </div>
+                  <div className="mt-1 text-[9.5px] font-semibold text-muted-foreground/80">
                     {arabicShortDate(d.date).split(" ").slice(-1)[0]}
                   </div>
-                  {d.isToday && d.available && (
-                    <span className="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
-                  )}
                 </button>
               ))}
             </div>
@@ -651,7 +722,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
         {step === "time" && (
           <div>
-            <h2 className="mb-3.5 px-1 text-2xl font-bold tracking-tight">اختر الوقت</h2>
+            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">اختر الوقت</h2>
             {slots.length === 0 || !hasFreeSlot ? (
               <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-10 text-center">
                 <div className="text-base font-bold text-foreground">لا توجد مواعيد متاحة</div>
@@ -660,7 +731,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                 </div>
                 <button
                   onClick={() => setStep("date")}
-                  className="mt-4 rounded-xl bg-secondary px-4 py-2.5 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted active:scale-95"
+                  className="press mt-4 rounded-xl border border-border/70 bg-secondary px-4 py-2.5 text-[12px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
                 >
                   اختر تاريخاً آخر
                 </button>
@@ -669,14 +740,19 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
               <div className="grid grid-cols-3 gap-2.5">
                 {slots.map((s) => {
                   const disabled = s.kind !== "available";
-                  const styles =
-                    s.kind === "available"
-                      ? "border-border bg-card text-foreground hover:border-primary/50 shadow-card active:scale-[0.96] cursor-pointer"
-                      : s.kind === "booked"
-                        ? "border-border/40 bg-muted/30 text-muted-foreground/40"
-                        : s.kind === "break"
-                          ? "border-dashed border-border/50 bg-muted/20 text-muted-foreground/40"
-                          : "border-border/40 bg-muted/30 text-muted-foreground/30";
+                  const tone = disabled
+                    ? s.kind === "break"
+                      ? "cursor-not-allowed border-dashed border-border/60 bg-muted/15"
+                      : "cursor-not-allowed border-border/40 bg-muted/25"
+                    : "cursor-pointer border-border/70 bg-card shadow-card hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated press";
+                  const caption =
+                    s.kind === "booked"
+                      ? "محجوز"
+                      : s.kind === "break"
+                        ? "استراحة"
+                        : s.kind === "past"
+                          ? "انتهى"
+                          : null;
                   return (
                     <button
                       key={s.time}
@@ -685,15 +761,22 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                         setTime(s.time);
                         goNext("confirm");
                       }}
-                      className={`rounded-2xl border p-3 text-xs font-bold transition-all duration-200 flex items-center justify-between ${styles} ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+                      className={`flex flex-col items-center justify-center rounded-2xl border px-2 py-3 transition-all duration-300 ${tone}`}
                     >
-                      <span className="truncate">{s.label}</span>
-                      {s.kind === "available" && (
-                        <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0 shadow-sm" />
+                      <span
+                        className={`font-display text-[0.92rem] font-extrabold tnum ${
+                          disabled ? "text-muted-foreground/45" : "text-foreground"
+                        }`}
+                      >
+                        {s.label}
+                      </span>
+                      {caption ? (
+                        <span className="mt-1 text-[8.5px] font-bold text-muted-foreground/60">
+                          {caption}
+                        </span>
+                      ) : (
+                        <span className="mt-1 h-1 w-1 rounded-full bg-success shadow-[0_0_0_3px_color-mix(in_oklab,var(--success)_16%,transparent)]" />
                       )}
-                      {s.kind === "booked" && <span className="text-[9px] font-medium opacity-60">محجوز</span>}
-                      {s.kind === "break" && <span className="text-[9px] font-medium opacity-60">استراحة</span>}
-                      {s.kind === "past" && <span className="text-[9px] font-medium opacity-55">منتهي</span>}
                     </button>
                   );
                 })}
@@ -704,23 +787,86 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
         {step === "confirm" && service && barber && date && time && (
           <div className="space-y-4">
-            <h2 className="px-1 text-2xl font-bold tracking-tight">تأكيد الحجز</h2>
-            <div className="ios-grouped-card">
-              <AppleRow label="الاسم" value={auth.profile?.full_name ?? ""} icon={<User className="h-4 w-4" strokeWidth={1.5} />} />
-              <AppleRow label="الجوال" value={auth.profile?.phone ?? ""} icon={<Phone className="h-4 w-4" strokeWidth={1.5} />} />
-              <AppleRow label="الخدمة" value={`${service.name} • ${service.price} ج.م`} icon={<Scissors className="h-4 w-4" strokeWidth={1.5} />} />
-              <AppleRow label="الحلاق" value={barber.name} icon={<User className="h-4 w-4" strokeWidth={1.5} />} />
-              <AppleRow label="التاريخ" value={arabicDate(date)} icon={<CalendarDays className="h-4 w-4" strokeWidth={1.5} />} />
-              <AppleRow label="الوقت" value={slots.find((s) => s.time === time)?.label ?? time} icon={<Clock className="h-4 w-4" strokeWidth={1.5} />} />
+            <h2 className="px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">تأكيد الحجز</h2>
+
+            <div className="panel-ink grain">
+              <div className="relative z-10 p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[9.5px] font-bold text-ink-foreground/45">
+                      الخدمة المختارة
+                    </div>
+                    <div className="mt-1.5 truncate font-display text-[1.1rem] font-extrabold text-ink-foreground">
+                      {service.name}
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-end">
+                    <div className="font-display text-[1.6rem] font-black leading-none tnum text-gradient-gold">
+                      {service.price}
+                    </div>
+                    <div className="mt-1 text-[8.5px] font-bold text-ink-foreground/45">
+                      ج.م
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="gold-rule my-4" />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[9.5px] font-bold text-ink-foreground/45">
+                      الحلاق
+                    </div>
+                    <div className="mt-1 truncate font-display text-[0.85rem] font-extrabold text-ink-foreground">
+                      {barber.name}
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[9.5px] font-bold text-ink-foreground/45">
+                      الوقت
+                    </div>
+                    <div className="mt-1 truncate font-display text-[0.85rem] font-extrabold tnum text-ink-foreground">
+                      {slots.find((s) => s.time === time)?.label ?? time}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 min-w-0">
+                  <div className="text-[9.5px] font-bold text-ink-foreground/45">
+                    التاريخ
+                  </div>
+                  <div className="mt-1 truncate font-display text-[0.85rem] font-extrabold text-ink-foreground">
+                    {arabicDate(date)}
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <div className="divide-y divide-border/55 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card">
+              <AppleRow label="الاسم" value={auth.profile?.full_name ?? ""} icon={<User className="h-4 w-4" strokeWidth={1.6} />} />
+              <AppleRow label="الجوال" value={auth.profile?.phone ?? ""} icon={<Phone className="h-4 w-4" strokeWidth={1.6} />} />
+            </div>
+
             <button
               onClick={() => confirm.mutate()}
               disabled={confirm.isPending}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-luxe transition-all duration-200 hover:brightness-105 active:scale-[0.97] disabled:opacity-50"
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl gradient-gold py-4 text-[0.84rem] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-[1.06] disabled:opacity-55 press"
             >
-              <Check className="h-4.5 w-4.5" strokeWidth={2.5} />
-              {confirm.isPending ? "جارٍ التأكيد..." : "تأكيد الحجز"}
+              {confirm.isPending ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-gold-foreground/30 border-t-gold-foreground" />
+                  جارٍ التأكيد...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4.5 w-4.5" strokeWidth={2.6} /> تأكيد الحجز
+                </>
+              )}
             </button>
+
+            <p className="text-center text-[10.5px] font-semibold text-muted-foreground/75">
+              سيصل إشعار للحلاق فور تأكيد الحجز.
+            </p>
           </div>
         )}
 
@@ -734,12 +880,14 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
 function AppleRow({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="ios-list-item flex items-center justify-between gap-3 bg-card">
-      <div className="flex items-center gap-2.5 text-xs font-semibold text-muted-foreground">
-        <span className="text-muted-foreground">{icon}</span>
+    <div className="flex items-center justify-between gap-3 px-3.5 py-3">
+      <div className="flex shrink-0 items-center gap-2.5 text-[11.5px] font-semibold text-muted-foreground">
+        <span className="grid h-7 w-7 place-items-center rounded-lg bg-secondary text-muted-foreground">
+          {icon}
+        </span>
         {label}
       </div>
-      <div className="truncate text-sm font-bold text-foreground">{value}</div>
+      <div className="truncate font-display text-[0.83rem] font-bold text-foreground">{value}</div>
     </div>
   );
 }
@@ -817,28 +965,64 @@ function SuccessCard({
   };
 
   return (
-    <div className="space-y-5 text-center animate-spring-in">
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-xl shadow-emerald-500/30 animate-success-bounce border border-emerald-400/30">
-        <Check className="h-10 w-10 text-white stroke-[3]" />
-      </div>
-      <h2 className="text-2xl font-black tracking-tight text-foreground">تم الحجز بنجاح</h2>
-      <div className="rounded-2xl glass-card p-5">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">رقم الحجز</div>
-        <div className="mt-1 text-3xl font-black text-gradient-gold">{booking.booking_number}</div>
-      </div>
-
-      <div className="ios-grouped-card text-start">
-        <AppleRow label="الحلاق" value={barberName} icon={<User className="h-4 w-4" strokeWidth={1.5} />} />
-        <AppleRow label="الخدمة" value={`${booking.service_name} • ${booking.service_price} ج.م`} icon={<Scissors className="h-4 w-4" strokeWidth={1.5} />} />
-        <AppleRow label="التاريخ" value={arabicDate(booking.booking_date)} icon={<CalendarDays className="h-4 w-4" strokeWidth={1.5} />} />
-        <AppleRow label="الوقت" value={formatTime(booking.booking_time)} icon={<Clock className="h-4 w-4" strokeWidth={1.5} />} />
+    <div className="animate-spring-in space-y-5 text-center">
+      <div className="relative mx-auto grid h-20 w-20 place-items-center">
+        <span aria-hidden className="absolute inset-0 rounded-full border border-gold/35 animate-ring-expand" />
+        <span className="absolute inset-0 rounded-full bg-gold/25 blur-2xl animate-glow-pulse" />
+        <span className="relative grid h-20 w-20 place-items-center rounded-full gradient-gold text-gold-foreground shadow-glow-gold ring-1 ring-inset ring-white/40 animate-success-bounce">
+          <Check className="h-11 w-11" strokeWidth={2.6} />
+        </span>
       </div>
 
-      <div className="rounded-2xl border border-primary/15 bg-primary/8 p-3.5 text-start text-[12px] font-semibold leading-relaxed text-primary">
+      <div>
+        <div className="eyebrow text-accent-foreground">تم بنجاح</div>
+        <h2 className="mt-1.5 font-display text-[1.5rem] font-black tracking-tight text-foreground">
+          موعدك محجوز
+        </h2>
+      </div>
+
+      <div className="panel-ink grain">
+        <div className="relative z-10 px-5 py-4">
+          <div className="text-[9.5px] font-bold text-ink-foreground/45">
+            رقم الحجز
+          </div>
+          <div className="mt-1.5 font-display text-[2rem] font-black leading-none tnum text-gradient-gold">
+            {booking.booking_number}
+          </div>
+          <hr className="gold-rule my-3.5" />
+          <div className="flex items-center justify-between gap-3 text-start">
+            <div className="min-w-0">
+              <div className="text-[9px] font-bold text-ink-foreground/45">
+                مع
+              </div>
+              <div className="mt-1 truncate font-display text-[0.82rem] font-extrabold text-ink-foreground">
+                {barberName}
+              </div>
+            </div>
+            <div className="shrink-0 text-end">
+              <div className="text-[9px] font-bold text-ink-foreground/45">
+                السعر
+              </div>
+              <div className="mt-1 font-display text-[0.82rem] font-extrabold tnum text-ink-foreground">
+                {booking.service_price} ج.م
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="divide-y divide-border/55 overflow-hidden rounded-2xl border border-border/70 bg-card text-start shadow-card">
+        <AppleRow label="الحلاق" value={barberName} icon={<User className="h-4 w-4" strokeWidth={1.6} />} />
+        <AppleRow label="الخدمة" value={booking.service_name} icon={<Scissors className="h-4 w-4" strokeWidth={1.6} />} />
+        <AppleRow label="التاريخ" value={arabicDate(booking.booking_date)} icon={<CalendarDays className="h-4 w-4" strokeWidth={1.6} />} />
+        <AppleRow label="الوقت" value={formatTime(booking.booking_time)} icon={<Clock className="h-4 w-4" strokeWidth={1.6} />} />
+      </div>
+
+      <div className="rounded-2xl border border-gold/25 bg-gold/8 p-3.5 text-start text-[11.5px] font-semibold leading-relaxed text-accent-foreground">
         تم إشعار الحلاق بحجزك، وسيصلك تنبيه فور بدء الخدمة.
       </div>
 
-      <p className="text-xs text-muted-foreground/80 font-medium leading-relaxed">
+      <p className="text-[11.5px] font-medium leading-relaxed text-muted-foreground/80">
         يرجى الحضور قبل موعدك بـ ٥ دقائق.
         <br />
         في حالة التأخير أكثر من ١٠ دقائق قد يتم إلغاء الموعد تلقائياً.
@@ -849,29 +1033,29 @@ function SuccessCard({
           href={wa}
           target="_blank"
           rel="noopener"
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#34C759] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#34C759]/20 transition-all duration-300 hover:brightness-105 hover:shadow-xl active:scale-[0.97]"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl gradient-success py-3.5 text-[0.82rem] font-extrabold text-white shadow-glow-success transition-all duration-300 hover:brightness-[1.06] press"
         >
-          <MessageCircle className="h-4.5 w-4.5" strokeWidth={1.5} /> تأكيد عبر واتساب
+          <MessageCircle className="h-4.5 w-4.5" strokeWidth={1.8} /> تأكيد عبر واتساب
         </a>
         <button
           onClick={addToCalendar}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-secondary py-3.5 text-sm font-bold text-foreground border border-border/40 transition-all duration-300 hover:bg-muted active:scale-[0.97]"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border/70 bg-card py-3.5 text-[0.82rem] font-extrabold text-foreground shadow-card transition-all duration-300 hover:border-gold/45 hover:text-accent-foreground press"
         >
-          <CalendarDays className="h-4.5 w-4.5" strokeWidth={1.5} /> أضف الموعد للتقويم
+          <CalendarDays className="h-4.5 w-4.5" strokeWidth={1.8} /> أضف الموعد للتقويم
         </button>
         {digits.length > 5 && (
           <a
             href={`tel:${digits}`}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-secondary py-3.5 text-sm font-bold text-foreground border border-border/40 transition-all duration-300 hover:bg-muted active:scale-[0.97]"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border/70 bg-card py-3.5 text-[0.82rem] font-extrabold text-foreground shadow-card transition-all duration-300 hover:border-gold/45 hover:text-accent-foreground press"
           >
-            <Phone className="h-4.5 w-4.5" strokeWidth={1.5} /> اتصل بالصالون
+            <Phone className="h-4.5 w-4.5" strokeWidth={1.8} /> اتصل بالصالون
           </a>
         )}
       </div>
 
       <button
         onClick={onDone}
-        className="mx-auto block cursor-pointer py-1 text-xs font-semibold text-primary transition-transform duration-200 active:scale-95"
+        className="link-underline mx-auto block cursor-pointer py-1 font-display text-[0.8rem] font-bold text-accent-foreground transition-transform duration-200 press"
       >
         العودة للرئيسية
       </button>
@@ -1020,7 +1204,7 @@ function BookingsList() {
     <div className="space-y-6">
       {(active.length > 0 || upcoming.length > 0) && (
         <section>
-          <h2 className="ios-grouped-section-title">القادمة</h2>
+          <SectionTitle eyebrow="المواعيد">القادمة</SectionTitle>
           <div className="space-y-3">
             {[...active, ...upcoming].map((b) => (
               <BookingCard
@@ -1036,7 +1220,7 @@ function BookingsList() {
       )}
       {past.length > 0 && (
         <section>
-          <h2 className="ios-grouped-section-title">السابقة</h2>
+          <SectionTitle eyebrow="أرشيف">السابقة</SectionTitle>
           <div className="space-y-3">
             {past.map((b) => (
               <BookingCard
@@ -1086,41 +1270,62 @@ function BookingCard({
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const getStatusInfo = () => {
-    if (inService) return { label: "جارٍ الخدمة الآن", cls: "bg-amber-500/12 text-amber-600 dark:text-amber-400" };
-    if (b.status === "booked") return { label: "محجوز", cls: "bg-primary/10 text-primary" };
-    if (b.status === "completed") return { label: "مكتمل", cls: "bg-success/10 text-success" };
-    if (b.status === "cancelled_by_barber") return { label: "ملغي بواسطة الحلاق", cls: "bg-destructive/10 text-destructive" };
-    if (b.status === "cancelled_by_customer") return { label: "ملغي بواسطة العميل", cls: "bg-destructive/10 text-destructive" };
-    return { label: "ملغي", cls: "bg-destructive/10 text-destructive" };
+    if (inService) return { label: "جارٍ الخدمة الآن", chip: "chip-warn" };
+    if (b.status === "booked") return { label: "محجوز", chip: "chip-gold" };
+    if (b.status === "completed") return { label: "مكتمل", chip: "chip-success" };
+    if (b.status === "cancelled_by_barber") return { label: "ملغي بواسطة الحلاق", chip: "chip-danger" };
+    if (b.status === "cancelled_by_customer") return { label: "ملغي بواسطة العميل", chip: "chip-danger" };
+    return { label: "ملغي", chip: "chip-danger" };
   };
-  const { label: status, cls: statusClass } = getStatusInfo();
+  const { label: status, chip: statusChip } = getStatusInfo();
 
   return (
     <div
-      className={`rounded-xl border bg-card p-4 shadow-card transition-all duration-300 hover:shadow-elevated ${
-        inService ? "border-amber-500/40" : "border-border hover:border-primary/15"
+      className={`group relative overflow-hidden rounded-2xl border bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elevated ${
+        inService ? "border-warning/35 bg-warning/[0.05]" : "border-border/70"
       }`}
     >
+      <span
+        aria-hidden
+        className={`absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent to-transparent ${
+          inService ? "via-warning/70" : "via-gold/40"
+        }`}
+      />
+
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-bold text-foreground">{b.service_name}</div>
-          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
-            <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />
-            {arabicDate(b.booking_date)} • {formatTime(b.booking_time)}
+          <div className="truncate font-display text-[0.95rem] font-extrabold text-foreground">
+            {b.service_name}
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] font-semibold text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.7} />
+              {arabicDate(b.booking_date)}
+            </span>
+            <span className="inline-flex items-center gap-1.5 tnum">
+              <Clock className="h-3.5 w-3.5" strokeWidth={1.7} />
+              {formatTime(b.booking_time)}
+            </span>
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-bold tracking-wider ${statusClass}`}>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span className={`chip ${statusChip}`}>
             {inService && <CurvedWorkingAnimation />}
             {status}
           </span>
-          <span className="text-[10px] font-bold text-muted-foreground/60">{b.booking_number}</span>
+          <span className="tnum text-[9.5px] font-bold tracking-[0.1em] text-muted-foreground/60">
+            {b.booking_number}
+          </span>
         </div>
       </div>
 
       {inService && (
-        <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/8 px-3.5 py-2.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
-          حلاقك بدأ الخدمة الآن — أهلاً بك!
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-warning/25 bg-warning/8 px-3.5 py-2.5">
+          <span className="chip chip-warn shrink-0">
+            <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
+            مباشر
+          </span>
+          <span className="text-[11px] font-bold text-foreground">حلاقك بدأ الخدمة الآن — أهلاً بك!</span>
         </div>
       )}
 
@@ -1128,13 +1333,13 @@ function BookingCard({
         (!confirmCancel ? (
           <button
             onClick={() => setConfirmCancel(true)}
-            className="mt-3.5 w-full cursor-pointer rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-2.5 text-xs font-bold text-destructive transition-all duration-200 hover:bg-destructive/10 active:scale-[0.98]"
+            className="mt-3.5 w-full cursor-pointer rounded-xl border border-destructive/25 bg-destructive/[0.06] px-4 py-2.5 text-[11.5px] font-bold text-destructive transition-all duration-300 hover:bg-destructive/12 press"
           >
             إلغاء الحجز
           </button>
         ) : (
-          <div className="mt-3.5 space-y-2 rounded-xl border border-destructive/25 bg-destructive/5 p-3 animate-scale-in">
-            <p className="text-center text-[11px] font-bold text-destructive">
+          <div className="mt-3.5 animate-scale-in space-y-2.5 rounded-xl border border-destructive/25 bg-destructive/[0.06] p-3">
+            <p className="text-center text-[11.5px] font-bold text-destructive">
               سيتم إلغاء الموعد وإشعار الحلاق — هل أنت متأكد؟
             </p>
             <div className="flex gap-2">
@@ -1144,14 +1349,14 @@ function BookingCard({
                   onCancel();
                   setConfirmCancel(false);
                 }}
-                className="flex-1 cursor-pointer rounded-xl bg-destructive px-4 py-2.5 text-xs font-bold text-destructive-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.98] disabled:opacity-50"
+                className="flex-1 cursor-pointer rounded-xl bg-destructive px-4 py-2.5 text-[11.5px] font-bold text-destructive-foreground transition-all duration-200 hover:brightness-105 press disabled:opacity-50"
               >
                 {isCancelling ? "جارٍ الإلغاء..." : "نعم، إلغاء"}
               </button>
               <button
                 disabled={isCancelling}
                 onClick={() => setConfirmCancel(false)}
-                className="flex-1 cursor-pointer rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.98] disabled:opacity-50"
+                className="flex-1 cursor-pointer rounded-xl border border-border/70 bg-card px-4 py-2.5 text-[11.5px] font-bold text-foreground transition-all duration-200 hover:bg-muted press disabled:opacity-50"
               >
                 تراجع
               </button>
@@ -1160,8 +1365,11 @@ function BookingCard({
         ))}
 
       {alreadyReviewed && !onReview && (
-        <div className="mt-3 rounded-xl bg-success/10 px-4 py-2.5 text-center text-[11px] font-bold text-success">
-          شكراً لك، تم إرسال تقييمك
+        <div className="mt-3 flex justify-center">
+          <span className="chip chip-success">
+            <Check className="h-3 w-3" strokeWidth={3} />
+            شكراً لك، تم إرسال تقييمك
+          </span>
         </div>
       )}
 
@@ -1170,22 +1378,23 @@ function BookingCard({
           {!open ? (
             <button
               onClick={() => setOpen(true)}
-              className="w-full cursor-pointer rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.98]"
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-gold/30 bg-gold/10 px-4 py-2.5 text-[11.5px] font-bold text-accent-foreground transition-all duration-300 hover:bg-gold/18 press"
             >
+              <Star className="h-3.5 w-3.5" strokeWidth={2} />
               قيّم الخدمة
             </button>
           ) : (
-            <div className="space-y-3.5 rounded-xl bg-secondary/35 border border-border/40 p-4 animate-scale-in">
+            <div className="animate-scale-in space-y-3.5 rounded-xl border border-border/60 bg-secondary/35 p-4">
               <div className="flex items-center justify-center gap-1.5">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
                     key={n}
                     onClick={() => setRating(n)}
                     aria-label={`${n} نجوم`}
-                    className="cursor-pointer transition-transform duration-150 active:scale-125"
+                    className="cursor-pointer transition-transform duration-150 press"
                   >
                     <Star
-                      className={`h-7 w-7 transition-colors duration-200 ${n <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                      className={`h-7 w-7 transition-colors duration-200 ${n <= rating ? "fill-gold text-gold" : "text-muted-foreground/30"}`}
                       strokeWidth={n <= rating ? 0 : 1.5}
                     />
                   </button>
@@ -1195,7 +1404,7 @@ function BookingCard({
                 value={comment}
                 onChange={(e) => setComment(e.target.value.slice(0, 300))}
                 placeholder="رأيك يهمنا..."
-                className="w-full rounded-xl border border-border bg-card p-3 text-xs outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/45"
+                className="w-full rounded-xl border border-border bg-card p-3 text-xs outline-none transition-colors duration-200 placeholder:text-muted-foreground/45 focus:border-gold/45 focus:ring-2 focus:ring-gold/25"
                 rows={2}
               />
               <button
@@ -1204,7 +1413,7 @@ function BookingCard({
                   setOpen(false);
                   setComment("");
                 }}
-                className="w-full cursor-pointer rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-all duration-200 hover:brightness-105 active:scale-[0.98]"
+                className="w-full cursor-pointer rounded-xl gradient-gold px-4 py-2.5 text-[11.5px] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-200 hover:brightness-[1.06] press"
               >
                 إرسال التقييم
               </button>
@@ -1235,25 +1444,39 @@ function OffersList() {
   }
   if (!offers.data?.length) return <Empty title="لا توجد عروض" subtitle="تابعنا للجديد" />;
   return (
-    <div className="space-y-3">
-      {offers.data.map((o, i) => (
-        <div
-          key={o.id}
-          className="rounded-xl border border-border bg-card p-5 shadow-card animate-fade-in-up transition-all duration-300 hover:shadow-elevated active:scale-[0.98]"
-          style={{ animationDelay: `${0.04 * i}s` }}
-        >
-          <div className="flex items-center justify-between">
-            <Tag className="h-6 w-6 text-primary" strokeWidth={1.5} />
+    <div className="space-y-3.5">
+      <SectionTitle eyebrow="لفترة محدودة">كل العروض</SectionTitle>
+      <div className="space-y-3">
+        {offers.data.map((o, i) => (
+          <article
+            key={o.id}
+            className="group relative flex gap-4 overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated"
+            style={{ animationDelay: `${0.04 * i}s` }}
+          >
+            <span aria-hidden className="absolute inset-y-0 start-0 w-[3px] gradient-gold" />
             {o.discount_percent != null && (
-              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
-                خصم {o.discount_percent}٪
-              </span>
+              <div className="relative grid w-[68px] shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25">
+                <span aria-hidden className="absolute inset-y-1.5 start-0 w-px border-s border-dashed border-gold/40" />
+                <div className="text-center">
+                  <div className="font-display text-[1.55rem] font-black leading-none tnum">
+                    {o.discount_percent}<span className="text-[0.6rem] font-extrabold">٪</span>
+                  </div>
+                  <div className="mt-1 text-[8.5px] font-bold opacity-70">خصم</div>
+                </div>
+              </div>
             )}
-          </div>
-          <div className="mt-3.5 text-base font-bold text-foreground">{o.title}</div>
-          {o.description && <div className="mt-1 text-xs text-muted-foreground font-medium leading-relaxed">{o.description}</div>}
-        </div>
-      ))}
+            <div className="min-w-0 flex-1 py-0.5">
+              <div className="flex items-start gap-2">
+                <Tag className="mt-0.5 h-4 w-4 shrink-0 text-accent-foreground" strokeWidth={1.7} />
+                <h3 className="font-display text-[0.95rem] font-extrabold leading-snug text-foreground">{o.title}</h3>
+              </div>
+              {o.description && (
+                <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted-foreground">{o.description}</p>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1289,28 +1512,38 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
     : null;
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-xl border border-border bg-card p-5 text-center shadow-card animate-fade-in-up">
-        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary/10 border border-primary/20 text-xl font-bold text-primary shadow-sm">
-          {auth.profile?.full_name?.charAt(0) ?? "?"}
+    <div className="space-y-4">
+      <div className="panel-ink grain animate-fade-in-up p-5">
+        <span aria-hidden className="absolute inset-x-5 top-0 h-px gold-rule" />
+        <div className="relative flex items-center gap-4">
+          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl gradient-gold font-display text-[1.6rem] font-black text-gold-foreground shadow-glow-gold">
+            {auth.profile?.full_name?.charAt(0) ?? "?"}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="eyebrow text-ink-foreground/55">بطاقة العميل</div>
+            <div className="mt-1 truncate font-display text-[1.15rem] font-extrabold tracking-tight text-ink-foreground">
+              {auth.profile?.full_name}
+            </div>
+            <div className="mt-1 font-display text-xs font-bold tnum text-ink-foreground/60" dir="ltr">
+              {auth.profile?.phone}
+            </div>
+          </div>
         </div>
-        <div className="mt-3 text-base font-bold text-foreground tracking-tight">{auth.profile?.full_name}</div>
-        <div className="text-xs text-muted-foreground font-medium mt-0.5">{auth.profile?.phone}</div>
       </div>
 
       {push?.supported && (
         <button
           onClick={togglePush}
           disabled={busy}
-          className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-card p-5 text-start shadow-card transition-all duration-300 hover:shadow-elevated hover:border-primary/20 active:scale-[0.99] disabled:opacity-60 animate-fade-in-up"
+          className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card p-4 text-start shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated disabled:opacity-60 animate-fade-in-up press"
           style={{ animationDelay: "0.05s" }}
         >
           <span className="flex min-w-0 items-center gap-3">
-            <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${push.subscribed ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
+            <span className={`grid h-10 w-10 shrink-0 place-items-center squircle transition-colors duration-300 ${push.subscribed ? "bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25" : "bg-secondary text-muted-foreground"}`}>
               {push.subscribed ? <BellRing className="h-5 w-5" strokeWidth={1.6} /> : <BellOff className="h-5 w-5" strokeWidth={1.6} />}
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-bold text-foreground">إشعارات الموعد</span>
+              <span className="block font-display text-[0.85rem] font-extrabold text-foreground">إشعارات الموعد</span>
               <span className="mt-0.5 block text-[11px] font-semibold text-muted-foreground">
                 {busy
                   ? "جارٍ التحديث..."
@@ -1321,7 +1554,7 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
             </span>
           </span>
           <span
-            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-300 ${push.subscribed ? "bg-primary" : "bg-muted-foreground/25"}`}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-all duration-300 ${push.subscribed ? "gradient-gold shadow-glow-gold" : "bg-muted-foreground/25"}`}
           >
             <span
               className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-300 ${push.subscribed ? "start-0.5" : "start-[22px]"}`}
@@ -1331,10 +1564,18 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
       )}
 
       {settings && (
-        <div className="rounded-xl border border-border bg-card p-5 shadow-card animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          <div className="text-sm font-bold text-foreground">{settings.shop_name}</div>
+        <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-card animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center squircle bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25">
+              <Store className="h-4 w-4" strokeWidth={1.7} />
+            </span>
+            <div className="min-w-0">
+              <div className="eyebrow text-accent-foreground">تواصل معنا</div>
+              <div className="mt-0.5 truncate font-display text-[0.88rem] font-extrabold text-foreground">{settings.shop_name}</div>
+            </div>
+          </div>
           {settings.address && (
-            <div className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground font-semibold">
+            <div className="mt-3 flex items-start gap-1.5 text-[11.5px] font-semibold text-muted-foreground">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={1.6} />
               <span>{settings.address}</span>
             </div>
@@ -1345,7 +1586,7 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
                 href={whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-[#34C759]/10 border border-[#34C759]/25 px-3 text-xs font-bold text-[#1F9E45] dark:text-[#4ADE80] transition-all duration-200 hover:bg-[#34C759]/18 active:scale-[0.97]"
+                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-success/30 bg-success/10 px-3 text-xs font-bold text-foreground transition-all duration-200 hover:bg-success/18 press"
               >
                 <MessageCircle className="h-4 w-4" strokeWidth={1.8} /> واتساب
               </a>
@@ -1353,7 +1594,7 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
             {settings.whatsapp && (
               <a
                 href={`tel:${digitsOnly(settings.whatsapp)}`}
-                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-secondary px-3 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.97]"
+                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-secondary px-3 text-xs font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground press"
               >
                 <Phone className="h-4 w-4" strokeWidth={1.6} /> اتصال
               </a>
@@ -1363,14 +1604,14 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
                 href={`https://maps.google.com/?q=${encodeURIComponent(settings.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-secondary px-3 text-xs font-bold text-foreground transition-all duration-200 hover:bg-muted active:scale-[0.97]"
+                className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-secondary px-3 text-xs font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground press"
               >
                 <Navigation className="h-4 w-4" strokeWidth={1.6} /> الموقع
               </a>
             )}
           </div>
           {(settings.facebook || settings.instagram || settings.tiktok) && (
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-border/55 pt-3">
               {settings.facebook && <SocialBtn href={settings.facebook} label="فيسبوك" />}
               {settings.instagram && <SocialBtn href={settings.instagram} label="انستجرام" />}
               {settings.tiktok && <SocialBtn href={settings.tiktok} label="تيك توك" />}
@@ -1388,18 +1629,40 @@ function SocialBtn({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noopener"
-      className="rounded-xl bg-secondary px-3.5 py-2 text-xs font-semibold text-foreground transition-all duration-200 hover:bg-muted active:scale-95 border border-border/30"
+      className="press rounded-full border border-border/70 bg-secondary px-3.5 py-1.5 text-[11px] font-bold text-muted-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
     >
       {label}
     </a>
   );
 }
 
+function SectionTitle({
+  children,
+  eyebrow,
+  action,
+}: {
+  children: React.ReactNode;
+  eyebrow?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-3 flex items-end justify-between gap-3 px-0.5">
+      <div className="min-w-0">
+        {eyebrow && <div className="eyebrow text-accent-foreground">{eyebrow}</div>}
+        <h2 className="mt-1 font-display text-[1.05rem] font-extrabold tracking-tight text-foreground">
+          {children}
+        </h2>
+      </div>
+      {action}
+    </div>
+  );
+}
+
 function Empty({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-secondary/15 p-10 text-center">
-      <div className="text-sm font-bold text-foreground">{title}</div>
-      <div className="mt-1 text-xs text-muted-foreground font-medium">{subtitle}</div>
+    <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-10 text-center">
+      <div className="font-display text-sm font-extrabold text-foreground">{title}</div>
+      <div className="mt-1.5 text-xs font-medium text-muted-foreground">{subtitle}</div>
     </div>
   );
 }
@@ -1434,28 +1697,29 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
     <nav
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="fixed inset-x-0 bottom-0 z-40 glass-bottom"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)]"
     >
-      <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1 px-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2">
-        {items.map((it) => (
-          <button
-            key={it.t}
-            onClick={() => onChange(it.t)}
-            className={`flex flex-col items-center gap-1 py-1.5 text-[9px] font-semibold transition-all duration-300 ${
-              tab === it.t
-                ? "text-primary scale-105 drop-shadow-sm"
-                : "text-muted-foreground/70 active:scale-95 hover:text-foreground"
-            }`}
-          >
-            <div className={`relative transition-all duration-300 ${tab === it.t ? "animate-glow-pulse rounded-full" : ""}`}>
-              {it.icon}
-              {tab === it.t && (
-                <span className="absolute -bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-primary" />
-              )}
-            </div>
-            {it.label}
-          </button>
-        ))}
+      <div className="nav-dock pointer-events-auto mx-auto grid max-w-md grid-cols-4">
+        {items.map((it) => {
+          const active = tab === it.t;
+          return (
+            <button
+              key={it.t}
+              onClick={() => onChange(it.t)}
+              aria-current={active ? "page" : undefined}
+              className={`dock-item press ${active ? "dock-item-active" : "hover:text-foreground"}`}
+            >
+              <span
+                className={`grid h-9 w-[46px] place-items-center rounded-[0.85rem] transition-all duration-300 ${
+                  active ? "gradient-gold text-gold-foreground shadow-glow-gold" : ""
+                }`}
+              >
+                {it.icon}
+              </span>
+              <span className={active ? "text-accent-foreground" : undefined}>{it.label}</span>
+            </button>
+          );
+        })}
       </div>
     </nav>
   );
