@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -7,10 +7,30 @@ import { useAuth } from "@/hooks/use-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SkeletonCard, SkeletonWizard } from "@/components/ui/skeleton";
 import { CurvedWorkingAnimation } from "@/components/ui/curved-working-animation";
+import { CustomerHeader } from "@/components/customer/CustomerHeader";
+import { FeaturedBookingCard } from "@/components/customer/FeaturedBookingCard";
+import { OffersSection } from "@/components/customer/OffersSection";
+import { BarbersSection } from "@/components/customer/BarbersSection";
+import {
+  CustomerBottomNav,
+  type CustomerTab as Tab,
+} from "@/components/customer/CustomerBottomNav";
 import { generateSlots, formatTime, hasRemainingTime, type Slot } from "@/lib/slots";
-import { arabicDate, arabicShortDate, isoDate, ARABIC_DAYS, buildWhatsAppLink, digitsOnly } from "@/lib/format";
+import {
+  arabicDate,
+  arabicShortDate,
+  isoDate,
+  ARABIC_DAYS,
+  buildWhatsAppLink,
+  digitsOnly,
+} from "@/lib/format";
 import { cancelBookingByCustomer, notifyBarbers } from "@/lib/admin.functions";
-import { disablePushNotifications, enablePushNotifications, getPushState, type PushState } from "@/lib/push";
+import {
+  disablePushNotifications,
+  enablePushNotifications,
+  getPushState,
+  type PushState,
+} from "@/lib/push";
 import { toast } from "sonner";
 import {
   Scissors,
@@ -20,11 +40,9 @@ import {
   Phone,
   Star,
   Tag,
-  Home,
   LogOut,
   ChevronLeft,
   Check,
-  Sparkles,
   MessageCircle,
   BellRing,
   BellOff,
@@ -33,7 +51,6 @@ import {
   Store,
 } from "lucide-react";
 
-type Tab = "home" | "bookings" | "offers" | "profile";
 type Step = "service" | "barber" | "date" | "time" | "confirm" | "success";
 
 interface Service {
@@ -112,74 +129,81 @@ export function CustomerApp() {
     navigate({ to: "/auth" });
   };
 
+  const isHome = tab === "home";
+
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-28">
-      {/* Header */}
-      <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="relative grid h-11 w-11 shrink-0 place-items-center squircle gradient-gold text-gold-foreground shadow-glow-gold">
-              <Scissors className="h-[22px] w-[22px]" strokeWidth={1.6} />
+    <div
+      dir="rtl"
+      className={`flex min-h-screen flex-col pb-28 ${isHome ? "bg-[#FAF5E8]" : "bg-background"}`}
+    >
+      {/* Header (inner pages keep the existing app header; home has its own) */}
+      {!isHome && (
+        <header className="sticky top-0 z-30 glass">
+          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="relative grid h-11 w-11 shrink-0 place-items-center squircle gradient-gold text-gold-foreground shadow-glow-gold">
+                <Scissors className="h-[22px] w-[22px]" strokeWidth={1.6} />
+              </div>
+              <div className="min-w-0">
+                <div className="truncate font-display text-[15px] font-extrabold leading-tight text-foreground">
+                  {settings.data?.shop_name ?? "حلاق الباشا"}
+                </div>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <span className="inline-flex h-1.5 w-1.5 rounded-full bg-success shadow-[0_0_0_3px_color-mix(in_oklab,var(--success)_18%,transparent)] animate-pulse" />
+                  <span className="truncate text-[11px] font-semibold text-muted-foreground">
+                    مرحباً، {auth.profile?.full_name ?? "صديقنا"}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="min-w-0">
-              <div className="truncate font-display text-[15px] font-extrabold leading-tight text-foreground">
-                {settings.data?.shop_name ?? "حلاق الباشا"}
-              </div>
-              <div className="mt-0.5 flex items-center gap-1.5">
-                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-success shadow-[0_0_0_3px_color-mix(in_oklab,var(--success)_18%,transparent)] animate-pulse" />
-                <span className="truncate text-[11px] font-semibold text-muted-foreground">
-                  مرحباً، {auth.profile?.full_name ?? "صديقنا"}
-                </span>
-              </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <ThemeToggle />
+              <button
+                onClick={signOut}
+                aria-label="خروج"
+                className="hit-area grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-border/70 bg-card/60 text-muted-foreground transition-all duration-300 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive press"
+              >
+                <LogOut className="h-4 w-4" strokeWidth={1.6} />
+              </button>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <ThemeToggle />
-            <button
-              onClick={signOut}
-              aria-label="خروج"
-              className="hit-area grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-border/70 bg-card/60 text-muted-foreground transition-all duration-300 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive press"
-            >
-              <LogOut className="h-4 w-4" strokeWidth={1.6} />
-            </button>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4">
-        {tab === "home" && <CustomerHome settings={settings.data} onBook={() => setTab("bookings")} />}
+      <main className={`mx-auto w-full flex-1 px-4 pt-4 ${isHome ? "max-w-md" : "max-w-2xl"}`}>
+        {tab === "home" && (
+          <CustomerHomePage
+            settings={settings.data}
+            userName={auth.profile?.full_name}
+            onSignOut={signOut}
+            onBookingDone={() => setTab("bookings")}
+          />
+        )}
         {tab === "bookings" && <BookingsList />}
         {tab === "offers" && <OffersList />}
         {tab === "profile" && <ProfileView settings={settings.data} />}
       </main>
 
       {/* Bottom Nav */}
-      <BottomNav tab={tab} onChange={setTab} />
+      <CustomerBottomNav tab={tab} onChange={setTab} />
     </div>
   );
 }
 
-/* -------- HOME (includes wizard) -------- */
-function CustomerHome({
+/* -------- HOME (rebuilt to reference design; booking wizard preserved) -------- */
+function CustomerHomePage({
   settings,
-  onBook,
+  userName,
+  onSignOut,
+  onBookingDone,
 }: {
   settings: Settings | undefined;
-  onBook: () => void;
+  userName: string | undefined;
+  onSignOut: () => void;
+  onBookingDone: () => void;
 }) {
   const [wizardOpen, setWizardOpen] = useState(false);
-  const offers = useQuery<Offer[]>({
-    queryKey: ["offers", "active"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("offers")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-      return (data ?? []) as Offer[];
-    },
-  });
 
   if (wizardOpen) {
     if (!settings) return <SkeletonWizard />;
@@ -188,226 +212,34 @@ function CustomerHome({
         settings={settings}
         onDone={() => {
           setWizardOpen(false);
-          onBook();
+          onBookingDone();
         }}
       />
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Hero Card */}
-      <section className="panel-ink grain spotlight animate-fade-in-up">
-        <div className="relative z-10 p-6">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/12 px-3 py-1 text-[10px] font-extrabold text-gold">
-            <Sparkles className="h-3.5 w-3.5" strokeWidth={2} /> تجربة فاخرة ومضمونة
-          </div>
-
-          <h1 className="mt-4 display-lg text-ink-foreground">
-            يسعدنا خدمتك في
-            <br />
-            <span className="text-gradient-gold">{settings?.shop_name ?? "حلاق الباشا"}</span>
-          </h1>
-
-          <p className="mt-2.5 max-w-[22rem] text-[0.8rem] font-medium leading-relaxed text-ink-foreground/60">
-            احجز موعدك بضغطة واحدة — مواعيد مرتّبة، وبلا انتظار.
-          </p>
-
-          <button
-            onClick={() => setWizardOpen(true)}
-            className="mt-6 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl gradient-gold py-4 text-[0.84rem] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-[1.06] press"
-          >
-            <CalendarDays className="h-4.5 w-4.5" strokeWidth={2.2} /> ابدأ الحجز الآن
-          </button>
-
-          <div className="mt-4 grid grid-cols-2 gap-2.5">
-            <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.05] px-3.5 py-3">
-              <div className="flex items-center gap-1.5 text-[9.5px] font-bold text-ink-foreground/45">
-                <Clock className="h-3 w-3" strokeWidth={2} /> ساعات العمل
-              </div>
-              <div className="mt-1.5 truncate font-display text-[13px] font-extrabold tnum text-ink-foreground">
-                {formatTime(settings?.start_time ?? "10:00")} — {formatTime(settings?.end_time ?? "23:00")}
-              </div>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.05] px-3.5 py-3">
-              <div className="flex items-center gap-1.5 text-[9.5px] font-bold text-ink-foreground/45">
-                <MapPin className="h-3 w-3" strokeWidth={2} /> العنوان
-              </div>
-              <div className="mt-1.5 truncate font-display text-[13px] font-extrabold text-ink-foreground">
-                {settings?.address || "فرعنا الرئيسي"}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Offers */}
-      {(offers.data?.length ?? 0) > 0 && (
-        <section className="animate-fade-in-up" style={{ animationDelay: "0.08s" }}>
-          <SectionTitle eyebrow="لفترة محدودة">العروض الحالية</SectionTitle>
-          <div className="space-y-2.5">
-            {offers.data!.slice(0, 3).map((o, i) => (
-              <article
-                key={o.id}
-                className="relative flex items-center gap-3.5 overflow-hidden rounded-2xl border border-border/70 bg-card px-4 py-3.5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated"
-                style={{ animationDelay: `${0.04 * (i + 1)}s` }}
-              >
-                <span aria-hidden className="absolute inset-y-3 start-0 w-[3px] rounded-full gradient-gold" />
-                <div className="grid h-10 w-10 shrink-0 place-items-center squircle bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25">
-                  <Tag className="h-4.5 w-4.5" strokeWidth={1.7} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-display text-[0.9rem] font-extrabold text-foreground">
-                    {o.title}
-                  </div>
-                  {o.description && (
-                    <div className="mt-0.5 truncate text-[11.5px] font-medium text-muted-foreground">
-                      {o.description}
-                    </div>
-                  )}
-                </div>
-                {o.discount_percent != null && (
-                  <div className="shrink-0 border-s border-dashed border-border ps-3.5 text-center">
-                    <div className="font-display text-[1.35rem] font-black leading-none tnum text-accent-foreground">
-                      {o.discount_percent}
-                      <span className="text-[0.65rem] font-extrabold">٪</span>
-                    </div>
-                    <div className="mt-1 text-[8.5px] font-bold text-muted-foreground">
-                      خصم
-                    </div>
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Barbers */}
-      <div className="animate-fade-in-up" style={{ animationDelay: "0.16s" }}>
-        <BarbersShowcase />
+    <div className="space-y-7 pb-2">
+      <div className="animate-fade-in-up">
+        <CustomerHeader userName={userName} onSignOut={onSignOut} />
+      </div>
+      <div className="animate-fade-in-up" style={{ animationDelay: "0.06s" }}>
+        <FeaturedBookingCard
+          shopName={settings?.shop_name ?? "حلاق الباشا"}
+          onStart={() => setWizardOpen(true)}
+        />
+      </div>
+      <div className="animate-fade-in-up" style={{ animationDelay: "0.12s" }}>
+        <OffersSection />
+      </div>
+      <div className="animate-fade-in-up" style={{ animationDelay: "0.18s" }}>
+        <BarbersSection />
       </div>
     </div>
   );
 }
 
-function BarbersShowcase() {
-  const qc = useQueryClient();
-  const barbers = useQuery<(Barber & { avg: number; cnt: number })[]>({
-    queryKey: ["barbers", "showcase"],
-    // Realtime pushes changes; polling is only a slow safety net.
-    refetchInterval: 30000,
-    queryFn: async () => {
-      const { data: list } = await supabase.from("barbers").select("*").eq("is_active", true);
-      const ids = (list ?? []).map((b) => b.id);
-      const { data: reviews } = await supabase
-        .from("reviews")
-        .select("barber_id, rating")
-        .in("barber_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
-      const stats: Record<string, { sum: number; cnt: number }> = {};
-      (reviews ?? []).forEach((r) => {
-        stats[r.barber_id] ??= { sum: 0, cnt: 0 };
-        stats[r.barber_id].sum += r.rating;
-        stats[r.barber_id].cnt += 1;
-      });
-      return (list ?? []).map((b) => ({
-        ...(b as Barber),
-        avg: stats[b.id] ? stats[b.id].sum / stats[b.id].cnt : 0,
-        cnt: stats[b.id]?.cnt ?? 0,
-      }));
-    },
-  });
-  useEffect(() => {
-    const channel = supabase
-      .channel("public-barbers-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "barbers" }, () =>
-        qc.invalidateQueries({ queryKey: ["barbers"] }),
-      )
-      .on("postgres_changes", { event: "*", schema: "public", table: "reviews" }, () =>
-        qc.invalidateQueries({ queryKey: ["barbers"] }),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [qc]);
-
-  if (barbers.isLoading) {
-    return (
-      <div className="space-y-2.5">
-        <SkeletonCard />
-        <SkeletonCard />
-      </div>
-    );
-  }
-  if (!barbers.data?.length) {
-    return (
-      <section>
-        <SectionTitle eyebrow="نخبة الحلاقين">فريقنا</SectionTitle>
-        <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-6 text-center text-xs font-medium text-muted-foreground">
-          لا يوجد حلاقون متاحون حالياً
-        </div>
-      </section>
-    );
-  }
-  return (
-    <section>
-      <SectionTitle eyebrow="نخبة الحلاقين">فريقنا</SectionTitle>
-      <div className="grid grid-cols-2 gap-2.5">
-        {barbers.data.map((b, i) => (
-          <article
-            key={b.id}
-            className={`relative animate-scale-in overflow-hidden rounded-2xl border p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elevated ${
-              b.is_working
-                ? "border-warning/30 bg-warning/[0.045]"
-                : "border-border/70 bg-card"
-            }`}
-            style={{ animationDelay: `${0.04 * i}s` }}
-          >
-            <span
-              aria-hidden
-              className={`absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent to-transparent ${
-                b.is_working ? "via-warning/60" : "via-gold/55"
-              }`}
-            />
-
-            <div className="flex items-start justify-between gap-2">
-              <div className="grid h-12 w-12 shrink-0 place-items-center squircle bg-accent font-display text-[19px] font-black text-accent-foreground ring-1 ring-inset ring-gold/25">
-                {b.name.charAt(0)}
-              </div>
-              {b.is_working ? (
-                <span className="chip chip-warn shrink-0">
-                  <CurvedWorkingAnimation />
-                  مشغول
-                </span>
-              ) : (
-                <span className="chip chip-success shrink-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                  متاح
-                </span>
-              )}
-            </div>
-
-            <div className="mt-3.5 truncate font-display text-[0.92rem] font-extrabold text-foreground">
-              {b.name}
-            </div>
-            <div className="mt-0.5 truncate text-[11.5px] font-medium text-muted-foreground">
-              {b.specialization || "حلاق"}
-            </div>
-
-            <div className="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-2.5 text-[11px] font-semibold text-muted-foreground">
-              <Star className="h-3 w-3 fill-gold text-gold" strokeWidth={0} />
-              <span className="font-display font-extrabold tnum text-foreground">
-                {b.avg ? b.avg.toFixed(1) : "جديد"}
-              </span>
-              {b.cnt > 0 && <span className="tnum">({b.cnt})</span>}
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
+/* Barbers showcase moved to src/components/customer/BarbersSection.tsx (no photos, reference design). */
 
 /* -------- WIZARD -------- */
 function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () => void }) {
@@ -505,9 +337,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
   const slots: Slot[] = useMemo(() => {
     if (!date || !barber) return [];
     const isToday = date === isoDate(new Date());
-    const nowMin = isToday
-      ? new Date().getHours() * 60 + new Date().getMinutes()
-      : null;
+    const nowMin = isToday ? new Date().getHours() * 60 + new Date().getMinutes() : null;
     return generateSlots(cfg, bookedQ.data ?? [], nowMin);
   }, [date, barber, cfg, bookedQ.data]);
 
@@ -583,7 +413,9 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
       <div key={step} className="wizard-step-enter">
         {step === "service" && (
           <div>
-            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">اختر الخدمة</h2>
+            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">
+              اختر الخدمة
+            </h2>
             <div className="space-y-2.5">
               {services.data?.map((s, i) => (
                 <button
@@ -612,9 +444,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     <div className="font-display text-[0.95rem] font-black tnum text-accent-foreground">
                       {s.price}
                     </div>
-                    <div className="text-[8.5px] font-bold text-muted-foreground">
-                      ج.م
-                    </div>
+                    <div className="text-[8.5px] font-bold text-muted-foreground">ج.م</div>
                   </div>
                 </button>
               ))}
@@ -629,7 +459,9 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
         {step === "barber" && (
           <div>
-            <h2 className="mb-1.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">اختر الحلاق</h2>
+            <h2 className="mb-1.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">
+              اختر الحلاق
+            </h2>
             <p className="mb-3.5 px-1 text-[11.5px] font-medium text-muted-foreground">
               الحلاق المتاح يبدأ بخدمتك فور وصولك — والمشغول يمكنك الحجز معه لاحقاً.
             </p>
@@ -642,49 +474,54 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
               {[...(barbers.data ?? [])]
                 .sort((a, b) => Number(!!a.is_working) - Number(!!b.is_working))
                 .map((b, i) => (
-                <button
-                  key={b.id}
-                  onClick={() => {
-                    setBarber(b);
-                    goNext("date");
-                  }}
-                  className="group flex w-full cursor-pointer animate-fade-in-up items-center gap-3.5 rounded-2xl border border-border/70 bg-card px-4 py-3.5 text-right shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated press"
-                  style={{ animationDelay: `${0.03 * i}s` }}
-                >
-                  <div className="grid h-11 w-11 shrink-0 place-items-center squircle bg-accent font-display text-[17px] font-black text-accent-foreground ring-1 ring-inset ring-gold/25 transition-transform duration-300 group-hover:scale-105">
-                    {b.name.charAt(0)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <div className="truncate font-display text-[0.95rem] font-extrabold text-foreground">
-                        {b.name}
+                  <button
+                    key={b.id}
+                    onClick={() => {
+                      setBarber(b);
+                      goNext("date");
+                    }}
+                    className="group flex w-full cursor-pointer animate-fade-in-up items-center gap-3.5 rounded-2xl border border-border/70 bg-card px-4 py-3.5 text-right shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated press"
+                    style={{ animationDelay: `${0.03 * i}s` }}
+                  >
+                    <div className="grid h-11 w-11 shrink-0 place-items-center squircle bg-accent font-display text-[17px] font-black text-accent-foreground ring-1 ring-inset ring-gold/25 transition-transform duration-300 group-hover:scale-105">
+                      {b.name.charAt(0)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="truncate font-display text-[0.95rem] font-extrabold text-foreground">
+                          {b.name}
+                        </div>
+                        {b.is_working ? (
+                          <span className="chip chip-warn shrink-0">
+                            <CurvedWorkingAnimation />
+                            مشغول
+                          </span>
+                        ) : (
+                          <span className="chip chip-success shrink-0">
+                            <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                            متاح
+                          </span>
+                        )}
                       </div>
-                      {b.is_working ? (
-                        <span className="chip chip-warn shrink-0">
-                          <CurvedWorkingAnimation />
-                          مشغول
-                        </span>
-                      ) : (
-                        <span className="chip chip-success shrink-0">
-                          <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                          متاح
-                        </span>
-                      )}
+                      <div className="mt-0.5 truncate text-[11.5px] font-medium text-muted-foreground">
+                        {b.specialization || "حلاق"}
+                      </div>
                     </div>
-                    <div className="mt-0.5 truncate text-[11.5px] font-medium text-muted-foreground">
-                      {b.specialization || "حلاق"}
-                    </div>
-                  </div>
-                  <ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform duration-300 group-hover:-translate-x-0.5 group-hover:text-accent-foreground" strokeWidth={2} />
-                </button>
-              ))}
+                    <ChevronLeft
+                      className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform duration-300 group-hover:-translate-x-0.5 group-hover:text-accent-foreground"
+                      strokeWidth={2}
+                    />
+                  </button>
+                ))}
             </div>
           </div>
         )}
 
         {step === "date" && (
           <div>
-            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">اختر التاريخ</h2>
+            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">
+              اختر التاريخ
+            </h2>
             <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
               {dates.map((d) => (
                 <button
@@ -722,12 +559,16 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
         {step === "time" && (
           <div>
-            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">اختر الوقت</h2>
+            <h2 className="mb-3.5 px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">
+              اختر الوقت
+            </h2>
             {slots.length === 0 || !hasFreeSlot ? (
               <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-10 text-center">
                 <div className="text-base font-bold text-foreground">لا توجد مواعيد متاحة</div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {slots.length === 0 ? "لا يوجد وقت متاح لهذا اليوم" : "كل المواعيد محجوزة أو انتهى وقتها"}
+                  {slots.length === 0
+                    ? "لا يوجد وقت متاح لهذا اليوم"
+                    : "كل المواعيد محجوزة أو انتهى وقتها"}
                 </div>
                 <button
                   onClick={() => setStep("date")}
@@ -787,7 +628,9 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
         {step === "confirm" && service && barber && date && time && (
           <div className="space-y-4">
-            <h2 className="px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">تأكيد الحجز</h2>
+            <h2 className="px-1 font-display text-[1.35rem] font-extrabold tracking-tight text-foreground">
+              تأكيد الحجز
+            </h2>
 
             <div className="panel-ink grain">
               <div className="relative z-10 p-5">
@@ -804,9 +647,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                     <div className="font-display text-[1.6rem] font-black leading-none tnum text-gradient-gold">
                       {service.price}
                     </div>
-                    <div className="mt-1 text-[8.5px] font-bold text-ink-foreground/45">
-                      ج.م
-                    </div>
+                    <div className="mt-1 text-[8.5px] font-bold text-ink-foreground/45">ج.م</div>
                   </div>
                 </div>
 
@@ -814,17 +655,13 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="min-w-0">
-                    <div className="text-[9.5px] font-bold text-ink-foreground/45">
-                      الحلاق
-                    </div>
+                    <div className="text-[9.5px] font-bold text-ink-foreground/45">الحلاق</div>
                     <div className="mt-1 truncate font-display text-[0.85rem] font-extrabold text-ink-foreground">
                       {barber.name}
                     </div>
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[9.5px] font-bold text-ink-foreground/45">
-                      الوقت
-                    </div>
+                    <div className="text-[9.5px] font-bold text-ink-foreground/45">الوقت</div>
                     <div className="mt-1 truncate font-display text-[0.85rem] font-extrabold tnum text-ink-foreground">
                       {slots.find((s) => s.time === time)?.label ?? time}
                     </div>
@@ -832,9 +669,7 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
                 </div>
 
                 <div className="mt-3 min-w-0">
-                  <div className="text-[9.5px] font-bold text-ink-foreground/45">
-                    التاريخ
-                  </div>
+                  <div className="text-[9.5px] font-bold text-ink-foreground/45">التاريخ</div>
                   <div className="mt-1 truncate font-display text-[0.85rem] font-extrabold text-ink-foreground">
                     {arabicDate(date)}
                   </div>
@@ -843,8 +678,16 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
             </div>
 
             <div className="divide-y divide-border/55 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card">
-              <AppleRow label="الاسم" value={auth.profile?.full_name ?? ""} icon={<User className="h-4 w-4" strokeWidth={1.6} />} />
-              <AppleRow label="الجوال" value={auth.profile?.phone ?? ""} icon={<Phone className="h-4 w-4" strokeWidth={1.6} />} />
+              <AppleRow
+                label="الاسم"
+                value={auth.profile?.full_name ?? ""}
+                icon={<User className="h-4 w-4" strokeWidth={1.6} />}
+              />
+              <AppleRow
+                label="الجوال"
+                value={auth.profile?.phone ?? ""}
+                icon={<Phone className="h-4 w-4" strokeWidth={1.6} />}
+              />
             </div>
 
             <button
@@ -871,7 +714,12 @@ function BookingWizard({ settings, onDone }: { settings: Settings; onDone: () =>
         )}
 
         {step === "success" && created && (
-          <SuccessCard booking={created} barberName={barber?.name ?? ""} settings={settings} onDone={onDone} />
+          <SuccessCard
+            booking={created}
+            barberName={barber?.name ?? ""}
+            settings={settings}
+            onDone={onDone}
+          />
         )}
       </div>
     </div>
@@ -896,7 +744,12 @@ function icsEscape(s: string) {
   return s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
 }
 
-function downloadBookingIcs(booking: Booking, barberName: string, shopName: string, address?: string) {
+function downloadBookingIcs(
+  booking: Booking,
+  barberName: string,
+  shopName: string,
+  address?: string,
+) {
   const pad = (n: number) => String(n).padStart(2, "0");
   const floating = (d: Date) =>
     `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
@@ -910,7 +763,10 @@ function downloadBookingIcs(booking: Booking, barberName: string, shopName: stri
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
     `UID:${booking.id}@halak-elbasha`,
-    `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")}`,
+    `DTSTAMP:${new Date()
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}/, "")}`,
     `DTSTART:${floating(start)}`,
     `DTEND:${floating(end)}`,
     `SUMMARY:${icsEscape(`${shopName} — ${booking.service_name}`)}`,
@@ -967,7 +823,10 @@ function SuccessCard({
   return (
     <div className="animate-spring-in space-y-5 text-center">
       <div className="relative mx-auto grid h-20 w-20 place-items-center">
-        <span aria-hidden className="absolute inset-0 rounded-full border border-gold/35 animate-ring-expand" />
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-full border border-gold/35 animate-ring-expand"
+        />
         <span className="absolute inset-0 rounded-full bg-gold/25 blur-2xl animate-glow-pulse" />
         <span className="relative grid h-20 w-20 place-items-center rounded-full gradient-gold text-gold-foreground shadow-glow-gold ring-1 ring-inset ring-white/40 animate-success-bounce">
           <Check className="h-11 w-11" strokeWidth={2.6} />
@@ -983,26 +842,20 @@ function SuccessCard({
 
       <div className="panel-ink grain">
         <div className="relative z-10 px-5 py-4">
-          <div className="text-[9.5px] font-bold text-ink-foreground/45">
-            رقم الحجز
-          </div>
+          <div className="text-[9.5px] font-bold text-ink-foreground/45">رقم الحجز</div>
           <div className="mt-1.5 font-display text-[2rem] font-black leading-none tnum text-gradient-gold">
             {booking.booking_number}
           </div>
           <hr className="gold-rule my-3.5" />
           <div className="flex items-center justify-between gap-3 text-start">
             <div className="min-w-0">
-              <div className="text-[9px] font-bold text-ink-foreground/45">
-                مع
-              </div>
+              <div className="text-[9px] font-bold text-ink-foreground/45">مع</div>
               <div className="mt-1 truncate font-display text-[0.82rem] font-extrabold text-ink-foreground">
                 {barberName}
               </div>
             </div>
             <div className="shrink-0 text-end">
-              <div className="text-[9px] font-bold text-ink-foreground/45">
-                السعر
-              </div>
+              <div className="text-[9px] font-bold text-ink-foreground/45">السعر</div>
               <div className="mt-1 font-display text-[0.82rem] font-extrabold tnum text-ink-foreground">
                 {booking.service_price} ج.م
               </div>
@@ -1012,10 +865,26 @@ function SuccessCard({
       </div>
 
       <div className="divide-y divide-border/55 overflow-hidden rounded-2xl border border-border/70 bg-card text-start shadow-card">
-        <AppleRow label="الحلاق" value={barberName} icon={<User className="h-4 w-4" strokeWidth={1.6} />} />
-        <AppleRow label="الخدمة" value={booking.service_name} icon={<Scissors className="h-4 w-4" strokeWidth={1.6} />} />
-        <AppleRow label="التاريخ" value={arabicDate(booking.booking_date)} icon={<CalendarDays className="h-4 w-4" strokeWidth={1.6} />} />
-        <AppleRow label="الوقت" value={formatTime(booking.booking_time)} icon={<Clock className="h-4 w-4" strokeWidth={1.6} />} />
+        <AppleRow
+          label="الحلاق"
+          value={barberName}
+          icon={<User className="h-4 w-4" strokeWidth={1.6} />}
+        />
+        <AppleRow
+          label="الخدمة"
+          value={booking.service_name}
+          icon={<Scissors className="h-4 w-4" strokeWidth={1.6} />}
+        />
+        <AppleRow
+          label="التاريخ"
+          value={arabicDate(booking.booking_date)}
+          icon={<CalendarDays className="h-4 w-4" strokeWidth={1.6} />}
+        />
+        <AppleRow
+          label="الوقت"
+          value={formatTime(booking.booking_time)}
+          icon={<Clock className="h-4 w-4" strokeWidth={1.6} />}
+        />
       </div>
 
       <div className="rounded-2xl border border-gold/25 bg-gold/8 p-3.5 text-start text-[11.5px] font-semibold leading-relaxed text-accent-foreground">
@@ -1089,9 +958,7 @@ function BookingsList() {
         .from("reviews")
         .select("booking_id")
         .eq("customer_id", auth.user!.id);
-      return new Set(
-        (data ?? []).map((r) => r.booking_id).filter((id): id is string => !!id),
-      );
+      return new Set((data ?? []).map((r) => r.booking_id).filter((id): id is string => !!id));
     },
   });
 
@@ -1131,7 +998,9 @@ function BookingsList() {
           });
         }
         if (before.status === "booked" && b.status.startsWith("cancelled")) {
-          toast.error("تم إلغاء موعدك", { description: `${b.service_name} — ${arabicDate(b.booking_date)}` });
+          toast.error("تم إلغاء موعدك", {
+            description: `${b.service_name} — ${arabicDate(b.booking_date)}`,
+          });
         }
       }
     }
@@ -1196,9 +1065,7 @@ function BookingsList() {
   const upcoming = list.data
     .filter((b) => b.status === "booked" && !activeIds.has(b.id))
     .sort((a, b) => ts(a) - ts(b));
-  const past = list.data
-    .filter((b) => b.status !== "booked")
-    .sort((a, b) => ts(b) - ts(a));
+  const past = list.data.filter((b) => b.status !== "booked").sort((a, b) => ts(b) - ts(a));
 
   return (
     <div className="space-y-6">
@@ -1273,8 +1140,10 @@ function BookingCard({
     if (inService) return { label: "جارٍ الخدمة الآن", chip: "chip-warn" };
     if (b.status === "booked") return { label: "محجوز", chip: "chip-gold" };
     if (b.status === "completed") return { label: "مكتمل", chip: "chip-success" };
-    if (b.status === "cancelled_by_barber") return { label: "ملغي بواسطة الحلاق", chip: "chip-danger" };
-    if (b.status === "cancelled_by_customer") return { label: "ملغي بواسطة العميل", chip: "chip-danger" };
+    if (b.status === "cancelled_by_barber")
+      return { label: "ملغي بواسطة الحلاق", chip: "chip-danger" };
+    if (b.status === "cancelled_by_customer")
+      return { label: "ملغي بواسطة العميل", chip: "chip-danger" };
     return { label: "ملغي", chip: "chip-danger" };
   };
   const { label: status, chip: statusChip } = getStatusInfo();
@@ -1325,7 +1194,9 @@ function BookingCard({
             <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
             مباشر
           </span>
-          <span className="text-[11px] font-bold text-foreground">حلاقك بدأ الخدمة الآن — أهلاً بك!</span>
+          <span className="text-[11px] font-bold text-foreground">
+            حلاقك بدأ الخدمة الآن — أهلاً بك!
+          </span>
         </div>
       )}
 
@@ -1456,10 +1327,14 @@ function OffersList() {
             <span aria-hidden className="absolute inset-y-0 start-0 w-[3px] gradient-gold" />
             {o.discount_percent != null && (
               <div className="relative grid w-[68px] shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25">
-                <span aria-hidden className="absolute inset-y-1.5 start-0 w-px border-s border-dashed border-gold/40" />
+                <span
+                  aria-hidden
+                  className="absolute inset-y-1.5 start-0 w-px border-s border-dashed border-gold/40"
+                />
                 <div className="text-center">
                   <div className="font-display text-[1.55rem] font-black leading-none tnum">
-                    {o.discount_percent}<span className="text-[0.6rem] font-extrabold">٪</span>
+                    {o.discount_percent}
+                    <span className="text-[0.6rem] font-extrabold">٪</span>
                   </div>
                   <div className="mt-1 text-[8.5px] font-bold opacity-70">خصم</div>
                 </div>
@@ -1468,10 +1343,14 @@ function OffersList() {
             <div className="min-w-0 flex-1 py-0.5">
               <div className="flex items-start gap-2">
                 <Tag className="mt-0.5 h-4 w-4 shrink-0 text-accent-foreground" strokeWidth={1.7} />
-                <h3 className="font-display text-[0.95rem] font-extrabold leading-snug text-foreground">{o.title}</h3>
+                <h3 className="font-display text-[0.95rem] font-extrabold leading-snug text-foreground">
+                  {o.title}
+                </h3>
               </div>
               {o.description && (
-                <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted-foreground">{o.description}</p>
+                <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted-foreground">
+                  {o.description}
+                </p>
               )}
             </div>
           </article>
@@ -1488,16 +1367,21 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    getPushState().then(setPush).catch(() => setPush(null));
+    getPushState()
+      .then(setPush)
+      .catch(() => setPush(null));
   }, []);
 
   const togglePush = async () => {
     if (!push || busy) return;
     setBusy(true);
     try {
-      const next = push.subscribed ? await disablePushNotifications() : await enablePushNotifications();
+      const next = push.subscribed
+        ? await disablePushNotifications()
+        : await enablePushNotifications();
       setPush(next);
-      if (next.subscribed) toast.success("تم تفعيل الإشعارات", { description: "سنذكرك بموعدك قبل وقت كافٍ" });
+      if (next.subscribed)
+        toast.success("تم تفعيل الإشعارات", { description: "سنذكرك بموعدك قبل وقت كافٍ" });
       else if (next.permission === "denied") toast.error("الإشعارات محظورة من إعدادات المتصفح");
       else toast.message("تم إيقاف الإشعارات");
     } catch {
@@ -1524,7 +1408,10 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
             <div className="mt-1 truncate font-display text-[1.15rem] font-extrabold tracking-tight text-ink-foreground">
               {auth.profile?.full_name}
             </div>
-            <div className="mt-1 font-display text-xs font-bold tnum text-ink-foreground/60" dir="ltr">
+            <div
+              className="mt-1 font-display text-xs font-bold tnum text-ink-foreground/60"
+              dir="ltr"
+            >
               {auth.profile?.phone}
             </div>
           </div>
@@ -1539,11 +1426,19 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
           style={{ animationDelay: "0.05s" }}
         >
           <span className="flex min-w-0 items-center gap-3">
-            <span className={`grid h-10 w-10 shrink-0 place-items-center squircle transition-colors duration-300 ${push.subscribed ? "bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25" : "bg-secondary text-muted-foreground"}`}>
-              {push.subscribed ? <BellRing className="h-5 w-5" strokeWidth={1.6} /> : <BellOff className="h-5 w-5" strokeWidth={1.6} />}
+            <span
+              className={`grid h-10 w-10 shrink-0 place-items-center squircle transition-colors duration-300 ${push.subscribed ? "bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25" : "bg-secondary text-muted-foreground"}`}
+            >
+              {push.subscribed ? (
+                <BellRing className="h-5 w-5" strokeWidth={1.6} />
+              ) : (
+                <BellOff className="h-5 w-5" strokeWidth={1.6} />
+              )}
             </span>
             <span className="min-w-0">
-              <span className="block font-display text-[0.85rem] font-extrabold text-foreground">إشعارات الموعد</span>
+              <span className="block font-display text-[0.85rem] font-extrabold text-foreground">
+                إشعارات الموعد
+              </span>
               <span className="mt-0.5 block text-[11px] font-semibold text-muted-foreground">
                 {busy
                   ? "جارٍ التحديث..."
@@ -1564,14 +1459,19 @@ function ProfileView({ settings }: { settings: Settings | undefined }) {
       )}
 
       {settings && (
-        <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-card animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+        <div
+          className="rounded-2xl border border-border/70 bg-card p-4 shadow-card animate-fade-in-up"
+          style={{ animationDelay: "0.1s" }}
+        >
           <div className="flex items-center gap-2.5">
             <span className="grid h-9 w-9 shrink-0 place-items-center squircle bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25">
               <Store className="h-4 w-4" strokeWidth={1.7} />
             </span>
             <div className="min-w-0">
               <div className="eyebrow text-accent-foreground">تواصل معنا</div>
-              <div className="mt-0.5 truncate font-display text-[0.88rem] font-extrabold text-foreground">{settings.shop_name}</div>
+              <div className="mt-0.5 truncate font-display text-[0.88rem] font-extrabold text-foreground">
+                {settings.shop_name}
+              </div>
             </div>
           </div>
           {settings.address && (
@@ -1667,60 +1567,4 @@ function Empty({ title, subtitle }: { title: string; subtitle: string }) {
   );
 }
 
-/* -------- BOTTOM NAV -------- */
-function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
-  const tabs: Tab[] = ["home", "bookings", "offers", "profile"];
-  const touchStartX = useRef(0);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  }, []);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) < 50) return;
-    const currentIndex = tabs.indexOf(tab);
-    if (diff > 0 && currentIndex < tabs.length - 1) {
-      onChange(tabs[currentIndex + 1]);
-    } else if (diff < 0 && currentIndex > 0) {
-      onChange(tabs[currentIndex - 1]);
-    }
-  }, [tab, onChange, tabs]);
-
-  const items: { t: Tab; label: string; icon: React.ReactNode }[] = [
-    { t: "home", label: "الرئيسية", icon: <Home className="h-[20px]" strokeWidth={tab === "home" ? 2.2 : 1.5} /> },
-    { t: "bookings", label: "حجوزاتي", icon: <CalendarDays className="h-[20px]" strokeWidth={tab === "bookings" ? 2.2 : 1.5} /> },
-    { t: "offers", label: "العروض", icon: <Tag className="h-[20px]" strokeWidth={tab === "offers" ? 2.2 : 1.5} /> },
-    { t: "profile", label: "حسابي", icon: <User className="h-[20px]" strokeWidth={tab === "profile" ? 2.2 : 1.5} /> },
-  ];
-  return (
-    <nav
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)]"
-    >
-      <div className="nav-dock pointer-events-auto mx-auto grid max-w-md grid-cols-4">
-        {items.map((it) => {
-          const active = tab === it.t;
-          return (
-            <button
-              key={it.t}
-              onClick={() => onChange(it.t)}
-              aria-current={active ? "page" : undefined}
-              className={`dock-item press ${active ? "dock-item-active" : "hover:text-foreground"}`}
-            >
-              <span
-                className={`grid h-9 w-[46px] place-items-center rounded-[0.85rem] transition-all duration-300 ${
-                  active ? "gradient-gold text-gold-foreground shadow-glow-gold" : ""
-                }`}
-              >
-                {it.icon}
-              </span>
-              <span className={active ? "text-accent-foreground" : undefined}>{it.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
+/* Bottom navigation moved to src/components/customer/CustomerBottomNav.tsx (reference design). */
