@@ -2,11 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, customerEmail, customerPassword, staffEmail } from "@/hooks/use-auth";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { useAuth, customerPassword, staffEmail } from "@/hooks/use-auth";
 import { ensureDefaultAdmin, signUpCustomer, ADMIN_EMAIL, ADMIN_DEFAULT_PASSWORD } from "@/lib/admin.functions";
 import { toast } from "sonner";
-import { Scissors, User, Lock, Phone, ShieldCheck, Sparkles, Store, Crown } from "lucide-react";
+import { Scissors, User, Lock, Phone, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -20,24 +19,24 @@ export const Route = createFileRoute("/auth")({
 
 type Tab = "customer" | "staff" | "admin";
 
-const ROLES: { key: Tab; label: string; icon: React.ReactNode }[] = [
-  { key: "customer", label: "عميل", icon: <User className="h-4 w-4" strokeWidth={1.75} /> },
-  { key: "staff", label: "حلاق", icon: <Store className="h-4 w-4" strokeWidth={1.75} /> },
-  { key: "admin", label: "مدير", icon: <Crown className="h-4 w-4" strokeWidth={1.75} /> },
+const ROLES: { key: Tab; label: string }[] = [
+  { key: "customer", label: "عميل" },
+  { key: "staff", label: "موظف" },
+  { key: "admin", label: "مدير" },
 ];
 
 const COPY: Record<Tab, { title: string; body: string }> = {
   customer: {
-    title: "احجز موعدك في دقيقة",
-    body: "ادخل باسمك ورقمك فقط — لا حاجة لكلمة مرور. رقمك هو هويتك في الصالون.",
+    title: "احجز موعدك بلمسة واحدة",
+    body: "",
   },
   staff: {
-    title: "لوحة الحلاق",
-    body: "سجّل دخولك لمتابعة طابور اليوم، وبدء وإنهاء الخدمات لحظة بلحظة.",
+    title: "دخول الموظفين",
+    body: "سجّل دخولك لمتابعة طابور اليوم وبدء الخدمات.",
   },
   admin: {
-    title: "لوحة الإدارة",
-    body: "تحكم كامل في الحلاقين والخدمات والحجوزات والعروض من مكان واحد.",
+    title: "دخول المدير",
+    body: "تحكم كامل في الحلاقين والخدمات والحجوزات والعروض.",
   },
 };
 
@@ -158,169 +157,156 @@ function AuthPage() {
   const copy = COPY[tab];
 
   return (
-    <div dir="rtl" className="relative min-h-screen overflow-hidden gradient-hero grain text-ink-foreground">
-      {/* Ambient gold blooms */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-40 start-1/2 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full bg-gold/22 blur-[110px]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-48 -end-24 h-[22rem] w-[22rem] rounded-full bg-gold/12 blur-[120px]"
-      />
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-gold/60 to-transparent" />
-
-      <div className="fixed top-4 end-4 z-20">
-        <ThemeToggle />
-      </div>
-
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[26rem] flex-col justify-center px-6 py-14">
-        {/* Brand */}
+    <div dir="rtl" className="min-h-screen bg-[#FAF6EE] text-[#211a12]">
+      <div className="mx-auto flex min-h-screen w-full max-w-[26rem] flex-col px-6 pb-8 pt-12">
+        {/* Brand — matches reference: black scissors in orange ring, bold wordmark */}
         <header className="animate-fade-in-up text-center">
-          <div className="relative mx-auto grid h-24 w-24 place-items-center">
-            <span aria-hidden className="absolute inset-0 rounded-[1.75rem] border border-gold/30 animate-ring-expand" />
+          <div className="relative mx-auto grid h-28 w-28 place-items-center">
             <span
               aria-hidden
-              className="absolute inset-0 rounded-[1.75rem] bg-gold/25 blur-2xl animate-glow-pulse"
+              className="absolute inset-0 rounded-full border-[6px] border-[#E8831A]"
+              style={{ clipPath: "polygon(0 0, 100% 0, 100% 88%, 0 88%)" }}
             />
-            <span className="relative grid h-24 w-24 place-items-center rounded-[1.75rem] gradient-gold text-gold-foreground shadow-glow-gold ring-1 ring-inset ring-white/40">
-              <Scissors className="h-11 w-11" strokeWidth={1.4} />
-            </span>
+            <span aria-hidden className="absolute inset-0 rounded-full border-[6px] border-[#E8831A]/90" />
+            <span aria-hidden className="absolute left-1/2 top-[-8px] h-5 w-8 -translate-x-1/2 bg-[#FAF6EE]" />
+            <Scissors className="h-14 w-14 text-[#211a12]" strokeWidth={2.4} />
           </div>
 
-          <h1 className="mt-7 display-xl text-gradient-gold">حلاق الباشا</h1>
-
-          <div className="mx-auto mt-4 flex items-center justify-center gap-3">
-            <span className="h-px w-10 bg-gradient-to-l from-transparent to-gold/70" />
-            <p className="eyebrow !text-ink-foreground/55">صالون رجالي · حجز فوري</p>
-            <span className="h-px w-10 bg-gradient-to-r from-transparent to-gold/70" />
-          </div>
+          <h1 className="mt-5 font-display text-[2.9rem] font-black leading-none tracking-tight text-[#211a12]">
+            حَلاقُ البَاشَا
+          </h1>
+          <p className="mt-3 text-[1.05rem] font-semibold text-[#211a12]">
+            احجز موعدك بلمسة واحدة
+          </p>
         </header>
 
-        {/* Role switch */}
-        <div className="mt-9 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+        {/* Role switch — grey pill, active tab is white with orange text */}
+        <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "0.08s" }}>
           <div
             role="tablist"
             aria-label="نوع الحساب"
-            className="flex gap-1 rounded-full border border-white/10 bg-white/[0.06] p-1.5 backdrop-blur-xl"
+            className="flex items-center rounded-full bg-[#E4E1D8] p-1.5 shadow-[0_10px_25px_-12px_rgba(0,0,0,0.35)]"
           >
-            {ROLES.map((r) => {
+            {ROLES.map((r, i) => {
               const active = tab === r.key;
               return (
-                <button
-                  key={r.key}
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setTab(r.key)}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-[0.8rem] font-bold transition-all duration-300 press ${
-                    active
-                      ? "gradient-gold text-gold-foreground shadow-glow-gold"
-                      : "text-ink-foreground/55 hover:text-ink-foreground/85"
-                  }`}
-                >
-                  {r.icon}
-                  {r.label}
-                </button>
+                <div key={r.key} className="flex flex-1 items-center">
+                  <button
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setTab(r.key)}
+                    className={`flex-1 cursor-pointer rounded-full py-2.5 text-[1.05rem] font-bold transition-all duration-200 press ${
+                      active
+                        ? "bg-white text-[#E8831A] shadow-[0_6px_16px_-6px_rgba(0,0,0,0.35)]"
+                        : "text-[#2b2b2b] hover:text-black"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                  {i < ROLES.length - 1 && (
+                    <span aria-hidden className="mx-1 h-7 w-px bg-[#2b2b2b]/20" />
+                  )}
+                </div>
               );
             })}
           </div>
         </div>
 
         {/* Card */}
-        <div className="mt-5 animate-fade-in-up" style={{ animationDelay: "0.16s" }}>
-          <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-white/[0.055] p-6 backdrop-blur-2xl shadow-[0_24px_70px_-30px_rgba(0,0,0,0.85)]">
-            <span aria-hidden className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-l from-transparent via-gold/60 to-transparent" />
-
+        <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "0.14s" }}>
+          <div className="rounded-[1.6rem] bg-white p-5 shadow-[0_24px_55px_-24px_rgba(0,0,0,0.35)] ring-1 ring-black/[0.04]">
             <div key={tab} className="animate-fade-in">
-              <h2 className="font-display text-lg font-extrabold leading-snug text-ink-foreground">
-                {copy.title}
-              </h2>
-              <p className="mt-1.5 text-[0.78rem] font-medium leading-relaxed text-ink-foreground/55">
-                {copy.body}
-              </p>
+              {tab !== "customer" && (
+                <div className="mb-4 text-center">
+                  <h2 className="font-display text-lg font-extrabold text-[#211a12]">
+                    {copy.title}
+                  </h2>
+                  <p className="mt-1 text-[0.8rem] font-medium text-[#211a12]/60">
+                    {copy.body}
+                  </p>
+                </div>
+              )}
 
-              <div className="mt-5">
-                {tab === "customer" && (
-                  <form onSubmit={customerSubmit} className="space-y-3.5">
-                    <Field
-                      icon={<User className="h-[18px]" strokeWidth={1.6} />}
-                      placeholder="الاسم بالكامل"
-                      value={cName}
-                      onChange={setCName}
-                      autoComplete="name"
-                    />
-                    <Field
-                      icon={<Phone className="h-[18px]" strokeWidth={1.6} />}
-                      placeholder="رقم الجوال"
-                      type="tel"
-                      value={cPhone}
-                      onChange={setCPhone}
-                      autoComplete="tel"
-                    />
-                    <Submit loading={cLoading} label="دخول / تسجيل" />
-                    <p className="flex items-center justify-center gap-1.5 pt-0.5 text-[0.68rem] font-semibold text-ink-foreground/40">
-                      <Sparkles className="h-3.5 w-3.5" strokeWidth={1.8} />
-                      لا حاجة لكلمة مرور — رقمك هو هويتك
-                    </p>
-                  </form>
-                )}
+              {tab === "customer" && (
+                <form onSubmit={customerSubmit} className="space-y-4">
+                  <Field
+                    icon={<User className="h-5 w-5 fill-[#E8831A] text-[#E8831A]" strokeWidth={0} />}
+                    placeholder="الاسم الكامل"
+                    value={cName}
+                    onChange={setCName}
+                    autoComplete="name"
+                  />
+                  <Field
+                    icon={<Phone className="h-5 w-5 fill-[#E8831A] text-[#E8831A]" strokeWidth={0} />}
+                    placeholder="رقم الجوال"
+                    type="tel"
+                    value={cPhone}
+                    onChange={setCPhone}
+                    autoComplete="tel"
+                  />
+                  <Submit loading={cLoading} label="دخول / تسجيل" />
+                </form>
+              )}
 
-                {tab === "staff" && (
-                  <form onSubmit={staffSubmit} className="space-y-3.5">
-                    <Field
-                      icon={<Phone className="h-[18px]" strokeWidth={1.6} />}
-                      placeholder="رقم الجوال"
-                      type="tel"
-                      value={sPhone}
-                      onChange={setSPhone}
-                      autoComplete="username"
-                    />
-                    <Field
-                      icon={<Lock className="h-[18px]" strokeWidth={1.6} />}
-                      placeholder="كلمة المرور"
-                      type="password"
-                      value={sPwd}
-                      onChange={setSPwd}
-                      autoComplete="current-password"
-                    />
-                    <Submit loading={sLoading} label="دخول لوحة الحلاق" />
-                  </form>
-                )}
+              {tab === "staff" && (
+                <form onSubmit={staffSubmit} className="space-y-4">
+                  <Field
+                    icon={<Phone className="h-5 w-5 fill-[#E8831A] text-[#E8831A]" strokeWidth={0} />}
+                    placeholder="رقم الجوال"
+                    type="tel"
+                    value={sPhone}
+                    onChange={setSPhone}
+                    autoComplete="username"
+                  />
+                  <Field
+                    icon={<Lock className="h-5 w-5 text-[#E8831A]" strokeWidth={2} />}
+                    placeholder="كلمة المرور"
+                    type="password"
+                    value={sPwd}
+                    onChange={setSPwd}
+                    autoComplete="current-password"
+                  />
+                  <Submit loading={sLoading} label="دخول" />
+                </form>
+              )}
 
-                {tab === "admin" && (
-                  <form onSubmit={adminSubmit} className="space-y-3.5">
-                    <div className="flex items-center gap-2.5 rounded-2xl border border-gold/25 bg-gold/10 px-4 py-3 text-[0.7rem] font-bold text-gold">
-                      <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-                      <span>دخول المدير الافتراضي — صلاحيات كاملة</span>
-                    </div>
-                    <Field
-                      icon={<User className="h-[18px]" strokeWidth={1.6} />}
-                      placeholder="اسم المستخدم"
-                      value={aUser}
-                      onChange={setAUser}
-                      autoComplete="username"
-                    />
-                    <Field
-                      icon={<Lock className="h-[18px]" strokeWidth={1.6} />}
-                      placeholder="كلمة المرور"
-                      type="password"
-                      value={aPwd}
-                      onChange={setAPwd}
-                      autoComplete="current-password"
-                    />
-                    <Submit loading={aLoading} label="دخول كمدير" />
-                  </form>
-                )}
-              </div>
+              {tab === "admin" && (
+                <form onSubmit={adminSubmit} className="space-y-4">
+                  <div className="flex items-center gap-2 rounded-2xl border border-[#E8831A]/30 bg-[#E8831A]/10 px-4 py-3 text-[0.75rem] font-bold text-[#B25A09]">
+                    <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={2} />
+                    <span>دخول المدير — صلاحيات كاملة</span>
+                  </div>
+                  <Field
+                    icon={<User className="h-5 w-5 fill-[#E8831A] text-[#E8831A]" strokeWidth={0} />}
+                    placeholder="اسم المستخدم"
+                    value={aUser}
+                    onChange={setAUser}
+                    autoComplete="username"
+                  />
+                  <Field
+                    icon={<Lock className="h-5 w-5 text-[#E8831A]" strokeWidth={2} />}
+                    placeholder="كلمة المرور"
+                    type="password"
+                    value={aPwd}
+                    onChange={setAPwd}
+                    autoComplete="current-password"
+                  />
+                  <Submit loading={aLoading} label="دخول كمدير" />
+                </form>
+              )}
             </div>
           </div>
         </div>
 
+        {/* Helper line */}
+        <p className="mt-6 animate-fade-in-up text-center text-[0.95rem] font-semibold text-[#211a12]" style={{ animationDelay: "0.2s" }}>
+          لا حاجة لكلمة مرور — الرقم هو هويتك
+        </p>
+
+        <div className="flex-1" />
+
         {/* Footer */}
-        <p
-          className="mt-9 animate-fade-in-up text-center text-[0.62rem] font-semibold tracking-wide text-ink-foreground/28"
-          style={{ animationDelay: "0.26s" }}
-        >
+        <p className="mt-10 text-center text-[0.8rem] font-medium text-[#211a12]">
           Powered by Eng /Mohamed Eltahan &amp; Eng /Kamel Elmahy
         </p>
       </div>
@@ -344,18 +330,16 @@ function Field({
   autoComplete?: string;
 }) {
   return (
-    <label className="group flex items-center gap-3 rounded-2xl border border-white/12 bg-white/[0.04] px-4 transition-all duration-300 focus-within:border-gold/55 focus-within:bg-white/[0.075] focus-within:ring-2 focus-within:ring-gold/25">
-      <span className="shrink-0 text-ink-foreground/35 transition-colors duration-200 group-focus-within:text-gold">
-        {icon}
-      </span>
+    <label className="flex items-center gap-3 rounded-2xl border border-[#E3DCCB] bg-white px-4 transition-all duration-200 focus-within:border-[#E8831A]/60 focus-within:ring-2 focus-within:ring-[#E8831A]/20">
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
         autoComplete={autoComplete}
-        className="w-full bg-transparent py-3.5 text-sm font-medium text-ink-foreground outline-none placeholder:text-ink-foreground/30"
+        className="w-full bg-transparent py-4 text-[1rem] font-medium text-[#211a12] outline-none placeholder:text-[#211a12]/40"
       />
+      <span className="shrink-0">{icon}</span>
     </label>
   );
 }
@@ -366,10 +350,10 @@ function Submit({ loading, label }: { loading: boolean; label: string }) {
       type="submit"
       disabled={loading}
       aria-busy={loading}
-      className="mt-1 flex w-full items-center justify-center rounded-2xl gradient-gold py-3.5 text-[0.82rem] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-[1.06] active:scale-[0.975] disabled:opacity-55 press"
+      className="flex w-full cursor-pointer items-center justify-center rounded-2xl bg-[#E8831A] py-4 text-[1.15rem] font-extrabold text-white shadow-[0_14px_28px_-12px_rgba(232,131,26,0.65)] transition-all duration-200 hover:bg-[#D9730D] active:scale-[0.98] disabled:opacity-60 press"
     >
       {loading ? (
-        <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-gold-foreground/25 border-t-gold-foreground" />
+        <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
       ) : (
         label
       )}
