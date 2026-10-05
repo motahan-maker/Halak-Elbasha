@@ -5,50 +5,38 @@ import type { HomeOffer } from "./types";
 
 function OfferCard({ offer }: { offer: HomeOffer }) {
   return (
-    <article className="relative w-[218px] shrink-0 snap-start overflow-hidden rounded-3xl bg-white shadow-[0_18px_40px_-20px_rgba(36,19,13,0.35)] ring-1 ring-[#24130D]/5">
-      <div className="p-4 pb-2">
+    <article className="relative flex w-[230px] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elevated">
+      <div>
         <div className="flex items-start justify-between gap-2">
-          <span className="grid h-14 w-14 place-items-center rounded-full bg-[#D86620] font-display text-[1.05rem] font-black text-white shadow-[0_10px_20px_-8px_rgba(216,102,32,0.8)]">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#111111] font-display text-[1rem] font-black text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]">
             {offer.discount_percent != null ? (
               <span className="tnum">
                 {offer.discount_percent}
-                <span className="text-[0.65rem] font-extrabold">٪</span>
+                <span className="text-[0.65rem] font-bold">٪</span>
               </span>
             ) : (
-              <Tag className="h-6 w-6" strokeWidth={2} />
+              <Tag className="h-5 w-5" strokeWidth={1.8} />
             )}
           </span>
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-[#C99A35]/15 text-[#B07E1F]">
-            <Tag className="h-[18px] w-[18px]" strokeWidth={2} />
+          <span className="rounded-full border border-border bg-secondary px-2.5 py-1 font-display text-[0.68rem] font-bold text-muted-foreground">
+            عرض خاص
           </span>
         </div>
-        <h3 className="mt-3 font-display text-[1.02rem] font-extrabold leading-snug text-[#24130D]">
+        <h3 className="mt-4 font-display text-[1rem] font-bold leading-snug text-foreground">
           {offer.title}
         </h3>
         {offer.description && (
-          <p className="mt-1 min-h-10 whitespace-pre-line text-[0.8rem] font-medium leading-relaxed text-[#24130D]/65">
+          <p className="mt-1.5 whitespace-pre-line font-display text-[0.8rem] font-medium leading-relaxed text-muted-foreground">
             {offer.description}
           </p>
         )}
       </div>
-      {/* Gold/orange decorative curved bottom */}
-      <svg
-        viewBox="0 0 218 52"
-        preserveAspectRatio="none"
-        aria-hidden
-        className="block h-[52px] w-full"
-      >
-        <defs>
-          <linearGradient id={`offer-wave-${offer.id}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#C99A35" />
-            <stop offset="1" stopColor="#D86620" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M0 30 C 40 8, 80 8, 109 22 C 140 37, 180 40, 218 18 L 218 52 L 0 52 Z"
-          fill={`url(#offer-wave-${offer.id})`}
-        />
-      </svg>
+
+      <div className="mt-4 border-t border-border/60 pt-3">
+        <span className="font-display text-[0.75rem] font-bold text-foreground">
+          خصم حصري عند الحجز
+        </span>
+      </div>
     </article>
   );
 }
@@ -69,12 +57,12 @@ export function OffersSection() {
   if (offers.isLoading) {
     return (
       <section aria-label="العروض الحالية">
-        <h2 className="font-display text-[1.2rem] font-black text-[#C99A35]">العروض الحالية</h2>
+        <h2 className="font-display text-[1.15rem] font-black text-foreground">العروض الحالية</h2>
         <div className="scrollbar-none mt-3 flex gap-3 overflow-hidden">
           {[0, 1].map((i) => (
             <div
               key={i}
-              className="h-48 w-[218px] shrink-0 animate-pulse rounded-3xl bg-[#EDE4CE]"
+              className="h-44 w-[230px] shrink-0 animate-shimmer rounded-3xl border border-border bg-muted"
             />
           ))}
         </div>
@@ -86,8 +74,13 @@ export function OffersSection() {
 
   return (
     <section aria-label="العروض الحالية">
-      <h2 className="font-display text-[1.2rem] font-black text-[#C99A35]">العروض الحالية</h2>
-      <div className="scrollbar-none -mx-4 mt-3 flex snap-x gap-3 overflow-x-auto px-4 pb-1">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-[1.15rem] font-black text-foreground">العروض الحالية</h2>
+        <span className="font-display text-[0.75rem] font-bold text-muted-foreground">
+          {offers.data.length} عروض
+        </span>
+      </div>
+      <div className="scrollbar-none -mx-4 mt-3.5 flex snap-x gap-3 overflow-x-auto px-4 pb-1">
         {offers.data.map((offer) => (
           <OfferCard key={offer.id} offer={offer} />
         ))}

@@ -3,20 +3,24 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
-/* Button                                                              */
+/* Button Primitives (Design System Reference)                        */
 /* ------------------------------------------------------------------ */
 
 type BrandButtonVariant = "primary" | "secondary" | "outline" | "danger" | "ghost" | "success";
 
 const BUTTON_STYLES: Record<BrandButtonVariant, string> = {
   primary:
-    "bg-[#C99A35] text-white shadow-[0_14px_28px_-12px_rgba(201,154,53,0.65)] hover:bg-[#B3872C] hover:brightness-[1.03]",
+    "bg-[#111111] text-[#FFFFFF] shadow-card hover:bg-[#262626] active:bg-[#000000] dark:bg-[#F6F1E8] dark:text-[#111111] dark:hover:bg-[#FFFFFF]",
   secondary:
-    "border border-[#E5DCCB] bg-white text-[#24140E] shadow-card hover:border-[#C99A35]/50 hover:text-[#8A6414]",
-  outline: "border border-[#C99A35]/60 bg-transparent text-[#8A6414] hover:bg-[#C99A35]/10",
-  danger: "bg-[#B94E48] text-white shadow-card hover:brightness-105",
-  ghost: "bg-transparent text-[#756D64] hover:bg-[#C99A35]/10 hover:text-[#8A6414]",
-  success: "bg-[#5C8A58] text-white shadow-card hover:brightness-105",
+    "border border-[#DAD6CF] bg-[#F6F1E8] text-[#111111] shadow-card hover:bg-[#EFE8DC] active:bg-[#E2DAD0] dark:border-[#2A2A2A] dark:bg-[#1A1A1A] dark:text-[#F6F1E8] dark:hover:bg-[#242424]",
+  outline:
+    "border border-[#111111] bg-transparent text-[#111111] hover:bg-[#111111]/5 active:bg-[#111111]/10 dark:border-[#F6F1E8] dark:text-[#F6F1E8] dark:hover:bg-[#F6F1E8]/10",
+  danger:
+    "bg-[#C5221F] text-[#FFFFFF] shadow-card hover:bg-[#A81B18] active:bg-[#8E1714]",
+  ghost:
+    "bg-transparent text-[#8A857D] hover:bg-[#EFE8DC] hover:text-[#111111] dark:hover:bg-[#1F1F1F] dark:hover:text-[#F6F1E8]",
+  success:
+    "bg-[#2E7D32] text-[#FFFFFF] shadow-card hover:bg-[#1B5E20] active:bg-[#144718]",
 };
 
 interface BrandButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -25,7 +29,6 @@ interface BrandButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: ReactNode;
 }
 
-/** Unified button: gold primary like the login CTA. Min 44px touch target. */
 export function BrandButton({
   variant = "primary",
   loading = false,
@@ -41,7 +44,7 @@ export function BrandButton({
       disabled={disabled || loading}
       aria-busy={loading}
       className={cn(
-        "inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 font-display text-[0.82rem] font-extrabold transition-all duration-200 press disabled:cursor-not-allowed disabled:opacity-55",
+        "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-2.5 font-display text-[0.875rem] font-bold transition-all duration-200 press disabled:cursor-not-allowed disabled:opacity-50",
         BUTTON_STYLES[variant],
         className,
       )}
@@ -54,19 +57,25 @@ export function BrandButton({
 }
 
 /* ------------------------------------------------------------------ */
-/* Card                                                                */
+/* Card Primitive                                                     */
 /* ------------------------------------------------------------------ */
 
 export function BrandCard({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("card-brand p-4", className)} {...props}>
+    <div
+      className={cn(
+        "rounded-2xl border border-[#DAD6CF] bg-[#FFFFFF] p-5 shadow-card dark:border-[#2A2A2A] dark:bg-[#141414]",
+        className,
+      )}
+      {...props}
+    >
       {children}
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Section heading                                                     */
+/* Section Heading                                                    */
 /* ------------------------------------------------------------------ */
 
 export function SectionHeading({
@@ -76,22 +85,29 @@ export function SectionHeading({
   children: ReactNode;
   className?: string;
 }) {
-  return <h2 className={cn("section-heading", className)}>{children}</h2>;
+  return (
+    <h2 className={cn("font-display text-[1.15rem] font-black text-foreground", className)}>
+      {children}
+    </h2>
+  );
 }
 
 /* ------------------------------------------------------------------ */
-/* Status badge                                                        */
+/* Status Badges                                                      */
 /* ------------------------------------------------------------------ */
 
 type BadgeTone = "gold" | "success" | "danger" | "muted" | "warn";
 
 const BADGE_STYLES: Record<BadgeTone, string> = {
-  gold: "border-[#C99A35]/35 bg-[#C99A35]/12 text-[#8A6414] dark:text-[#E3B95A]",
-  success: "border-[#5C8A58]/30 bg-[#5C8A58]/10 text-[#3E6B3B] dark:text-[#82A97E]",
-  danger: "border-[#B94E48]/30 bg-[#B94E48]/10 text-[#B94E48] dark:text-[#D46960]",
+  gold: "border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#F6F1E8] dark:bg-[#F6F1E8] dark:text-[#111111]",
+  success:
+    "border-[#2E7D32]/25 bg-[#2E7D32]/10 text-[#2E7D32] dark:border-[#43A047]/30 dark:bg-[#43A047]/15 dark:text-[#81C784]",
+  danger:
+    "border-[#C5221F]/25 bg-[#C5221F]/10 text-[#C5221F] dark:border-[#E53935]/30 dark:bg-[#E53935]/15 dark:text-[#EF9A9A]",
   muted:
-    "border-[#E5DCCB] bg-[#F5EFE2] text-[#756D64] dark:border-white/10 dark:bg-white/5 dark:text-[#A89A87]",
-  warn: "border-[#D9A62E]/35 bg-[#D9A62E]/12 text-[#8A6414] dark:text-[#E0B44C]",
+    "border-[#DAD6CF] bg-[#EFE8DC] text-[#4F4C47] dark:border-[#2A2A2A] dark:bg-[#1F1F1F] dark:text-[#A6A199]",
+  warn:
+    "border-[#B45309]/25 bg-[#B45309]/10 text-[#B45309] dark:border-[#F59E0B]/30 dark:bg-[#F59E0B]/15 dark:text-[#FCD34D]",
 };
 
 export function StatusBadge({
@@ -106,7 +122,7 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[0.68rem] font-extrabold",
+        "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[0.7rem] font-bold",
         BADGE_STYLES[tone],
         className,
       )}
@@ -116,7 +132,6 @@ export function StatusBadge({
   );
 }
 
-/** Booking status -> badge tone + Arabic label. */
 export function BookingStatusBadge({ status }: { status: string }) {
   if (status === "completed") return <StatusBadge tone="success">مكتمل</StatusBadge>;
   if (
@@ -129,7 +144,7 @@ export function BookingStatusBadge({ status }: { status: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Empty / error states                                                */
+/* Empty & Error States                                               */
 /* ------------------------------------------------------------------ */
 
 export function EmptyState({
@@ -144,13 +159,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="card-brand p-8 text-center">
-      <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#C99A35]/12 text-[#8A6414]">
+    <div className="rounded-2xl border border-[#DAD6CF] bg-[#FFFFFF] p-8 text-center shadow-card dark:border-[#2A2A2A] dark:bg-[#141414]">
+      <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#EFE8DC] text-[#111111] dark:bg-[#242424] dark:text-[#F6F1E8]">
         {icon}
       </div>
-      <p className="mt-3 font-display text-[0.9rem] font-extrabold text-foreground">{title}</p>
+      <p className="mt-3.5 font-display text-[0.95rem] font-bold text-foreground">{title}</p>
       {hint && <p className="mt-1 text-xs font-medium text-muted-foreground">{hint}</p>}
-      {action && <div className="mt-4">{action}</div>}
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }
@@ -163,8 +178,8 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <div className="card-brand p-8 text-center">
-      <p className="font-display text-[0.9rem] font-extrabold text-foreground">{message}</p>
+    <div className="rounded-2xl border border-[#DAD6CF] bg-[#FFFFFF] p-8 text-center shadow-card dark:border-[#2A2A2A] dark:bg-[#141414]">
+      <p className="font-display text-[0.95rem] font-bold text-foreground">{message}</p>
       {onRetry && (
         <BrandButton variant="secondary" onClick={onRetry} className="mt-4">
           إعادة المحاولة
@@ -175,7 +190,7 @@ export function ErrorState({
 }
 
 /* ------------------------------------------------------------------ */
-/* Labeled input (login-DNA style)                                     */
+/* Labeled Form Input                                                 */
 /* ------------------------------------------------------------------ */
 
 interface BrandFieldProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -191,10 +206,10 @@ export function BrandField({ label, icon, error, id, className, ...props }: Bran
       <label
         htmlFor={id}
         className={cn(
-          "flex min-h-14 items-center gap-3 rounded-2xl border bg-white px-4 transition-all duration-200 dark:bg-white/5",
+          "flex min-h-13 items-center gap-3 rounded-2xl border bg-[#FFFFFF] px-4 transition-all duration-200 dark:bg-[#141414]",
           error
-            ? "border-red-400 focus-within:border-red-400 focus-within:ring-2 focus-within:ring-red-200"
-            : "border-[#E5DCCB] focus-within:border-[#C99A35]/60 focus-within:ring-2 focus-within:ring-[#C99A35]/25 dark:border-white/10",
+            ? "border-[#C5221F] focus-within:border-[#C5221F] focus-within:ring-2 focus-within:ring-[#C5221F]/20"
+            : "border-[#DAD6CF] focus-within:border-[#111111] focus-within:ring-2 focus-within:ring-[#111111]/15 dark:border-[#2A2A2A] dark:focus-within:border-[#F6F1E8]",
         )}
       >
         <span className="sr-only">{label}</span>
@@ -203,11 +218,11 @@ export function BrandField({ label, icon, error, id, className, ...props }: Bran
           aria-label={label}
           aria-invalid={!!error}
           aria-describedby={error && errorId ? errorId : undefined}
-          className="w-full bg-transparent py-4 text-[0.95rem] font-medium text-[#24140E] outline-none placeholder:text-[#24140E]/40 dark:text-[#F5ECDD] dark:placeholder:text-[#F5ECDD]/40"
+          className="w-full bg-transparent py-3.5 font-display text-[0.95rem] font-medium text-foreground outline-none placeholder:text-[#8A857D]"
           {...props}
         />
         {icon && (
-          <span aria-hidden className="shrink-0 text-[#C99A35]">
+          <span aria-hidden className="shrink-0 text-[#8A857D]">
             {icon}
           </span>
         )}
@@ -216,7 +231,7 @@ export function BrandField({ label, icon, error, id, className, ...props }: Bran
         <p
           id={errorId}
           role="alert"
-          className="mt-1.5 px-1 text-[0.78rem] font-semibold text-red-600"
+          className="mt-1.5 px-1 font-display text-[0.78rem] font-semibold text-[#C5221F]"
         >
           {error}
         </p>

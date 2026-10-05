@@ -58,40 +58,36 @@ export function PwaInstallBanner() {
   if (installed || !show || !deferred) return null;
 
   return (
-    <div className="pwa-banner-animate fixed bottom-4 right-4 left-4 z-50 md:left-auto md:w-96">
-      <div className="relative overflow-hidden rounded-2xl border border-gold/25 bg-card p-4 shadow-elevated">
-        <span
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/55 to-transparent"
-        />
+    <div className="fixed bottom-20 right-4 left-4 z-50 md:left-auto md:w-96" dir="rtl">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-luxe">
         <button
           onClick={handleDismiss}
           aria-label="إغلاق"
-          className="press absolute end-3 top-3 grid h-7 w-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="absolute end-3 top-3 grid h-7 w-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground press"
         >
-          <X className="h-3.5 w-3.5" strokeWidth={1.8} />
+          <X className="h-4 w-4" strokeWidth={1.8} />
         </button>
         <div className="flex items-center gap-3 pe-7">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl gradient-gold text-gold-foreground shadow-glow-gold ring-1 ring-inset ring-gold/35">
-            <Smartphone className="h-5.5 w-5.5" strokeWidth={1.7} />
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#111111] text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]">
+            <Smartphone className="h-6 w-6" strokeWidth={1.8} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-display text-[0.88rem] font-extrabold text-foreground">تثبيت حلاق الباشا</p>
-            <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-muted-foreground">
-              أضف التطبيق إلى شاشة هاتفك للوصول السريع
+            <p className="font-display text-sm font-bold text-foreground">تثبيت تطبيق حلاق الباشا</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              أضف التطبيق لشاشة هاتفك لحجز أسرع وتنبيهات فورية
             </p>
           </div>
         </div>
         <div className="mt-3.5 flex gap-2">
           <button
             onClick={handleInstall}
-            className="press flex-1 rounded-xl gradient-gold px-4 py-2.5 font-display text-[12.5px] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-200 hover:brightness-110"
+            className="flex-1 rounded-xl bg-[#111111] py-2.5 font-display text-xs font-bold text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111] press"
           >
-            تثبيت الآن
+            تثبيت التطبيق
           </button>
           <button
             onClick={handleDismiss}
-            className="press rounded-xl border border-border/70 bg-secondary px-4 py-2.5 text-[12px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
+            className="rounded-xl border border-border bg-secondary px-4 py-2.5 font-display text-xs font-bold text-foreground press"
           >
             لاحقاً
           </button>

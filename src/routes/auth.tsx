@@ -151,14 +151,14 @@ function AuthPage() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#FAF8F3] text-[#171717]">
-      <div className="mx-auto flex min-h-screen w-full max-w-[26rem] flex-col px-6 pb-8 pt-12">
+    <div dir="rtl" className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto flex min-h-screen w-full max-w-[26rem] flex-col px-5 pb-8 pt-10">
         <div className="animate-fade-in-up">
           <BrandHeader />
         </div>
 
         {/* Role selector */}
-        <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "0.08s" }}>
+        <div className="mt-7 animate-fade-in-up" style={{ animationDelay: "0.08s" }}>
           <RoleSelector
             value={tab}
             onChange={(role) => {
@@ -171,11 +171,11 @@ function AuthPage() {
         </div>
 
         {/* Auth card */}
-        <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "0.14s" }}>
-          <div className="rounded-[1.6rem] bg-white p-5 shadow-[0_24px_55px_-24px_rgba(0,0,0,0.3)] ring-1 ring-black/[0.04]">
+        <div className="mt-5 animate-fade-in-up" style={{ animationDelay: "0.14s" }}>
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-card dark:border-[#2A2A2A]">
             <div key={tab} className="animate-fade-in">
               {tab === "customer" && (
-                <form onSubmit={customerSubmit} className="space-y-4" noValidate={false}>
+                <form onSubmit={customerSubmit} className="space-y-3.5" noValidate={false}>
                   <AuthField
                     id="customer-name"
                     label="الاسم الكامل"
@@ -184,39 +184,41 @@ function AuthPage() {
                       setCName(v);
                       if (cNameError) setCNameError(null);
                     }}
-                    icon={<User className="h-5 w-5 text-[#E8892F]" strokeWidth={2} />}
+                    icon={<User className="h-5 w-5" strokeWidth={1.8} />}
                     autoComplete="name"
                     error={cNameError}
                   />
                   <AuthField
                     id="customer-phone"
-                    label="رقم الجوال"
+                    label="رقم الجوال (01XXXXXXXXX)"
                     value={cPhone}
                     onChange={(v) => {
                       setCPhone(v);
                       if (cPhoneError) setCPhoneError(null);
                     }}
-                    icon={<Phone className="h-5 w-5 text-[#E8892F]" strokeWidth={2} />}
+                    icon={<Phone className="h-5 w-5" strokeWidth={1.8} />}
                     type="tel"
                     autoComplete="tel"
                     inputMode="tel"
                     error={cPhoneError}
                   />
-                  <PrimaryButton loading={cLoading} label="دخول / تسجيل" />
+                  <div className="pt-1">
+                    <PrimaryButton loading={cLoading} label="دخول / تسجيل" />
+                  </div>
                 </form>
               )}
 
               {tab === "staff" && (
                 <div>
                   <div className="mb-4 text-center">
-                    <h2 className="font-display text-lg font-extrabold text-[#171717]">
+                    <h2 className="font-display text-base font-bold text-foreground">
                       {STAFF_COPY.title}
                     </h2>
-                    <p className="mt-1 text-[0.8rem] font-medium text-[#171717]/60">
+                    <p className="mt-1 font-display text-[0.8rem] font-medium text-muted-foreground">
                       {STAFF_COPY.body}
                     </p>
                   </div>
-                  <form onSubmit={staffSubmit} className="space-y-4">
+                  <form onSubmit={staffSubmit} className="space-y-3.5">
                     <AuthField
                       id="staff-phone"
                       label="رقم الجوال"
@@ -225,7 +227,7 @@ function AuthPage() {
                         setSPhone(v);
                         if (sPhoneError) setSPhoneError(null);
                       }}
-                      icon={<Phone className="h-5 w-5 text-[#E8892F]" strokeWidth={2} />}
+                      icon={<Phone className="h-5 w-5" strokeWidth={1.8} />}
                       type="tel"
                       autoComplete="username"
                       inputMode="tel"
@@ -236,11 +238,13 @@ function AuthPage() {
                       label="كلمة المرور"
                       value={sPwd}
                       onChange={setSPwd}
-                      icon={<Lock className="h-5 w-5 text-[#E8892F]" strokeWidth={2} />}
+                      icon={<Lock className="h-5 w-5" strokeWidth={1.8} />}
                       type="password"
                       autoComplete="current-password"
                     />
-                    <PrimaryButton loading={sLoading} label="دخول" />
+                    <div className="pt-1">
+                      <PrimaryButton loading={sLoading} label="دخول كحلاق" />
+                    </div>
                   </form>
                 </div>
               )}
@@ -248,24 +252,24 @@ function AuthPage() {
               {tab === "admin" && (
                 <div>
                   <div className="mb-4 text-center">
-                    <h2 className="font-display text-lg font-extrabold text-[#171717]">
+                    <h2 className="font-display text-base font-bold text-foreground">
                       {ADMIN_COPY.title}
                     </h2>
-                    <p className="mt-1 text-[0.8rem] font-medium text-[#171717]/60">
+                    <p className="mt-1 font-display text-[0.8rem] font-medium text-muted-foreground">
                       {ADMIN_COPY.body}
                     </p>
                   </div>
-                  <form onSubmit={adminSubmit} className="space-y-4">
-                    <div className="flex items-center gap-2 rounded-2xl border border-[#E8892F]/30 bg-[#E8892F]/10 px-4 py-3 text-[0.75rem] font-bold text-[#A85A10]">
-                      <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={2} />
-                      <span>دخول المدير — صلاحيات كاملة</span>
+                  <form onSubmit={adminSubmit} className="space-y-3.5">
+                    <div className="flex items-center gap-2 rounded-2xl border border-border bg-secondary/50 px-3.5 py-2.5 text-[0.78rem] font-bold text-foreground">
+                      <ShieldCheck className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2} />
+                      <span>دخول الإدارة — تحكم كامل</span>
                     </div>
                     <AuthField
                       id="admin-username"
                       label="اسم المستخدم"
                       value={aUser}
                       onChange={setAUser}
-                      icon={<User className="h-5 w-5 text-[#E8892F]" strokeWidth={2} />}
+                      icon={<User className="h-5 w-5" strokeWidth={1.8} />}
                       autoComplete="username"
                     />
                     <AuthField
@@ -273,11 +277,13 @@ function AuthPage() {
                       label="كلمة المرور"
                       value={aPwd}
                       onChange={setAPwd}
-                      icon={<Lock className="h-5 w-5 text-[#E8892F]" strokeWidth={2} />}
+                      icon={<Lock className="h-5 w-5" strokeWidth={1.8} />}
                       type="password"
                       autoComplete="current-password"
                     />
-                    <PrimaryButton loading={aLoading} label="دخول كمدير" />
+                    <div className="pt-1">
+                      <PrimaryButton loading={aLoading} label="دخول المدير" />
+                    </div>
                   </form>
                 </div>
               )}
@@ -285,10 +291,10 @@ function AuthPage() {
           </div>
         </div>
 
-        {/* Password note — customer only */}
+        {/* Customer subtitle reminder */}
         {tab === "customer" && (
           <p
-            className="mt-6 animate-fade-in-up text-center text-[0.95rem] font-semibold text-[#171717]"
+            className="mt-5 animate-fade-in-up text-center font-display text-[0.875rem] font-semibold text-muted-foreground"
             style={{ animationDelay: "0.2s" }}
           >
             لا حاجة لكلمة مرور — الرقم هو هويتك

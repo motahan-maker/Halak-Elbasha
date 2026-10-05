@@ -14,6 +14,7 @@ export function OffersAdmin() {
       (await supabase.from("offers").select("*").order("created_at", { ascending: false })).data ??
       [],
   });
+
   const create = useMutation({
     mutationFn: async (d: any) => {
       const { error } = await supabase.from("offers").insert(d);
@@ -21,10 +22,11 @@ export function OffersAdmin() {
     },
     onSuccess: () => {
       setOpen(false);
-      toast.success("تمت الإضافة");
+      toast.success("تمت إضافة العرض بنجاح");
       qc.invalidateQueries({ queryKey: ["admin-offers"] });
     },
   });
+
   const update = useMutation({
     mutationFn: async ({ id, ...rest }: any) => {
       const { error } = await supabase.from("offers").update(rest).eq("id", id);
@@ -32,6 +34,7 @@ export function OffersAdmin() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-offers"] }),
   });
+
   const del = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("offers").delete().eq("id", id);
@@ -42,7 +45,7 @@ export function OffersAdmin() {
 
   if (list.isLoading) {
     return (
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         <SkeletonCard />
         <SkeletonCard />
       </div>
@@ -50,17 +53,20 @@ export function OffersAdmin() {
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3">
       <button
         onClick={() => setOpen(true)}
-        className="press flex w-full items-center justify-center gap-2 rounded-2xl gradient-gold px-4 py-3.5 font-display text-sm font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-110"
+        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#111111] py-3.5 font-display text-sm font-bold text-[#FFFFFF] shadow-card transition-all duration-200 hover:bg-[#262626] dark:bg-[#F6F1E8] dark:text-[#111111] press"
       >
-        <Plus className="h-4 w-4" strokeWidth={2.2} /> إضافة عرض
+        <Plus className="h-4 w-4" strokeWidth={2.2} /> إضافة عرض جديد
       </button>
+
       {open && <OfferForm onCancel={() => setOpen(false)} onSave={(d: any) => create.mutate(d)} />}
-      {list.data?.map((o: any, i: number) => (
-        <div key={o.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
+
+      <div className="space-y-3">
+        {list.data?.map((o: any) => (
           <OfferRow
+            key={o.id}
             o={o}
             onSave={(d: any) => update.mutate({ id: o.id, ...d })}
             onToggle={() => update.mutate({ id: o.id, is_active: !o.is_active })}
@@ -68,8 +74,8 @@ export function OffersAdmin() {
               if (confirm(`حذف عرض «${o.title}» نهائياً؟`)) del.mutate(o.id);
             }}
           />
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -78,22 +84,34 @@ function OfferForm({ onCancel, onSave, initial }: any) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [desc, setDesc] = useState(initial?.description ?? "");
   const [pct, setPct] = useState(initial?.discount_percent ?? "");
+
   return (
-    <div className="animate-scale-in space-y-3 rounded-2xl border border-gold/25 bg-card p-4 shadow-elevated">
-      <Input label="عنوان العرض" value={title} onChange={setTitle} />
-      <Input label="الوصف" value={desc} onChange={setDesc} />
-      <Input label="نسبة الخصم %" value={String(pct)} onChange={setPct} type="number" />
-      <div className="flex gap-2.5 pt-1">
+    <div className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-elevated animate-fade-in">
+      <h3 className="font-display text-sm font-bold text-foreground">
+        {initial ? "تعديل العرض" : "بيانات العرض الجديد"}
+      </h3>
+      <InputField label="عنوان العرض" value={title} onChange={setTitle} />
+      <InputField label="تفاصيل العرض (اختياري)" value={desc} onChange={setDesc} />
+      <InputField
+        label="نسبة الخصم % (اختياري)"
+        value={String(pct)}
+        onChange={setPct}
+        type="number"
+      />
+      <div className="flex gap-2.5 pt-2">
         <button
           onClick={() =>
             onSave({ title, description: desc, discount_percent: pct === "" ? null : Number(pct) })
           }
           disabled={!title}
-          className="press flex-1 rounded-xl bg-primary py-2.5 font-display text-sm font-extrabold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-105 disabled:opacity-50"
+          className="flex-1 rounded-xl bg-[#111111] py-2.5 font-display text-xs font-bold text-[#FFFFFF] dark:bg-[#F6F1E8] dark:text-[#111111] press disabled:opacity-50"
         >
-          حفظ
+          حفظ العرض
         </button>
-        <button onClick={onCancel} className="press rounded-xl border border-border/70 bg-secondary px-4 py-2.5 text-[12px] font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground">
+        <button
+          onClick={onCancel}
+          className="rounded-xl border border-border bg-secondary px-4 py-2.5 font-display text-xs font-bold text-foreground press"
+        >
           إلغاء
         </button>
       </div>
@@ -103,7 +121,8 @@ function OfferForm({ onCancel, onSave, initial }: any) {
 
 function OfferRow({ o, onSave, onToggle, onDelete }: any) {
   const [edit, setEdit] = useState(false);
-  if (edit)
+
+  if (edit) {
     return (
       <OfferForm
         initial={o}
@@ -114,40 +133,57 @@ function OfferRow({ o, onSave, onToggle, onDelete }: any) {
         }}
       />
     );
+  }
+
   return (
-    <div className="group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated">
-      <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-      <div className="relative grid h-9.5 w-9.5 place-items-center rounded-xl bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25 shrink-0">
-        <Tag className="h-4.5 w-4.5" strokeWidth={1.7} />
-      </div>
-      <div className="relative min-w-0 flex-1">
-        <div className="truncate font-display text-[0.9rem] font-extrabold text-foreground">{o.title}</div>
-        <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11.5px] font-semibold text-muted-foreground">
-          <span className="truncate">{o.description || "—"}</span>
-          {o.discount_percent != null && (
-            <span className="shrink-0 tnum font-bold text-accent-foreground">-{o.discount_percent}٪</span>
-          )}
+    <div className="rounded-3xl border border-border bg-card p-4 shadow-card">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-secondary text-foreground">
+            <Tag className="h-5 w-5" strokeWidth={1.8} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="truncate font-display text-[1rem] font-bold text-foreground">
+                {o.title}
+              </span>
+              {o.discount_percent != null && (
+                <span className="chip chip-gold font-display tnum">
+                  -{o.discount_percent}٪
+                </span>
+              )}
+            </div>
+            {o.description && (
+              <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                {o.description}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <div className="relative flex shrink-0 gap-1.5">
+
+      <div className="mt-3.5 flex items-center gap-2 border-t border-border/70 pt-3">
         <button
           onClick={() => setEdit(true)}
-          aria-label="تعديل"
-          className="press grid h-8 w-8 place-items-center rounded-xl border border-border/70 bg-secondary text-muted-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
+          className="flex items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-1.5 font-display text-xs font-bold text-foreground transition-all duration-200 hover:border-foreground press"
         >
-          <Edit2 className="h-3.5 w-3.5" strokeWidth={1.8} />
+          <Edit2 className="h-3.5 w-3.5" strokeWidth={1.8} /> تعديل
         </button>
         <button
           onClick={onToggle}
-          aria-label="تفعيل"
-          className={`press grid h-8 w-8 place-items-center rounded-xl border transition-all duration-200 ${o.is_active ? "border-success/25 bg-success/10 text-success" : "border-border/70 bg-secondary text-muted-foreground"}`}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-display text-xs font-bold transition-all duration-200 press ${
+            o.is_active
+              ? "border-success/30 bg-success/10 text-success"
+              : "border-border bg-secondary text-muted-foreground"
+          }`}
         >
           <Power className="h-3.5 w-3.5" strokeWidth={1.8} />
+          {o.is_active ? "نشط" : "معطل"}
         </button>
         <button
           onClick={onDelete}
           aria-label="حذف"
-          className="press grid h-8 w-8 place-items-center rounded-xl border border-destructive/25 bg-destructive/[0.06] text-destructive transition-all duration-200 hover:bg-destructive/12"
+          className="ms-auto grid h-8 w-8 place-items-center rounded-xl border border-destructive/30 bg-destructive/10 text-destructive transition-all duration-200 hover:bg-destructive/20 press"
         >
           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.8} />
         </button>
@@ -156,7 +192,7 @@ function OfferRow({ o, onSave, onToggle, onDelete }: any) {
   );
 }
 
-function Input({
+function InputField({
   label,
   value,
   onChange,
@@ -169,12 +205,12 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-[10.5px] font-bold text-muted-foreground">{label}</label>
+      <label className="mb-1 block font-display text-[11px] font-bold text-muted-foreground">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type={type}
-        className="w-full rounded-xl border border-border/70 bg-secondary/30 px-3 py-2 text-[11.5px] font-semibold text-foreground outline-none transition-all duration-200 focus:border-gold/45 focus:bg-card focus:ring-2 focus:ring-gold/20"
+        className="w-full rounded-xl border border-border bg-card px-3 py-2 font-display text-xs font-medium text-foreground outline-none transition-colors duration-200 focus:border-foreground"
       />
     </div>
   );

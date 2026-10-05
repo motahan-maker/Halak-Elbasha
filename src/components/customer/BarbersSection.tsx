@@ -7,37 +7,41 @@ import type { HomeBarber } from "./types";
 function BarberCard({ barber }: { barber: HomeBarber }) {
   const isNew = barber.cnt === 0;
   return (
-    <article className="overflow-hidden rounded-3xl bg-white shadow-[0_18px_40px_-20px_rgba(36,19,13,0.35)] ring-1 ring-[#24130D]/5">
-      {/* Gold top with decorative circle + neutral placeholder */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-[#DFA93E] to-[#D86620] px-4 pb-5 pt-4">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -end-10 -top-12 h-32 w-32 rounded-full bg-white/15"
-        />
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -start-8 -bottom-14 h-28 w-28 rounded-full bg-black/10"
-        />
-        {isNew && (
-          <span className="absolute start-3 top-3 rounded-full bg-white px-2.5 py-1 text-[0.65rem] font-black text-[#D86620] shadow">
-            جديد
-          </span>
-        )}
-        <span className="relative mx-auto grid h-16 w-16 place-items-center rounded-full bg-white/95 shadow-[0_10px_20px_-8px_rgba(0,0,0,0.4)]">
-          <Scissors className="h-7 w-7 text-[#8A5A17]" strokeWidth={2} />
-        </span>
+    <article className="overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elevated">
+      <div className="flex items-center gap-3">
+        <div className="grid h-13 w-13 shrink-0 place-items-center rounded-2xl bg-[#111111] text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]">
+          <Scissors className="h-6 w-6" strokeWidth={1.8} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <h3 className="truncate font-display text-[0.95rem] font-bold text-foreground">
+              {barber.name}
+            </h3>
+            {isNew && (
+              <span className="rounded-full bg-secondary px-2 py-0.5 font-display text-[0.625rem] font-bold text-muted-foreground">
+                جديد
+              </span>
+            )}
+          </div>
+          <p className="truncate font-display text-[0.75rem] font-medium text-muted-foreground">
+            {barber.specialization || "حلاق محترف"}
+          </p>
+        </div>
       </div>
-      <div className="p-3.5">
-        <h3 className="truncate font-display text-[0.95rem] font-extrabold text-[#24130D]">
-          {barber.name}
-        </h3>
-        <p className="mt-0.5 text-[0.75rem] font-medium text-[#24130D]/55">
-          {barber.specialization || "حلاق"}
-        </p>
-        <p className="mt-2 flex items-center gap-1 text-[0.8rem] font-extrabold text-[#24130D]">
-          <Star className="h-3.5 w-3.5 fill-[#C99A35] text-[#C99A35]" strokeWidth={0} />
-          <span className="tnum">{barber.avg > 0 ? barber.avg.toFixed(1) : "جديد"}</span>
-        </p>
+
+      <div className="mt-3.5 flex items-center justify-between border-t border-border/60 pt-3">
+        <div className="flex items-center gap-1">
+          <Star className="h-3.5 w-3.5 fill-[#111111] text-[#111111] dark:fill-[#F6F1E8] dark:text-[#F6F1E8]" strokeWidth={0} />
+          <span className="font-display text-[0.8rem] font-bold tnum text-foreground">
+            {barber.avg > 0 ? barber.avg.toFixed(1) : "—"}
+          </span>
+          <span className="text-[0.6875rem] text-muted-foreground">
+            ({barber.cnt})
+          </span>
+        </div>
+        <span className="rounded-full border border-border bg-secondary/50 px-2 py-0.5 font-display text-[0.65rem] font-bold text-foreground">
+          متاح للحجز
+        </span>
       </div>
     </article>
   );
@@ -90,10 +94,10 @@ export function BarbersSection() {
   if (barbers.isLoading) {
     return (
       <section aria-label="فريق الحلاقين">
-        <h2 className="font-display text-[1.2rem] font-black text-[#C99A35]">فريق الحلاقين</h2>
-        <div className="mt-3 grid grid-cols-2 gap-3">
+        <h2 className="font-display text-[1.15rem] font-black text-foreground">فريق الحلاقين</h2>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {[0, 1].map((i) => (
-            <div key={i} className="h-52 animate-pulse rounded-3xl bg-[#EDE4CE]" />
+            <div key={i} className="h-28 animate-shimmer rounded-3xl border border-border bg-muted" />
           ))}
         </div>
       </section>
@@ -104,8 +108,13 @@ export function BarbersSection() {
 
   return (
     <section aria-label="فريق الحلاقين">
-      <h2 className="font-display text-[1.2rem] font-black text-[#C99A35]">فريق الحلاقين</h2>
-      <div className="mt-3 grid grid-cols-2 gap-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-[1.15rem] font-black text-foreground">فريق الحلاقين</h2>
+        <span className="font-display text-[0.75rem] font-bold text-muted-foreground">
+          {barbers.data.length} حلاق
+        </span>
+      </div>
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {barbers.data.map((barber) => (
           <BarberCard key={barber.id} barber={barber} />
         ))}

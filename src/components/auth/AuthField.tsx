@@ -13,10 +13,6 @@ interface AuthFieldProps {
   error?: string | null;
 }
 
-/**
- * Labeled text input with an orange icon on the right (RTL start)
- * and an accessible inline error message.
- */
 export function AuthField({
   id,
   label,
@@ -34,10 +30,10 @@ export function AuthField({
       <label
         htmlFor={id}
         className={cn(
-          "flex min-h-14 items-center gap-3 rounded-2xl border bg-white px-4 transition-all duration-200",
+          "flex min-h-13 items-center gap-3 rounded-2xl border bg-[#FFFFFF] px-4 transition-all duration-200 dark:bg-[#1A1A1A]",
           error
-            ? "border-red-400 focus-within:border-red-400 focus-within:ring-2 focus-within:ring-red-200"
-            : "border-[#E3DCCB] focus-within:border-[#E8892F]/60 focus-within:ring-2 focus-within:ring-[#E8892F]/20",
+            ? "border-[#C5221F] focus-within:border-[#C5221F] focus-within:ring-2 focus-within:ring-[#C5221F]/20"
+            : "border-[#DAD6CF] focus-within:border-[#111111] focus-within:ring-2 focus-within:ring-[#111111]/15 dark:border-[#2A2A2A] dark:focus-within:border-[#F6F1E8]",
         )}
       >
         <span className="sr-only">{label}</span>
@@ -52,9 +48,9 @@ export function AuthField({
           inputMode={inputMode}
           aria-invalid={!!error}
           aria-describedby={error ? errorId : undefined}
-          className="w-full bg-transparent py-4 text-[1rem] font-medium text-[#171717] outline-none placeholder:text-[#171717]/40"
+          className="w-full bg-transparent py-3.5 font-display text-[0.95rem] font-medium text-foreground outline-none placeholder:text-[#8A857D]"
         />
-        <span aria-hidden className="shrink-0">
+        <span aria-hidden className="shrink-0 text-[#8A857D]">
           {icon}
         </span>
       </label>
@@ -62,7 +58,7 @@ export function AuthField({
         <p
           id={errorId}
           role="alert"
-          className="mt-1.5 px-1 text-[0.78rem] font-semibold text-red-600"
+          className="mt-1.5 px-1 font-display text-[0.78rem] font-semibold text-[#C5221F]"
         >
           {error}
         </p>

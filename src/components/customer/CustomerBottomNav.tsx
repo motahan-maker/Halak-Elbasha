@@ -15,14 +15,17 @@ const ITEMS: { key: CustomerTab; label: string; icon: typeof Home }[] = [
   { key: "profile", label: "حسابي", icon: User },
 ];
 
-/** Fixed white bottom navigation; home is highlighted in gold. */
+/**
+ * Floating luxury pill navigation bar matching the Design System Reference Image.
+ * Active item is a circular obsidian #111111 button with pure white icon.
+ */
 export function CustomerBottomNav({ tab, onChange }: CustomerBottomNavProps) {
   return (
     <nav
       aria-label="التنقل الرئيسي"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[#24130D]/8 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_-15px_rgba(36,19,13,0.25)]"
+      className="fixed inset-x-0 bottom-4 z-40 mx-auto max-w-[340px] px-2"
     >
-      <div className="mx-auto grid max-w-md grid-cols-4 px-2">
+      <div className="flex items-center justify-between rounded-full border border-[#DAD6CF] bg-[#F6F1E8]/92 p-1.5 shadow-elevated backdrop-blur-xl dark:border-[#2A2A2A] dark:bg-[#141414]/92">
         {ITEMS.map((item) => {
           const active = tab === item.key;
           const Icon = item.icon;
@@ -32,13 +35,15 @@ export function CustomerBottomNav({ tab, onChange }: CustomerBottomNavProps) {
               type="button"
               onClick={() => onChange(item.key)}
               aria-current={active ? "page" : undefined}
+              aria-label={item.label}
               className={cn(
-                "flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 py-2 transition-colors duration-200 press",
-                active ? "text-[#C99A35]" : "text-[#24130D]/45 hover:text-[#24130D]",
+                "relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-all duration-200 press",
+                active
+                  ? "bg-[#111111] text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]"
+                  : "text-[#8A857D] hover:bg-[#EFE8DC] hover:text-[#111111] dark:hover:bg-[#202020] dark:hover:text-[#F6F1E8]",
               )}
             >
-              <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.2 : 1.6} />
-              <span className="text-[0.68rem] font-bold">{item.label}</span>
+              <Icon className="h-5 w-5" strokeWidth={active ? 2.2 : 1.8} />
             </button>
           );
         })}

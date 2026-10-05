@@ -5,12 +5,13 @@ import { toast } from "sonner";
 import { arabicDate } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
 import { SkeletonCard } from "@/components/ui/skeleton";
-import { Search } from "lucide-react";
+import { Search, CalendarDays, Clock, User, Phone, Check, XCircle } from "lucide-react";
 
 export function BookingsAdmin() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
+
   const list = useQuery({
     queryKey: ["admin-bookings"],
     queryFn: async () =>
@@ -25,16 +26,18 @@ export function BookingsAdmin() {
           .limit(200)
       ).data ?? [],
   });
+
   const update = useMutation({
     mutationFn: async ({ id, status }: any) => {
       const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      toast.success("تم التحديث");
+      toast.success("تم تحديث حالة الحجز");
       qc.invalidateQueries({ queryKey: ["admin-bookings"] });
     },
   });
+
   const filtered = (list.data ?? []).filter((b: any) => {
     if (status !== "all" && b.status !== status) return false;
     if (!q) return true;
@@ -48,8 +51,7 @@ export function BookingsAdmin() {
 
   if (list.isLoading) {
     return (
-      <div className="space-y-2.5">
-        <SkeletonCard />
+      <div className="space-y-3">
         <SkeletonCard />
         <SkeletonCard />
       </div>
@@ -57,23 +59,24 @@ export function BookingsAdmin() {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-2.5">
-        <div className="flex flex-1 items-center gap-2.5 rounded-2xl border border-border/70 bg-secondary/30 px-3.5 transition-all duration-200 focus-within:border-gold/45 focus-within:bg-card focus-within:ring-2 focus-within:ring-gold/20">
-          <Search className="h-4 w-4 text-muted-foreground shrink-0" strokeWidth={1.8} />
+    <div className="space-y-4">
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col gap-2.5 sm:flex-row">
+        <div className="flex flex-1 items-center gap-2.5 rounded-2xl border border-border bg-card px-4 shadow-card focus-within:border-foreground">
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.8} />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="بحث (اسم / جوال / رقم)"
-            className="w-full bg-transparent py-2.5 text-[11.5px] font-semibold outline-none placeholder:text-muted-foreground/60"
+            placeholder="بحث بالاسم أو رقم الجوال أو رقم الحجز..."
+            className="w-full bg-transparent py-3 font-display text-xs font-medium outline-none placeholder:text-muted-foreground"
           />
         </div>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="cursor-pointer rounded-2xl border border-border/70 bg-card px-3.5 py-2 text-[11.5px] font-bold text-foreground outline-none transition-all duration-200 focus:border-gold/45 focus:ring-2 focus:ring-gold/20"
+          className="cursor-pointer rounded-2xl border border-border bg-card px-4 py-3 font-display text-xs font-bold text-foreground outline-none shadow-card focus:border-foreground"
         >
-          <option value="all">الكل</option>
+          <option value="all">جميع الحالات</option>
           <option value="booked">محجوز</option>
           <option value="completed">مكتمل</option>
           <option value="cancelled_by_barber">ملغي بواسطة الحلاق</option>
@@ -81,76 +84,95 @@ export function BookingsAdmin() {
           <option value="cancelled">ملغي</option>
         </select>
       </div>
+
+      {/* Bookings List */}
       <div className="space-y-3">
-        {filtered.map((b: any, i: number) => (
+        {filtered.map((b: any) => (
           <div
             key={b.id}
-            className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated"
-            style={{ animationDelay: `${0.03 * i}s` }}
+            className="rounded-3xl border border-border bg-card p-4 shadow-card"
           >
-            <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-            <div className="relative flex items-start justify-between gap-2.5">
+            <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <div className="truncate font-display text-[0.9rem] font-extrabold text-foreground">{b.customer_name}</div>
-                <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11.5px] font-semibold text-muted-foreground">
-                  <span className="truncate">{b.service_name}</span>
-                  <span aria-hidden className="text-border">|</span>
-                  <span className="tnum shrink-0" dir="ltr">{b.customer_phone}</span>
+                <div className="flex items-center gap-2">
+                  <span className="truncate font-display text-[1rem] font-bold text-foreground">
+                    {b.customer_name}
+                  </span>
+                  <span
+                    className={`chip ${
+                      b.status === "completed"
+                        ? "chip-success"
+                        : String(b.status).startsWith("cancelled")
+                          ? "chip-danger"
+                          : "chip-gold"
+                    }`}
+                  >
+                    {b.status === "completed"
+                      ? "مكتمل"
+                      : String(b.status).startsWith("cancelled")
+                        ? "ملغي"
+                        : "محجوز"}
+                  </span>
                 </div>
-                <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground/85">
-                  <span>{arabicDate(b.booking_date)}</span>
-                  <span aria-hidden className="text-border">|</span>
-                  <span className="tnum font-bold text-foreground/80">{formatTime(b.booking_time)}</span>
+
+                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>{b.service_name}</span>
+                  <span>•</span>
+                  <span className="font-bold tnum text-foreground">{b.service_price} ج.م</span>
+                  <span>•</span>
+                  <span className="tnum" dir="ltr">{b.customer_phone}</span>
+                </div>
+
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.8} />
+                    {arabicDate(b.booking_date)}
+                  </span>
+                  <span className="flex items-center gap-1 tnum">
+                    <Clock className="h-3.5 w-3.5" strokeWidth={1.8} />
+                    {formatTime(b.booking_time)}
+                  </span>
                 </div>
               </div>
-              <span className="chip chip-gold tnum shrink-0">{b.booking_number}</span>
+
+              <div className="text-end shrink-0">
+                <span className="font-display text-xs font-bold tnum text-muted-foreground">
+                  #{b.booking_number}
+                </span>
+              </div>
             </div>
-            <div className="relative mt-3 flex items-center gap-2.5">
+
+            <div className="mt-3.5 flex flex-wrap gap-2 border-t border-border/70 pt-3">
+              <a
+                href={`tel:${b.customer_phone}`}
+                className="flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary px-3 font-display text-xs font-bold text-foreground transition-all duration-200 hover:border-foreground press"
+              >
+                <Phone className="h-3.5 w-3.5" strokeWidth={1.8} /> اتصال
+              </a>
+
               {b.status === "booked" && (
                 <>
                   <button
                     onClick={() => update.mutate({ id: b.id, status: "completed" })}
-                    className="press flex-1 rounded-xl gradient-gold py-2 text-[11.5px] font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-200 hover:brightness-110"
+                    className="flex min-h-9 items-center justify-center gap-1 rounded-xl bg-[#111111] px-3 font-display text-xs font-bold text-[#FFFFFF] dark:bg-[#F6F1E8] dark:text-[#111111] press"
                   >
-                    إكمال
+                    <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> تم
                   </button>
                   <button
-                    onClick={() => update.mutate({ id: b.id, status: "cancelled_by_barber" })}
-                    className="press flex-1 rounded-xl border border-destructive/25 bg-destructive/[0.06] py-2 text-[11.5px] font-bold text-destructive transition-all duration-200 hover:bg-destructive/12"
+                    onClick={() => update.mutate({ id: b.id, status: "cancelled" })}
+                    className="flex min-h-9 items-center justify-center gap-1 rounded-xl border border-destructive/30 bg-destructive/10 px-3 font-display text-xs font-bold text-destructive hover:bg-destructive/20 press"
                   >
-                    إلغاء
+                    <XCircle className="h-3.5 w-3.5" strokeWidth={1.8} /> إلغاء
                   </button>
                 </>
               )}
-              <span
-                className={`chip ${
-                  b.status === "completed"
-                    ? "chip-success"
-                    : String(b.status).startsWith("cancelled")
-                    ? "chip-danger"
-                    : "chip-gold"
-                }`}
-              >
-                {b.status === "completed" && (
-                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />
-                )}
-                {b.status === "booked"
-                  ? "محجوز"
-                  : b.status === "completed"
-                  ? "مكتمل"
-                  : b.status === "cancelled_by_barber"
-                  ? "ملغي بواسطة الحلاق"
-                  : b.status === "cancelled_by_customer"
-                  ? "ملغي بواسطة العميل"
-                  : "ملغي"}
-              </span>
             </div>
           </div>
         ))}
+
         {filtered.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-8 text-center">
-            <div className="font-display text-[0.82rem] font-extrabold text-foreground">لا توجد حجوزات مطابقة</div>
-            <div className="mt-1 text-[11px] font-medium text-muted-foreground">جرّب تغيير كلمة البحث أو الفلتر</div>
+          <div className="rounded-3xl border border-dashed border-border bg-card p-8 text-center text-xs text-muted-foreground">
+            لا توجد حجوزات مطابقة للبحث
           </div>
         )}
       </div>

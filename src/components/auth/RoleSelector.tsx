@@ -14,35 +14,31 @@ export function RoleSelector({
 }: {
   value: AuthRole;
   onChange: (role: AuthRole) => void;
-}) {
+  }) {
   return (
     <div
       role="tablist"
       aria-label="نوع الحساب"
-      className="flex items-center rounded-full bg-[#E6E2D6] p-1.5 shadow-[0_10px_25px_-12px_rgba(0,0,0,0.35)]"
+      className="flex items-center rounded-full border border-[#DAD6CF] bg-[#EFE8DC] p-1.5 shadow-card dark:border-[#2A2A2A] dark:bg-[#1A1A1A]"
     >
-      {OPTIONS.map((opt, i) => {
+      {OPTIONS.map((opt) => {
         const active = value === opt.key;
         return (
-          <div key={opt.key} className="flex flex-1 items-center">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => onChange(opt.key)}
-              className={cn(
-                "min-h-11 flex-1 cursor-pointer rounded-full py-2.5 text-[1.05rem] font-bold transition-all duration-200 press",
-                active
-                  ? "bg-white text-[#E8892F] shadow-[0_6px_16px_-6px_rgba(0,0,0,0.35)]"
-                  : "text-[#2b2b2b] hover:text-black",
-              )}
-            >
-              {opt.label}
-            </button>
-            {i < OPTIONS.length - 1 && (
-              <span aria-hidden className="mx-1 h-7 w-px bg-[#2b2b2b]/15" />
+          <button
+            key={opt.key}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(opt.key)}
+            className={cn(
+              "min-h-11 flex-1 cursor-pointer rounded-full py-2 font-display text-[0.95rem] font-bold transition-all duration-200 press",
+              active
+                ? "bg-[#111111] text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]"
+                : "text-[#8A857D] hover:text-[#111111] dark:hover:text-[#F6F1E8]",
             )}
-          </div>
+          >
+            {opt.label}
+          </button>
         );
       })}
     </div>

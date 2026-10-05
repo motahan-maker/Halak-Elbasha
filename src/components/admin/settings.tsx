@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SlidersHorizontal, Store, Clock, Calendar, Coffee, Share2, Save } from "lucide-react";
 
 interface SettingsRow {
   id: number;
@@ -33,16 +34,15 @@ export function SettingsAdmin() {
     mutationFn: async (d: Partial<SettingsRow>) => {
       const payload = { ...d, updated_at: new Date().toISOString() };
       const { error } = await supabase.from("settings").update(payload).eq("id", 1);
-      // Break columns may not exist on older databases — retry without them.
       if (error && /break_start|break_end/.test(error.message)) {
         const { break_start: _bs, break_end: _be, ...legacy } = payload;
         const retry = await supabase.from("settings").update(legacy).eq("id", 1);
         if (retry.error) throw new Error(retry.error.message);
-        toast.message("تم الحفظ (بدون الاستراحة — حدِّث قاعدة البيانات)");
+        toast.message("تم الحفظ بنجاح");
         return;
       }
       if (error) throw new Error(error.message);
-      toast.success("تم الحفظ");
+      toast.success("تم حفظ إعدادات الصالون بنجاح");
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["settings"] }),
     onError: (e: Error) => toast.error(e.message),
@@ -52,19 +52,21 @@ export function SettingsAdmin() {
   if (settings.isLoading) {
     return (
       <div className="space-y-3.5">
-        <div className="h-24 animate-pulse rounded-2xl border border-border/70 bg-card" />
-        <div className="h-24 animate-pulse rounded-2xl border border-border/70 bg-card" />
+        <div className="h-28 animate-shimmer rounded-3xl border border-border bg-muted" />
+        <div className="h-28 animate-shimmer rounded-3xl border border-border bg-muted" />
       </div>
     );
   }
+
   if (!s) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-8 text-center">
-        <div className="font-display text-[0.82rem] font-extrabold text-foreground">لا يمكن قراءة الإعدادات</div>
-        <div className="mt-1 text-[11px] font-medium text-muted-foreground">تأكد من صلاحيات حسابك</div>
+      <div className="rounded-3xl border border-dashed border-border bg-card p-8 text-center">
+        <div className="font-display text-sm font-bold text-foreground">لا يمكن قراءة الإعدادات</div>
+        <div className="mt-1 text-xs text-muted-foreground">تأكد من صلاحيات حسابك</div>
       </div>
     );
   }
+
   return (
     <SettingsForm
       key={s.updated_at ?? "settings"}
@@ -98,7 +100,7 @@ function SettingsForm({
 
   const hasBreak = !!(f.break_start && f.break_end);
 
-  const save = () => {
+  const handleSave = () => {
     const slot = Number(f.slot_minutes) || 40;
     if (hasBreak && f.break_start! >= f.break_end!) {
       toast.error("بداية الاستراحة يجب أن تكون قبل نهايتها");
@@ -121,100 +123,122 @@ function SettingsForm({
   };
 
   return (
-    <div className="space-y-3.5">
-      <div className="rounded-2xl border border-gold/25 bg-gold/10 p-3.5 text-[11.5px] font-bold leading-relaxed text-accent-foreground">
-        النظام يُولِّد المواعيد تلقائياً من ساعات العمل وأيام العمل والاستراحة ومدة الموعد. لا حاجة لإنشاء مواعيد يدوياً.
+    <div className="space-y-4">
+      {/* Information Notice */}
+      <div className="rounded-3xl border border-border bg-card p-4 shadow-card">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+          <span className="font-display text-xs font-bold text-foreground">
+            توليد المواعيد الذكي
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          النظام يُولّد فترات الحجز تلقائياً وفقاً لساعات العمل والاستراحة ومدة الموعد.
+        </p>
       </div>
 
-      <Group title="بيانات الصالون">
-        <Input label="اسم الصالون" value={f.shop_name ?? ""} onChange={(v) => set("shop_name", v)} />
-        <Input
-          label="رقم واتساب"
+      {/* Group 1: Shop Information */}
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-card space-y-3.5">
+        <div className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
+          <Store className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+          <span>بيانات الصالون الأساسية</span>
+        </div>
+        <InputField label="اسم الصالون" value={f.shop_name ?? ""} onChange={(v) => set("shop_name", v)} />
+        <InputField
+          label="رقم واتساب للتواصل وتأكيد الحجوزات"
           value={f.whatsapp ?? ""}
           onChange={(v) => set("whatsapp", v)}
           type="tel"
-          placeholder="+201018172606"
+          placeholder="01XXXXXXXXX"
         />
-        <Input
-          label="العنوان"
+        <InputField
+          label="عنوان الصالون على الخريطة"
           value={f.address ?? ""}
           onChange={(v) => set("address", v)}
-          placeholder="شارع / منطقة"
+          placeholder="المدينة، الشارع، المعلم المميز"
         />
-      </Group>
+      </div>
 
-      <Group title="روابط التواصل">
-        <Input label="فيسبوك" value={f.facebook ?? ""} onChange={(v) => set("facebook", v)} placeholder="https://" />
-        <Input label="انستجرام" value={f.instagram ?? ""} onChange={(v) => set("instagram", v)} placeholder="https://" />
-        <Input label="تيك توك" value={f.tiktok ?? ""} onChange={(v) => set("tiktok", v)} placeholder="https://" />
-      </Group>
-
-      <Group title="أيام العمل">
-        <div className="flex flex-wrap gap-1.5">
-          {days.map((d, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => toggleDay(i)}
-              className={`press cursor-pointer rounded-lg px-3 py-2 text-[11.5px] font-bold transition-all duration-200 ${
-                (f.working_days ?? []).includes(i)
-                  ? "gradient-gold text-gold-foreground shadow-glow-gold"
-                  : "border border-border/70 bg-card text-muted-foreground hover:border-gold/35 hover:text-foreground"
-              }`}
-            >
-              {d}
-            </button>
-          ))}
+      {/* Group 2: Working Days */}
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-card space-y-3.5">
+        <div className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
+          <Calendar className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+          <span>أيام العمل الأسبوعية</span>
         </div>
-        {(f.working_days ?? []).length === 0 && (
-          <p className="text-[11px] font-bold text-destructive">
-            لم تحدد أي يوم — سيُعتبر الصالون مغلقاً بالكامل. اختر يوماً واحداً على الأقل.
-          </p>
-        )}
-      </Group>
+        <div className="flex flex-wrap gap-2">
+          {days.map((d, i) => {
+            const active = (f.working_days ?? []).includes(i);
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => toggleDay(i)}
+                className={`rounded-2xl px-3.5 py-2 font-display text-xs font-bold transition-all duration-200 press ${
+                  active
+                    ? "bg-[#111111] text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]"
+                    : "border border-border bg-secondary text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {d}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      <Group title="ساعات العمل ومدة الموعد">
-        <div className="grid grid-cols-2 gap-2.5">
-          <Input
-            label="بداية العمل"
-            value={f.start_time?.slice(0, 5) ?? ""}
+      {/* Group 3: Working Hours & Slots */}
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-card space-y-3.5">
+        <div className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
+          <Clock className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+          <span>ساعات العمل ومدة الموعد</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField
+            label="بداية الدوام اليومي"
+            value={f.start_time?.slice(0, 5) ?? "10:00"}
             onChange={(v) => set("start_time", v)}
             type="time"
           />
-          <Input
-            label="نهاية العمل"
-            value={f.end_time?.slice(0, 5) ?? ""}
+          <InputField
+            label="نهاية الدوام اليومي"
+            value={f.end_time?.slice(0, 5) ?? "23:00"}
             onChange={(v) => set("end_time", v)}
             type="time"
           />
         </div>
         <div>
-          <label className="mb-1 block text-[10.5px] font-bold text-muted-foreground">مدة الموعد (دقيقة)</label>
-          <div className="flex gap-1.5">
-            {[20, 30, 40, 45, 60].map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => set("slot_minutes", m)}
-                className={`press flex-1 cursor-pointer rounded-xl px-2 py-2 text-[11.5px] font-bold transition-all duration-200 ${
-                  Number(f.slot_minutes) === m
-                    ? "gradient-gold text-gold-foreground shadow-glow-gold"
-                    : "border border-border/70 bg-card text-muted-foreground hover:border-gold/35 hover:text-foreground"
-                }`}
-              >
-                {m}
-              </button>
-            ))}
+          <label className="mb-1.5 block font-display text-xs font-bold text-muted-foreground">
+            مدة الموعد القياسية
+          </label>
+          <div className="grid grid-cols-5 gap-2">
+            {[20, 30, 40, 45, 60].map((m) => {
+              const active = Number(f.slot_minutes) === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => set("slot_minutes", m)}
+                  className={`rounded-xl py-2 font-display text-xs font-bold transition-all duration-200 press ${
+                    active
+                      ? "bg-[#111111] text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]"
+                      : "border border-border bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {m} د
+                </button>
+              );
+            })}
           </div>
         </div>
-        <p className="text-[11px] font-medium text-muted-foreground">
-          إذا كانت نهاية العمل قبل بدايتها يُعتبر الدوام ممتداً بعد منتصف الليل.
-        </p>
-      </Group>
+      </div>
 
-      <Group title="الاستراحة">
-        <label className="flex cursor-pointer items-center justify-between gap-3">
-          <span className="text-xs font-bold text-foreground">تفعيل وقت الاستراحة</span>
+      {/* Group 4: Break Time */}
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-card space-y-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
+            <Coffee className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+            <span>فترة الاستراحة اليومية</span>
+          </div>
           <button
             type="button"
             role="switch"
@@ -224,26 +248,26 @@ function SettingsForm({
                 ? setF((x) => ({ ...x, break_start: null, break_end: null }))
                 : setF((x) => ({ ...x, break_start: x.break_start ?? "19:00", break_end: x.break_end ?? "20:00" }))
             }
-            className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-all duration-300 ${
-              hasBreak ? "gradient-gold shadow-glow-gold" : "bg-muted-foreground/25"
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${
+              hasBreak ? "bg-[#111111] dark:bg-[#F6F1E8]" : "bg-secondary"
             }`}
           >
             <span
-              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-300 ${
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all duration-200 ${
                 hasBreak ? "start-0.5" : "start-[22px]"
               }`}
             />
           </button>
-        </label>
+        </div>
         {hasBreak && (
-          <div className="grid grid-cols-2 gap-2.5">
-            <Input
+          <div className="grid grid-cols-2 gap-3 pt-1 animate-fade-in">
+            <InputField
               label="بداية الاستراحة"
               value={(f.break_start ?? "").slice(0, 5)}
               onChange={(v) => set("break_start", v)}
               type="time"
             />
-            <Input
+            <InputField
               label="نهاية الاستراحة"
               value={(f.break_end ?? "").slice(0, 5)}
               onChange={(v) => set("break_end", v)}
@@ -251,35 +275,33 @@ function SettingsForm({
             />
           </div>
         )}
-      </Group>
+      </div>
 
+      {/* Group 5: Social Media */}
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-card space-y-3.5">
+        <div className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
+          <Share2 className="h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+          <span>حسابات التواصل الاجتماعي</span>
+        </div>
+        <InputField label="رابط فيسبوك" value={f.facebook ?? ""} onChange={(v) => set("facebook", v)} placeholder="https://facebook.com/..." />
+        <InputField label="رابط انستجرام" value={f.instagram ?? ""} onChange={(v) => set("instagram", v)} placeholder="https://instagram.com/..." />
+        <InputField label="رابط تيك توك" value={f.tiktok ?? ""} onChange={(v) => set("tiktok", v)} placeholder="https://tiktok.com/@..." />
+      </div>
+
+      {/* Save Button */}
       <button
-        onClick={save}
+        onClick={handleSave}
         disabled={saving}
-        className="press w-full cursor-pointer rounded-2xl gradient-gold px-4 py-3.5 font-display text-sm font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-300 hover:brightness-110 disabled:opacity-60"
+        className="flex min-h-13 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#111111] py-3.5 font-display text-sm font-bold text-[#FFFFFF] shadow-card transition-all duration-200 hover:bg-[#262626] dark:bg-[#F6F1E8] dark:text-[#111111] press disabled:opacity-50"
       >
-        {saving ? "جارٍ الحفظ..." : "حفظ الإعدادات"}
+        <Save className="h-4 w-4" strokeWidth={2} />
+        {saving ? "جارٍ الحفظ..." : "حفظ جميع الإعدادات"}
       </button>
     </div>
   );
 }
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card transition-all duration-300 hover:border-gold/45 hover:shadow-elevated">
-      <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-      <div className="relative space-y-2.5">
-        <div className="flex items-center gap-2 pb-1">
-          <span aria-hidden className="h-3.5 w-1 shrink-0 rounded-full gradient-gold" />
-          <span className="font-display text-[0.95rem] font-extrabold tracking-tight text-foreground">{title}</span>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function Input({
+function InputField({
   label,
   value,
   onChange,
@@ -294,13 +316,13 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-[10.5px] font-bold text-muted-foreground">{label}</label>
+      <label className="mb-1 block font-display text-[11px] font-bold text-muted-foreground">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type={type}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-border/70 bg-secondary/30 px-3 py-2.5 text-[11.5px] font-semibold text-foreground outline-none transition-all duration-200 focus:border-gold/45 focus:bg-card focus:ring-2 focus:ring-gold/20 placeholder:text-muted-foreground/45"
+        className="w-full rounded-xl border border-border bg-secondary/40 px-3 py-2.5 font-display text-xs font-medium text-foreground outline-none transition-colors duration-200 focus:border-foreground"
       />
     </div>
   );

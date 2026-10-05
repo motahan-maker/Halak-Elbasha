@@ -1,10 +1,8 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SkeletonStat } from "@/components/ui/skeleton";
-import { arabicDate, isoDate } from "@/lib/format";
-import { formatTime } from "@/lib/slots";
-import { Scissors, Star } from "lucide-react";
+import { isoDate } from "@/lib/format";
+import { Scissors, Star, Users, CalendarDays, Check, XCircle } from "lucide-react";
 
 export function Overview() {
   const stats = useQuery({
@@ -74,7 +72,7 @@ export function Overview() {
   if (stats.isLoading) {
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2.5">
           <SkeletonStat />
           <SkeletonStat />
           <SkeletonStat />
@@ -88,107 +86,111 @@ export function Overview() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2.5">
-        <KPI label="حجوزات اليوم" value={d?.todayCount ?? "—"} tone="gold" delay={0} />
-        <KPI label="مكتملة" value={d?.completedCount ?? "—"} tone="success" delay={0.03} />
-        <KPI label="ملغية" value={d?.cancelledCount ?? "—"} tone="danger" delay={0.06} />
-        <KPI label="العملاء" value={d?.customers ?? "—"} delay={0.09} />
-        <KPI label="الحلاقون" value={d?.barbers ?? "—"} delay={0.12} />
-        <KPI label="الخدمات" value={d?.services ?? "—"} delay={0.15} />
+      {/* 6 Key KPIs */}
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+        <KPICard
+          label="حجوزات اليوم"
+          value={d?.todayCount ?? "—"}
+          icon={<CalendarDays className="h-4 w-4" strokeWidth={1.8} />}
+        />
+        <KPICard
+          label="مكتملة"
+          value={d?.completedCount ?? "—"}
+          icon={<Check className="h-4 w-4" strokeWidth={2.2} />}
+        />
+        <KPICard
+          label="ملغية"
+          value={d?.cancelledCount ?? "—"}
+          icon={<XCircle className="h-4 w-4 text-destructive" strokeWidth={1.8} />}
+        />
+        <KPICard
+          label="العملاء المسجلين"
+          value={d?.customers ?? "—"}
+          icon={<Users className="h-4 w-4" strokeWidth={1.8} />}
+        />
+        <KPICard
+          label="الحلاقون"
+          value={d?.barbers ?? "—"}
+          icon={<Scissors className="h-4 w-4" strokeWidth={1.8} />}
+        />
+        <KPICard
+          label="الخدمات النشطة"
+          value={d?.services ?? "—"}
+          icon={<Scissors className="h-4 w-4" strokeWidth={1.8} />}
+        />
       </div>
 
-      <section className="panel-ink grain animate-fade-in-up p-5" style={{ animationDelay: "0.18s" }}>
-        <span aria-hidden className="absolute inset-x-5 top-0 h-px gold-rule" />
-        <div className="relative">
-          <div className="eyebrow text-ink-foreground/55">إيرادات مكتملة</div>
-          <div className="mt-3.5 grid grid-cols-3">
-            {[
-              { label: "اليوم", v: d?.revDay ?? 0 },
-              { label: "الأسبوع", v: d?.revWeek ?? 0 },
-              { label: "الشهر", v: d?.revMonth ?? 0 },
-            ].map((r, i) => (
-              <div key={r.label} className={i > 0 ? "border-s border-white/10 text-center" : "text-center"}>
-                <div className="text-[10.5px] font-bold text-ink-foreground/55">{r.label}</div>
-                <div className="mt-2 font-display text-[1.15rem] font-black leading-none tnum text-gradient-gold">
-                  {r.v}
-                  <span className="ms-1 text-[0.6rem] font-bold">ج.م</span>
-                </div>
+      {/* Revenue Summary Card */}
+      <section className="rounded-3xl bg-[#111111] p-6 text-[#FFFFFF] shadow-luxe dark:bg-[#141414]">
+        <div className="text-xs font-bold uppercase tracking-wider text-[#8A857D]">
+          الإيرادات المحققة (المكتملة)
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 divide-x divide-white/10 text-center">
+          {[
+            { label: "اليوم", v: d?.revDay ?? 0 },
+            { label: "هذا الأسبوع", v: d?.revWeek ?? 0 },
+            { label: "هذا الشهر", v: d?.revMonth ?? 0 },
+          ].map((r) => (
+            <div key={r.label} className="px-2">
+              <div className="text-[11px] font-bold text-[#8A857D]">{r.label}</div>
+              <div className="mt-2 font-display text-[1.35rem] font-black leading-none tnum text-[#FFFFFF]">
+                {r.v}
+                <span className="ms-1 text-[9px] font-bold text-[#8A857D]">ج.م</span>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
+      {/* Top Performers */}
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        <StatCard
-          title="الأكثر طلباً"
-          value={d?.topService ?? "—"}
-          delay={0.21}
-          icon={<Scissors className="h-4 w-4" strokeWidth={1.8} />}
-        />
-        <StatCard
-          title="أفضل حلاق تقييماً"
-          value={d?.topBarber ?? "—"}
-          delay={0.24}
-          icon={<Star className="h-4 w-4 fill-current" strokeWidth={0} />}
-        />
+        <div className="flex items-center gap-3.5 rounded-3xl border border-border bg-card p-4 shadow-card">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary text-foreground">
+            <Scissors className="h-5 w-5" strokeWidth={1.8} />
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-muted-foreground">الخدمة الأكثر طلباً</div>
+            <div className="mt-1 truncate font-display text-[1rem] font-bold text-foreground">
+              {d?.topService ?? "—"}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3.5 rounded-3xl border border-border bg-card p-4 shadow-card">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary text-foreground">
+            <Star className="h-5 w-5 fill-current" strokeWidth={0} />
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-muted-foreground">أفضل حلاق تقييماً</div>
+            <div className="mt-1 truncate font-display text-[1rem] font-bold text-foreground">
+              {d?.topBarber ?? "—"}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function KPI({
+function KPICard({
   label,
   value,
-  tone = "neutral",
-  delay = 0,
+  icon,
 }: {
   label: string;
   value: string | number;
-  tone?: "neutral" | "gold" | "success" | "danger";
-  delay?: number;
-}) {
-  const hair = {
-    neutral: "via-border",
-    gold: "via-gold/60",
-    success: "via-success/55",
-    danger: "via-destructive/55",
-  }[tone];
-
-  return (
-    <div
-      className="relative overflow-hidden rounded-2xl border border-border/70 bg-card px-3.5 py-3 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated animate-fade-in-up"
-      style={{ animationDelay: `${delay}s` }}
-    >
-      <span aria-hidden className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent ${hair}`} />
-      <div className="truncate font-display text-[1.35rem] font-black leading-none tnum text-foreground">{value}</div>
-      <div className="mt-1.5 truncate text-[10.5px] font-bold text-muted-foreground">{label}</div>
-    </div>
-  );
-}
-
-function StatCard({
-  title,
-  value,
-  icon,
-  delay = 0,
-}: {
-  title: string;
-  value: string;
   icon: React.ReactNode;
-  delay?: number;
 }) {
   return (
-    <div
-      className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated animate-fade-in-up"
-      style={{ animationDelay: `${delay}s` }}
-    >
-      <div className="grid h-10 w-10 shrink-0 place-items-center squircle bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25">
-        {icon}
+    <div className="rounded-3xl border border-border bg-card p-4 shadow-card">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-muted-foreground">{label}</span>
+        <span className="grid h-7 w-7 place-items-center rounded-xl bg-secondary text-foreground">
+          {icon}
+        </span>
       </div>
-      <div className="min-w-0">
-        <div className="eyebrow text-accent-foreground">{title}</div>
-        <div className="mt-1 truncate font-display text-[0.9rem] font-extrabold text-foreground">{value}</div>
+      <div className="mt-2.5 font-display text-[1.6rem] font-black leading-none tnum text-foreground">
+        {value}
       </div>
     </div>
   );

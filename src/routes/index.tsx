@@ -28,13 +28,13 @@ function Index() {
     return (
       <div className="grid min-h-screen place-items-center bg-background" dir="rtl">
         <div className="animate-fade-in-up text-center">
-          <div className="mx-auto grid h-24 w-24 place-items-center rounded-[1.6rem] gradient-gold shadow-glow-gold ring-1 ring-inset ring-gold/35 animate-glow-pulse">
-            <Scissors className="h-12 w-12 text-gold-foreground animate-pulse-soft" strokeWidth={1.5} />
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-[#111111] text-[#FFFFFF] shadow-luxe dark:bg-[#F6F1E8] dark:text-[#111111]">
+            <Scissors className="h-10 w-10 animate-pulse-soft" strokeWidth={1.8} />
           </div>
-          <div className="mt-6 font-display text-sm font-extrabold text-foreground">حلاق الباشا</div>
-          <div className="mt-1 text-[11px] font-semibold text-muted-foreground">جارٍ التحميل...</div>
-          <div className="mx-auto mt-4 h-1 w-32 overflow-hidden rounded-full bg-secondary">
-            <div className="h-full w-full animate-shimmer rounded-full gradient-gold" />
+          <div className="mt-5 font-display text-base font-black text-foreground">حلاق الباشا</div>
+          <div className="mt-1 font-display text-xs text-muted-foreground">جارٍ التحميل...</div>
+          <div className="mx-auto mt-4 h-1 w-28 overflow-hidden rounded-full bg-secondary">
+            <div className="h-full w-full animate-shimmer rounded-full bg-[#111111] dark:bg-[#F6F1E8]" />
           </div>
         </div>
       </div>

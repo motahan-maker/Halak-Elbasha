@@ -158,12 +158,10 @@ async function showBrowserNotification(title: string, body: string) {
   } catch {}
 }
 
-/** Timestamp of an appointment as a local Date. */
 function appointmentTs(b: Pick<BookingRow, "booking_date" | "booking_time">) {
   return new Date(`${b.booking_date}T${b.booking_time}`).getTime();
 }
 
-/** Minutes until an appointment; negative once it has passed. */
 function minutesUntil(dateIso: string, time: string) {
   return Math.round((appointmentTs({ booking_date: dateIso, booking_time: time }) - Date.now()) / 60000);
 }
@@ -214,7 +212,7 @@ export function BarberApp() {
       } else if (wasSubscribed) {
         toast.message("تم إيقاف الإشعارات");
       } else if (next.permission === "denied") {
-        toast.error("الإشعارات محظورة — فعّلها من إعدادات المتصفح");
+        toast.error("الإشعارات محظورة من إعدادات المتصفح");
       } else {
         toast.error("تعذّر تفعيل الإشعارات");
       }
@@ -257,7 +255,6 @@ export function BarberApp() {
   const bookings = useQuery<BookingRow[]>({
     queryKey: ["barber-bookings", barberId],
     enabled: !!barberId,
-    // Realtime keeps this fresh; polling is only a slow safety net.
     refetchInterval: 30000,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -274,7 +271,6 @@ export function BarberApp() {
     },
   });
 
-  // Live sync: any insert/update on this barber's bookings refreshes the list instantly.
   useEffect(() => {
     if (!barberId) return;
     const channel = supabase
@@ -343,7 +339,6 @@ export function BarberApp() {
       try {
         await startFn({ data: { booking_id: bookingId } });
       } finally {
-        // Legacy global flag (only one service runs at a time in the chair).
         try {
           await workingStatusFn({ data: { barber_id: barberId, is_working: true } });
         } catch (e) {
@@ -357,8 +352,7 @@ export function BarberApp() {
       qc.invalidateQueries({ queryKey: ["barber-bookings"] });
       qc.invalidateQueries({ queryKey: ["barbers"] });
     },
-    onError: (e: Error) => {
-      console.error("Start service error:", e);
+    onError: () => {
       toast.error("حدثت مشكلة أثناء البدء");
       qc.invalidateQueries({ queryKey: ["barber-bookings"] });
     },
@@ -414,7 +408,7 @@ export function BarberApp() {
     const next =
       active ??
       pendingSorted.find((b) => appointmentTs(b) >= Date.now() - 30 * 60 * 1000) ??
-      pendingSorted[pendingSorted.length - 1] ??
+      pendingSorted[0] ??
       null;
 
     return {
@@ -438,147 +432,128 @@ export function BarberApp() {
     return (
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-30 glass">
-          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
-            <div className="flex min-w-0 items-center gap-3">
-              <SkeletonStat />
-            </div>
+          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
+            <SkeletonStat />
           </div>
         </header>
-        <main className="mx-auto max-w-2xl space-y-5 px-4 pt-5">
-          <section className="grid grid-cols-3 gap-2.5">
+        <main className="mx-auto max-w-2xl space-y-4 px-4 pt-4">
+          <div className="grid grid-cols-3 gap-2.5">
             <SkeletonStat />
             <SkeletonStat />
             <SkeletonStat />
-          </section>
-          <SkeletonCard />
-          <SkeletonCard />
+          </div>
           <SkeletonCard />
         </main>
       </div>
     );
   }
+
   if (!myBarber.data) {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center p-6 text-center" dir="rtl">
-        <div className="grid h-14 w-14 place-items-center squircle border border-border/70 bg-card text-muted-foreground shadow-card">
-          <Scissors className="h-6 w-6" strokeWidth={1.5} />
+        <div className="grid h-16 w-16 place-items-center rounded-3xl bg-[#111111] text-[#FFFFFF] shadow-card dark:bg-[#F6F1E8] dark:text-[#111111]">
+          <Scissors className="h-8 w-8" strokeWidth={1.8} />
         </div>
-        <p className="mt-4 font-display text-[0.95rem] font-extrabold text-foreground">لم يتم ربط حسابك بأي حلاق</p>
-        <p className="mt-1.5 text-xs font-semibold text-muted-foreground">تواصل مع المدير لإتمام الربط.</p>
+        <h2 className="mt-4 font-display text-[1.1rem] font-black text-foreground">لم يتم ربط حسابك كحلاق</h2>
+        <p className="mt-1 font-display text-xs text-muted-foreground">تواصل مع إدارة الصالون لتفعيل حسابك كحلاق.</p>
         <button
           onClick={signOut}
-          className="press mt-5 cursor-pointer rounded-2xl bg-primary px-6 py-3 font-display text-sm font-extrabold text-primary-foreground shadow-card transition-all duration-300 hover:brightness-110"
+          className="mt-6 rounded-2xl bg-[#111111] px-6 py-3 font-display text-sm font-bold text-[#FFFFFF] shadow-card dark:bg-[#F6F1E8] dark:text-[#111111] press"
         >
-          خروج
+          تسجيل الخروج
         </button>
       </div>
     );
   }
 
   const tabs: { key: Tab; label: string; count: number; icon: React.ReactNode }[] = [
-    { key: "today", label: "اليوم", count: todays.length, icon: <Calendar className="h-3.5 w-3.5" strokeWidth={1.5} /> },
-    { key: "upcoming", label: "القادمة", count: upcoming.length, icon: <CalendarClock className="h-3.5 w-3.5" strokeWidth={1.5} /> },
-    { key: "history", label: "السجل", count: history.length, icon: <History className="h-3.5 w-3.5" strokeWidth={1.5} /> },
-    { key: "reviews", label: "التقييمات", count: reviews.data?.length ?? 0, icon: <MessageSquareQuote className="h-3.5 w-3.5" strokeWidth={1.5} /> },
+    { key: "today", label: "طابور اليوم", count: todays.length + (inService ? 1 : 0), icon: <Calendar className="h-4 w-4" strokeWidth={1.8} /> },
+    { key: "upcoming", label: "القادمة", count: upcoming.length, icon: <CalendarClock className="h-4 w-4" strokeWidth={1.8} /> },
+    { key: "history", label: "السجل", count: history.length, icon: <History className="h-4 w-4" strokeWidth={1.8} /> },
+    { key: "reviews", label: "التقييمات", count: reviews.data?.length ?? 0, icon: <MessageSquareQuote className="h-4 w-4" strokeWidth={1.8} /> },
   ];
 
-  const renderCard = (b: BookingRow, fromHistory = false) => (
-    <Card
-      key={b.id}
-      b={b}
-      inService={inService?.id === b.id}
-      onStart={fromHistory ? undefined : () => startService.mutate(b.id)}
-      onComplete={fromHistory ? undefined : () => complete.mutate(b.id)}
-      onCancel={fromHistory ? undefined : () => setCancelTarget(b)}
-      isStarting={startService.isPending && startService.variables === b.id}
-      isCompleting={complete.isPending && complete.variables === b.id}
-    />
-  );
-
   return (
-    <div className="min-h-screen bg-background pb-10">
+    <div dir="rtl" className="min-h-screen bg-background pb-12 text-foreground">
+      {/* Sticky Header */}
       <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="relative grid h-11 w-11 shrink-0 place-items-center squircle gradient-gold text-gold-foreground shadow-glow-gold">
-              <Scissors className="h-[22px] w-[22px]" strokeWidth={1.6} />
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#111111] font-display text-base font-bold text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]">
+              {myBarber.data.name.charAt(0)}
             </div>
             <div className="min-w-0">
-              <div className="truncate font-display text-[15px] font-extrabold leading-tight text-foreground">
+              <div className="truncate font-display text-[15px] font-bold text-foreground">
                 {myBarber.data.name}
               </div>
-              <div className="mt-1 flex items-center gap-1.5">
+              <div className="mt-0.5 flex items-center gap-1.5">
                 {myBarber.data.is_working ? (
                   <span className="chip chip-warn">
                     <CurvedWorkingAnimation />
-                    <span>مشغول</span>
+                    <span>مشغول بالكرسي</span>
                   </span>
                 ) : (
                   <span className="chip chip-success">
-                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                    <span>متاح</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                    <span>متاح للخدمة</span>
                   </span>
                 )}
-                <span className="text-[10.5px] font-semibold text-muted-foreground">لوحة الحلاق</span>
+                <span className="text-[10px] font-medium text-muted-foreground">لوحة الحلاق</span>
               </div>
             </div>
           </div>
+
           <div className="flex shrink-0 items-center gap-2">
             {push?.supported && (
               <button
                 onClick={togglePush}
                 disabled={pushBusy}
-                aria-label={push.subscribed ? "إيقاف الإشعارات" : "تفعيل الإشعارات"}
-                aria-pressed={push.subscribed}
-                className={`press grid h-9 w-9 cursor-pointer place-items-center rounded-full border transition-all duration-300 disabled:opacity-50 ${
+                aria-label="تفعيل الإشعارات"
+                className={`grid h-9 w-9 cursor-pointer place-items-center rounded-full border transition-all duration-200 press ${
                   push.subscribed
-                    ? "border-gold/30 bg-accent text-accent-foreground shadow-glow-gold"
-                    : "border-border/70 bg-card/70 text-muted-foreground hover:border-gold/45 hover:text-accent-foreground"
+                    ? "border-[#111111] bg-[#111111] text-[#FFFFFF] dark:border-[#F6F1E8] dark:bg-[#F6F1E8] dark:text-[#111111]"
+                    : "border-border bg-card text-muted-foreground"
                 }`}
               >
-                {push.subscribed ? (
-                  <BellRing className="h-4 w-4" strokeWidth={1.7} />
-                ) : (
-                  <BellOff className="h-4 w-4" strokeWidth={1.7} />
-                )}
+                {push.subscribed ? <BellRing className="h-4 w-4" strokeWidth={1.8} /> : <BellOff className="h-4 w-4" strokeWidth={1.8} />}
               </button>
             )}
             <ThemeToggle />
             <button
               onClick={signOut}
               aria-label="خروج"
-              className="press hit-area grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-border/70 bg-card/70 text-muted-foreground transition-all duration-300 hover:border-destructive/40 hover:text-destructive"
+              className="grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-border bg-card text-muted-foreground transition-all duration-200 hover:border-destructive/40 hover:text-destructive press"
             >
-              <LogOut className="h-4 w-4" strokeWidth={1.7} />
+              <LogOut className="h-4 w-4" strokeWidth={1.8} />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl space-y-5 px-4 pt-4">
+      {/* Main Content */}
+      <main className="mx-auto max-w-2xl space-y-4 px-4 pt-4">
+        {/* Quick KPI Stats */}
         <section className="grid grid-cols-3 gap-2.5">
-          <Stat
+          <StatTile
             label="مواعيد اليوم"
             value={todays.length + (inService ? 1 : 0)}
-            tone="gold"
-            icon={<Calendar className="h-3.5 w-3.5" strokeWidth={1.8} />}
+            icon={<Calendar className="h-4 w-4" strokeWidth={1.8} />}
           />
-          <Stat
+          <StatTile
             label="مكتملة"
             value={completedCount}
-            tone="success"
-            icon={<Check className="h-3.5 w-3.5" strokeWidth={2.2} />}
+            icon={<Check className="h-4 w-4" strokeWidth={2.2} />}
           />
-          <Stat
+          <StatTile
             label="التقييم"
             value={avg ? avg.toFixed(1) : "—"}
-            tone="star"
-            icon={<Star className="h-3.5 w-3.5 fill-current" strokeWidth={0} />}
+            icon={<Star className="h-4 w-4 fill-current" strokeWidth={0} />}
           />
         </section>
 
+        {/* Operational Now & Next Hero Card */}
         {nextAppointment && (
-          <NextAppointmentHero
+          <OperationalHero
             b={nextAppointment}
             inService={inService?.id === nextAppointment.id}
             isStarting={startService.isPending}
@@ -588,26 +563,26 @@ export function BarberApp() {
           />
         )}
 
-        <div className="flex items-center gap-1.5 rounded-2xl border border-border/70 bg-secondary/50 p-1.5">
+        {/* Segmented Control */}
+        <div className="flex rounded-full border border-border bg-secondary p-1">
           {tabs.map((t) => {
             const active = tab === t.key;
             return (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                aria-current={active ? "page" : undefined}
-                className={`press flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-1 py-2 text-[11px] font-extrabold transition-all duration-300 ${
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 font-display text-xs font-bold transition-all duration-200 press ${
                   active
-                    ? "border border-gold/30 bg-card text-accent-foreground shadow-card"
-                    : "border border-transparent text-muted-foreground hover:text-foreground"
+                    ? "bg-[#111111] text-[#FFFFFF] shadow-sm dark:bg-[#F6F1E8] dark:text-[#111111]"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t.icon}
                 <span className="truncate">{t.label}</span>
                 {t.count > 0 && (
                   <span
-                    className={`shrink-0 rounded-full px-1.5 text-[9.5px] font-black tnum ${
-                      active ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
+                    className={`rounded-full px-1.5 text-[9px] font-bold tnum ${
+                      active ? "bg-white/20 text-white dark:bg-black/20 dark:text-black" : "bg-card text-foreground"
                     }`}
                   >
                     {t.count}
@@ -618,109 +593,150 @@ export function BarberApp() {
           })}
         </div>
 
+        {/* Tab 1: Today */}
         {tab === "today" && (
-          <Section title="مواعيد اليوم">
-            {todays.length === 0 && <Empty msg="لا توجد مواعيد اليوم" />}
-            {todays.map((b, i) => (
-              <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
-                {renderCard(b)}
-              </div>
+          <div className="space-y-3">
+            {todays.length === 0 && !inService && (
+              <EmptyState
+                icon={<Calendar className="h-6 w-6" strokeWidth={1.8} />}
+                title="لا توجد مواعيد اليوم"
+                hint="ستظهر هنا المواعيد المحجوزة لليوم فور وصولها"
+              />
+            )}
+            {todays.map((b) => (
+              <BarberAppointmentCard
+                key={b.id}
+                b={b}
+                inService={inService?.id === b.id}
+                onStart={() => startService.mutate(b.id)}
+                onComplete={() => complete.mutate(b.id)}
+                onCancel={() => setCancelTarget(b)}
+                isStarting={startService.isPending && startService.variables === b.id}
+                isCompleting={complete.isPending && complete.variables === b.id}
+              />
             ))}
-          </Section>
+          </div>
         )}
 
+        {/* Tab 2: Upcoming */}
         {tab === "upcoming" && (
-          <Section title="المواعيد القادمة">
-            {upcoming.length === 0 && <Empty msg="لا توجد مواعيد قادمة" />}
-            {upcoming.map((b, i) => (
-              <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
-                {renderCard(b)}
-              </div>
+          <div className="space-y-3">
+            {upcoming.length === 0 && (
+              <EmptyState
+                icon={<CalendarClock className="h-6 w-6" strokeWidth={1.8} />}
+                title="لا توجد مواعيد قادمة"
+                hint="المواعيد للأيام القادمة ستظهر هنا"
+              />
+            )}
+            {upcoming.map((b) => (
+              <BarberAppointmentCard
+                key={b.id}
+                b={b}
+                onStart={() => startService.mutate(b.id)}
+                onComplete={() => complete.mutate(b.id)}
+                onCancel={() => setCancelTarget(b)}
+                isStarting={startService.isPending && startService.variables === b.id}
+                isCompleting={complete.isPending && complete.variables === b.id}
+              />
             ))}
-          </Section>
+          </div>
         )}
 
+        {/* Tab 3: History */}
         {tab === "history" && (
-          <Section title="سجل المواعيد">
-            {history.length === 0 && <Empty msg="لا يوجد سجل" />}
-            {history.slice(0, 30).map((b, i) => (
-              <div key={b.id} className="animate-fade-in-up" style={{ animationDelay: `${0.03 * i}s` }}>
-                {renderCard(b, true)}
-              </div>
+          <div className="space-y-3">
+            {history.length === 0 && (
+              <EmptyState
+                icon={<History className="h-6 w-6" strokeWidth={1.8} />}
+                title="لا يوجد سجل سابق"
+                hint="المواعيد المنتهية أو الملغاة ستظهر هنا"
+              />
+            )}
+            {history.slice(0, 40).map((b) => (
+              <BarberAppointmentCard key={b.id} b={b} />
             ))}
-          </Section>
+          </div>
         )}
 
+        {/* Tab 4: Reviews */}
         {tab === "reviews" && (
-          <Section title="تقييمات العملاء">
-            {(reviews.data?.length ?? 0) === 0 && <Empty msg="لا توجد تقييمات بعد" />}
-            {reviews.data?.map((r, i) => (
+          <div className="space-y-3">
+            {(reviews.data?.length ?? 0) === 0 && (
+              <EmptyState
+                icon={<Star className="h-6 w-6" strokeWidth={1.8} />}
+                title="لا توجد تقييمات بعد"
+                hint="ستظهر تقييمات وآراء العملاء لخدماتك هنا"
+              />
+            )}
+            {reviews.data?.map((r) => (
               <div
                 key={r.id}
-                className="relative overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-card animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/45 hover:shadow-elevated"
-                style={{ animationDelay: `${0.03 * i}s` }}
+                className="rounded-3xl border border-border bg-card p-4 shadow-card"
               >
-                <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-0.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <Star
                         key={n}
-                        className={`h-3.5 w-3.5 ${n <= r.rating ? "fill-gold text-gold" : "fill-none text-muted-foreground/30"}`}
-                        strokeWidth={n <= r.rating ? 0 : 1.6}
+                        className={`h-4 w-4 ${
+                          n <= r.rating
+                            ? "fill-[#111111] text-[#111111] dark:fill-[#F6F1E8] dark:text-[#F6F1E8]"
+                            : "text-muted-foreground/30"
+                        }`}
+                        strokeWidth={n <= r.rating ? 0 : 1.5}
                       />
                     ))}
-                    <span className="ms-1.5 font-display text-[11px] font-black tnum text-accent-foreground">
+                    <span className="ms-1.5 font-display text-xs font-bold tnum text-foreground">
                       {r.rating.toFixed(1)}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold tnum text-muted-foreground">{arabicDate(r.created_at)}</span>
+                  <span className="text-[10px] font-bold tnum text-muted-foreground">
+                    {arabicDate(r.created_at)}
+                  </span>
                 </div>
                 {r.comment && (
-                  <p className="mt-2.5 text-[12px] font-semibold leading-relaxed text-foreground/85">{r.comment}</p>
+                  <p className="mt-2.5 font-display text-xs leading-relaxed text-foreground">
+                    {r.comment}
+                  </p>
                 )}
               </div>
             ))}
-          </Section>
+          </div>
         )}
       </main>
 
-      {/* Confirmation Modal */}
+      {/* Cancellation Confirmation Modal */}
       {cancelTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-fade-in" dir="rtl">
-          <div className="w-full max-w-sm overflow-hidden rounded-3xl border border-border/70 bg-card shadow-luxe animate-scale-in">
-            <div className="px-5 pt-6 text-center">
-              <div className="mx-auto grid h-14 w-14 place-items-center squircle border border-destructive/25 bg-destructive/10 text-destructive">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in" dir="rtl">
+          <div className="w-full max-w-sm overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-luxe animate-scale-in">
+            <div className="text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#C5221F]/10 text-[#C5221F]">
                 <XCircle className="h-7 w-7" strokeWidth={1.8} />
               </div>
-              <h3 className="mt-4 font-display text-[1.05rem] font-extrabold text-foreground">
+              <h3 className="mt-3 font-display text-base font-bold text-foreground">
                 إلغاء هذا الحجز؟
               </h3>
-              <p className="mt-1.5 text-[11.5px] font-semibold leading-relaxed text-muted-foreground">
-                سيصل إشعار للعميل بإلغاء الموعد.
+              <p className="mt-1 font-display text-xs text-muted-foreground">
+                سيصل إشعار للعميل فور إلغاء الحجز.
               </p>
             </div>
-            <div className="mt-4 divide-y divide-border/55 border-y border-border/55">
-              <div className="flex items-center justify-between gap-3 px-5 py-3">
-                <span className="text-[11.5px] font-semibold text-muted-foreground">العميل</span>
-                <span className="truncate font-display text-[0.83rem] font-bold text-foreground">
-                  {cancelTarget.customer_name}
-                </span>
+
+            <div className="my-4 divide-y divide-border rounded-2xl border border-border bg-secondary/30 p-3 text-xs">
+              <div className="flex justify-between py-1.5">
+                <span className="text-muted-foreground">العميل:</span>
+                <span className="font-bold text-foreground">{cancelTarget.customer_name}</span>
               </div>
-              <div className="flex items-center justify-between gap-3 px-5 py-3">
-                <span className="text-[11.5px] font-semibold text-muted-foreground">الخدمة</span>
-                <span className="truncate font-display text-[0.83rem] font-bold text-foreground">
-                  {cancelTarget.service_name}
-                </span>
+              <div className="flex justify-between py-1.5">
+                <span className="text-muted-foreground">الخدمة:</span>
+                <span className="font-bold text-foreground">{cancelTarget.service_name}</span>
               </div>
-              <div className="flex items-center justify-between gap-3 px-5 py-3">
-                <span className="text-[11.5px] font-semibold text-muted-foreground">الموعد</span>
-                <span className="truncate font-display text-[0.83rem] font-bold tnum text-foreground">
-                  {formatTime(cancelTarget.booking_time)} • {arabicDate(cancelTarget.booking_date)}
-                </span>
+              <div className="flex justify-between py-1.5">
+                <span className="text-muted-foreground">الوقت:</span>
+                <span className="font-bold tnum text-foreground">{formatTime(cancelTarget.booking_time)}</span>
               </div>
             </div>
-            <div className="flex gap-2.5 p-4">
+
+            <div className="flex gap-2">
               <button
                 disabled={cancelByBarber.isPending}
                 onClick={() => {
@@ -728,16 +744,16 @@ export function BarberApp() {
                     onSettled: () => setCancelTarget(null),
                   });
                 }}
-                className="press flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-destructive py-3 text-sm font-extrabold text-destructive-foreground transition-all duration-200 hover:brightness-105 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-[#C5221F] py-2.5 font-display text-xs font-bold text-white press disabled:opacity-50"
               >
-                {cancelByBarber.isPending ? "جارٍ الإلغاء..." : "إلغاء الحجز"}
+                {cancelByBarber.isPending ? "جارٍ الإلغاء..." : "تأكيد الإلغاء"}
               </button>
               <button
                 disabled={cancelByBarber.isPending}
                 onClick={() => setCancelTarget(null)}
-                className="press flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-border/70 bg-secondary py-3 text-sm font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground disabled:opacity-50"
+                className="flex-1 rounded-xl border border-border bg-card py-2.5 font-display text-xs font-bold text-foreground press"
               >
-                رجوع
+                تراجع
               </button>
             </div>
           </div>
@@ -747,7 +763,8 @@ export function BarberApp() {
   );
 }
 
-function NextAppointmentHero({
+/* Operational Now & Next Hero */
+function OperationalHero({
   b,
   inService,
   isStarting,
@@ -766,182 +783,120 @@ function NextAppointmentHero({
   const late = diff < 0;
   const reminder = buildWhatsAppLink(
     b.customer_phone,
-    `مرحباً ${b.customer_name}، نذكرك بموعدك: ${b.service_name} — ${arabicDate(b.booking_date)} الساعة ${formatTime(b.booking_time)}. في انتظارك!`,
+    `مرحباً ${b.customer_name}، نذكرك بموعدك في صالون حلاق الباشا: ${b.service_name} — ${arabicDate(b.booking_date)} الساعة ${formatTime(b.booking_time)}. بانتظارك!`,
   );
 
   return (
-    <section
-      className={`relative overflow-hidden animate-fade-in-up ${
-        inService ? "panel-ink grain spotlight p-5" : "rounded-2xl border border-border/70 bg-card p-4 shadow-elevated"
-      }`}
-    >
-      <span
-        aria-hidden
-        className={
-          inService
-            ? "absolute inset-x-5 top-0 h-px gold-rule"
-            : `absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent ${late ? "via-destructive/60" : "via-gold/55"}`
-        }
-      />
-      <div className="relative">
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1.5">
-            {inService ? (
-              <CurvedWorkingAnimation />
-            ) : (
-              <Timer className="h-3.5 w-3.5 text-accent-foreground" strokeWidth={1.8} />
-            )}
-            <span
-              className={`font-display text-[11px] font-extrabold ${
-                inService ? "text-gold" : "text-foreground"
-              }`}
-            >
-              {inService ? "جارٍ الخدمة الآن" : "الموعد القادم"}
-            </span>
+    <section className="rounded-3xl bg-[#111111] p-5 text-[#FFFFFF] shadow-luxe dark:bg-[#141414]">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {inService ? (
+            <CurvedWorkingAnimation />
+          ) : (
+            <Timer className="h-4 w-4 text-[#8A857D]" strokeWidth={1.8} />
+          )}
+          <span className="font-display text-xs font-bold text-[#FFFFFF]">
+            {inService ? "العميل الحالي بالكرسي" : "الموعد القادم"}
           </span>
-          {inService ? (
-            <span className="rounded-full border border-gold/35 bg-gold/12 px-2.5 py-1 font-display text-[10.5px] font-black tnum text-gold">
-              {humanizeMinutes(diff)}
-            </span>
-          ) : (
-            <span className={`chip ${late ? "chip-danger" : "chip-gold"}`}>
-              {late ? `متأخر ${humanizeMinutes(diff)}` : `بعد ${humanizeMinutes(diff)}`}
-            </span>
-          )}
         </div>
+        <span
+          className={`chip ${
+            inService
+              ? "chip-warn"
+              : late
+                ? "chip-danger"
+                : "chip-gold"
+          }`}
+        >
+          {inService ? "جارٍ الخدمة" : late ? `متأخر ${humanizeMinutes(diff)}` : `بعد ${humanizeMinutes(diff)}`}
+        </span>
+      </div>
 
-        <div className="mt-3.5 flex items-center gap-3">
-          <div
-            className={`grid h-14 w-16 shrink-0 place-items-center rounded-xl ${
-              inService
-                ? "border border-gold/30 bg-gold/10"
-                : "bg-accent text-accent-foreground ring-1 ring-inset ring-gold/25"
-            }`}
-          >
-            <div className="text-center">
-              <div
-                className={`font-display text-[1.05rem] font-black leading-none tnum ${
-                  inService ? "text-gradient-gold" : ""
-                }`}
-              >
-                {formatTime(b.booking_time)}
-              </div>
-              <div className={`mt-1 text-[8.5px] font-bold ${inService ? "text-ink-foreground/50" : "opacity-70"}`}>
-                موعد
-              </div>
-            </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-display text-[1.25rem] font-black text-[#FFFFFF]">
+            {b.customer_name}
           </div>
-          <div className="min-w-0 flex-1">
-            <div
-              className={`truncate font-display text-[1.1rem] font-black ${
-                inService ? "text-ink-foreground" : "text-foreground"
-              }`}
-            >
-              {b.customer_name}
-            </div>
-            <div
-              className={`mt-1 truncate text-[11.5px] font-semibold ${
-                inService ? "text-ink-foreground/70" : "text-muted-foreground"
-              }`}
-            >
-              {b.service_name} • {b.service_price} ج.م
-            </div>
-            <div
-              className={`mt-0.5 truncate text-[11px] font-semibold ${
-                inService ? "text-ink-foreground/45" : "text-muted-foreground/80"
-              }`}
-            >
-              {arabicDate(b.booking_date)}
-            </div>
+          <div className="mt-1 truncate text-xs text-[#8A857D]">
+            {b.service_name} • {b.service_price} ج.م
           </div>
         </div>
+        <div className="grid h-13 w-16 place-items-center rounded-2xl bg-white/10 text-center">
+          <div className="font-display text-[1.1rem] font-bold tnum text-[#FFFFFF]">
+            {formatTime(b.booking_time)}
+          </div>
+          <div className="text-[9px] font-bold text-[#8A857D]">موعد</div>
+        </div>
+      </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
+        <a
+          href={`tel:${b.customer_phone}`}
+          className="flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl border border-white/15 bg-white/5 font-display text-xs font-bold text-[#FFFFFF] transition-all duration-200 hover:bg-white/10 press"
+        >
+          <Phone className="h-4 w-4" strokeWidth={1.8} />
+          اتصال
+        </a>
+        {!inService && (
           <a
-            href={`tel:${b.customer_phone}`}
-            className={`press flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition-all duration-200 ${
-              inService
-                ? "border-white/12 bg-white/6 text-ink-foreground hover:bg-white/12"
-                : "border-border/70 bg-secondary text-foreground hover:border-gold/45 hover:text-accent-foreground"
-            }`}
+            href={reminder}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl border border-white/15 bg-white/5 font-display text-xs font-bold text-[#FFFFFF] transition-all duration-200 hover:bg-white/10 press"
           >
-            <Phone className="h-3.5 w-3.5" strokeWidth={1.7} /> اتصال
+            <MessageCircle className="h-4 w-4" strokeWidth={1.8} />
+            تذكير
           </a>
-          {!inService && (
-            <a
-              href={reminder}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="press flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-success/30 bg-success/10 px-3 text-xs font-bold text-foreground transition-all duration-200 hover:bg-success/18"
-            >
-              <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.8} /> تذكير
-            </a>
-          )}
-          {inService ? (
-            <button
-              disabled={isCompleting}
-              onClick={onComplete}
-              className="press flex min-h-11 flex-[1.5] cursor-pointer items-center justify-center gap-1.5 rounded-xl gradient-gold px-3 text-xs font-extrabold text-gold-foreground shadow-glow-gold transition-all duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> {isCompleting ? "جارٍ الإنهاء..." : "إنهاء الموعد"}
-            </button>
-          ) : (
-            <button
-              disabled={isStarting}
-              onClick={onStart}
-              className="press flex min-h-11 flex-[1.5] cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-extrabold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Play className="h-3.5 w-3.5 fill-current" strokeWidth={0} />
-              {isStarting ? "جارٍ البدء..." : "ابدأ الخدمة"}
-            </button>
-          )}
-        </div>
+        )}
+        {inService ? (
+          <button
+            disabled={isCompleting}
+            onClick={onComplete}
+            className="flex min-h-11 flex-[1.5] cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-[#FFFFFF] font-display text-xs font-black text-[#111111] shadow-card transition-all duration-200 hover:bg-[#EFE8DC] active:bg-[#DAD6CF] disabled:opacity-50 press"
+          >
+            <Check className="h-4 w-4" strokeWidth={2.2} />
+            {isCompleting ? "جارٍ الإنهاء..." : "إنهاء الخدمة"}
+          </button>
+        ) : (
+          <button
+            disabled={isStarting}
+            onClick={onStart}
+            className="flex min-h-11 flex-[1.5] cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-[#FFFFFF] font-display text-xs font-black text-[#111111] shadow-card transition-all duration-200 hover:bg-[#EFE8DC] active:bg-[#DAD6CF] disabled:opacity-50 press"
+          >
+            <Play className="h-3.5 w-3.5 fill-current" strokeWidth={0} />
+            {isStarting ? "جارٍ البدء..." : "ابدأ الخدمة"}
+          </button>
+        )}
       </div>
     </section>
   );
 }
 
-function Stat({
+function StatTile({
   label,
   value,
   icon,
-  tone = "gold",
 }: {
   label: string;
   value: number | string;
-  icon?: React.ReactNode;
-  tone?: "gold" | "success" | "star";
+  icon: React.ReactNode;
 }) {
-  const tones = {
-    gold: { hair: "via-gold/60", tile: "bg-accent text-accent-foreground ring-gold/25" },
-    success: { hair: "via-success/55", tile: "bg-success/10 text-success ring-success/25" },
-    star: { hair: "via-gold/60", tile: "bg-gold/15 text-accent-foreground ring-gold/30" },
-  }[tone];
-
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card px-3.5 py-3 shadow-card animate-fade-in-up">
-      <span aria-hidden className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent ${tones.hair}`} />
+    <div className="rounded-3xl border border-border bg-card p-4 shadow-card">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[10.5px] font-bold text-muted-foreground">{label}</span>
-        <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg ring-1 ring-inset ${tones.tile}`}>
+        <span className="text-xs font-bold text-muted-foreground">{label}</span>
+        <span className="grid h-7 w-7 place-items-center rounded-xl bg-secondary text-foreground">
           {icon}
         </span>
       </div>
-      <div className="mt-2 font-display text-[1.7rem] font-black leading-none tnum text-foreground">{value}</div>
+      <div className="mt-2 font-display text-[1.6rem] font-black leading-none tnum text-foreground">
+        {value}
+      </div>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h2 className="section-heading mb-3 px-0.5 text-[1.05rem]">{title}</h2>
-      <div className="space-y-3">{children}</div>
-    </section>
-  );
-}
-
-function Card({
+function BarberAppointmentCard({
   b,
   onStart,
   onComplete,
@@ -962,117 +917,117 @@ function Card({
   const late = b.status === "booked" && minutes < 0;
   const reminder = buildWhatsAppLink(
     b.customer_phone,
-    `مرحباً ${b.customer_name}، نذكرك بموعدك: ${b.service_name} — ${arabicDate(b.booking_date)} الساعة ${formatTime(b.booking_time)}. في انتظارك!`,
+    `مرحباً ${b.customer_name}، نذكرك بموعدك في صالون حلاق الباشا: ${b.service_name} — ${arabicDate(b.booking_date)} الساعة ${formatTime(b.booking_time)}. بانتظارك!`,
   );
 
-  const getStatusBadge = () => {
-    if (b.status === "completed") return <span className="chip chip-success">مكتمل</span>;
-    if (b.status === "cancelled_by_barber") return <span className="chip chip-danger">ملغي بواسطتك</span>;
-    if (b.status === "cancelled_by_customer") return <span className="chip chip-danger">ملغي بواسطة العميل</span>;
-    if (b.status === "cancelled") return <span className="chip chip-danger">ملغي</span>;
-    if (inService) {
-      return (
-        <span className="chip chip-warn">
-          <CurvedWorkingAnimation />
-          <span>جارٍ الخدمة</span>
-        </span>
-      );
-    }
-    return <span className="chip chip-gold tnum">{b.booking_number}</span>;
-  };
-
   return (
-    <div
-      className={`group relative overflow-hidden rounded-2xl border bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elevated ${
-        inService ? "border-warning/35 bg-warning/[0.05]" : "border-border/70 hover:border-gold/45"
-      }`}
-    >
-      <span
-        aria-hidden
-        className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent ${
-          inService ? "via-warning/70" : "via-gold/40"
-        }`}
-      />
-      <div className="flex items-start justify-between gap-2.5">
+    <div className="rounded-3xl border border-border bg-card p-4 shadow-card">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="truncate font-display text-[0.95rem] font-extrabold text-foreground">{b.customer_name}</div>
-          <div className="mt-1 flex items-center gap-1.5 text-[11.5px] font-semibold text-muted-foreground">
-            <Scissors className="h-3.5 w-3.5 shrink-0" strokeWidth={1.7} />
-            <span className="truncate">{b.service_name}</span>
-            <span className="shrink-0 font-display font-black tnum text-accent-foreground">{b.service_price} ج.م</span>
+          <div className="truncate font-display text-[1rem] font-bold text-foreground">
+            {b.customer_name}
           </div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-muted-foreground">
+          <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Scissors className="h-3.5 w-3.5" strokeWidth={1.8} />
+            <span className="truncate">{b.service_name}</span>
+            <span>•</span>
+            <span className="font-bold tnum text-foreground">{b.service_price} ج.م</span>
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" strokeWidth={1.9} />
-              <span className="font-display font-bold tnum text-foreground">{formatTime(b.booking_time)}</span>
+              <Clock className="h-3.5 w-3.5" strokeWidth={1.8} />
+              <span className="font-bold tnum text-foreground">{formatTime(b.booking_time)}</span>
             </span>
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" strokeWidth={1.7} />
-              {arabicDate(b.booking_date)}
-            </span>
+            <span>•</span>
+            <span>{arabicDate(b.booking_date)}</span>
             {b.status === "booked" && (
-              <span className={`font-extrabold ${late ? "text-destructive" : "text-muted-foreground/70"}`}>
-                {late ? `• متأخر ${humanizeMinutes(minutes)}` : `• بعد ${humanizeMinutes(minutes)}`}
+              <span className={`font-bold ${late ? "text-destructive" : "text-muted-foreground"}`}>
+                {late ? `(متأخر ${humanizeMinutes(minutes)})` : `(بعد ${humanizeMinutes(minutes)})`}
               </span>
             )}
           </div>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1.5">{getStatusBadge()}</div>
+
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <span
+            className={`chip ${
+              b.status === "completed"
+                ? "chip-success"
+                : String(b.status).startsWith("cancelled")
+                  ? "chip-danger"
+                  : inService
+                    ? "chip-warn"
+                    : "chip-gold"
+            }`}
+          >
+            {inService && <CurvedWorkingAnimation />}
+            {b.status === "completed"
+              ? "مكتمل"
+              : b.status === "cancelled_by_barber"
+                ? "ملغي بواسطتك"
+                : b.status === "cancelled_by_customer"
+                  ? "ملغي بواسطة العميل"
+                  : b.status === "cancelled"
+                    ? "ملغي"
+                    : inService
+                      ? "جارٍ الخدمة"
+                      : "محجوز"}
+          </span>
+          <span className="font-display text-[10px] font-bold tnum text-muted-foreground">
+            #{b.booking_number}
+          </span>
+        </div>
       </div>
-      <div className="mt-3.5 flex flex-wrap gap-2">
+
+      <div className="mt-3.5 flex flex-wrap gap-2 border-t border-border/70 pt-3">
         <a
           href={`tel:${b.customer_phone}`}
-          className="press flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-secondary px-3 text-xs font-bold text-foreground transition-all duration-200 hover:border-gold/45 hover:text-accent-foreground"
+          className="flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1 rounded-xl border border-border bg-secondary font-display text-xs font-bold text-foreground transition-all duration-200 hover:border-foreground press"
         >
-          <Phone className="h-3.5 w-3.5" strokeWidth={1.7} /> اتصال
+          <Phone className="h-3.5 w-3.5" strokeWidth={1.8} />
+          اتصال
         </a>
         {b.status === "booked" && (
           <a
             href={reminder}
             target="_blank"
             rel="noopener noreferrer"
-            className="press flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-success/30 bg-success/10 px-3 text-xs font-bold text-foreground transition-all duration-200 hover:bg-success/18"
+            className="flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1 rounded-xl border border-border bg-secondary font-display text-xs font-bold text-foreground transition-all duration-200 hover:border-foreground press"
           >
-            <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.8} /> تذكير
+            <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.8} />
+            تذكير
           </a>
         )}
         {onStart && b.status === "booked" && !b.started_at && (
           <button
             disabled={isStarting}
             onClick={onStart}
-            className="press flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-extrabold text-primary-foreground shadow-card transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1 rounded-xl bg-[#111111] font-display text-xs font-bold text-[#FFFFFF] shadow-card dark:bg-[#F6F1E8] dark:text-[#111111] press disabled:opacity-50"
           >
-            <Play className="h-3.5 w-3.5 fill-current" strokeWidth={0} /> {isStarting ? "جارٍ البدء..." : "ابدأ"}
+            <Play className="h-3.5 w-3.5 fill-current" strokeWidth={0} />
+            {isStarting ? "..." : "ابدأ"}
           </button>
         )}
         {onComplete && b.status === "booked" && (
           <button
             disabled={isCompleting}
             onClick={onComplete}
-            className="press flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-gold/30 bg-gold/10 px-3 text-xs font-extrabold text-accent-foreground transition-all duration-200 hover:bg-gold/18 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1 rounded-xl bg-[#111111] font-display text-xs font-bold text-[#FFFFFF] shadow-card dark:bg-[#F6F1E8] dark:text-[#111111] press disabled:opacity-50"
           >
-            <Check className="h-3.5 w-3.5" strokeWidth={2} /> {isCompleting ? "جارٍ الإنهاء..." : "إنهاء"}
+            <Check className="h-3.5 w-3.5" strokeWidth={2} />
+            {isCompleting ? "..." : "إنهاء"}
           </button>
         )}
         {onCancel && b.status === "booked" && (
           <button
             onClick={onCancel}
-            className="press flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-destructive/25 bg-destructive/[0.06] px-3 text-xs font-bold text-destructive transition-all duration-200 hover:bg-destructive/12"
+            className="flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1 rounded-xl border border-destructive/30 bg-destructive/10 font-display text-xs font-bold text-destructive hover:bg-destructive/20 press"
           >
-            <XCircle className="h-3.5 w-3.5" strokeWidth={1.7} /> إلغاء
+            <XCircle className="h-3.5 w-3.5" strokeWidth={1.8} />
+            إلغاء
           </button>
         )}
       </div>
     </div>
-  );
-}
-
-function Empty({ msg }: { msg: string }) {
-  return (
-    <EmptyState
-      icon={<Calendar className="h-5 w-5" strokeWidth={1.8} />}
-      title={msg}
-      hint="ستظهر هنا فور وصول حجز جديد"
-    />
   );
 }
