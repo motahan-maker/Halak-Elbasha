@@ -14,9 +14,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =========================================================
-   DESIGN LANGUAGE — "OBSIDIAN & GOLD"
-   A premium barbershop identity: deep warm obsidian, brushed
-   gold, ivory paper. Editorial typography, quiet luxury.
+   DESIGN LANGUAGE — "HALAQ EL BASHA" (login DNA)
+   Warm ivory, brushed gold, deep brown. All screens inherit
+   these tokens: ivory bg, white surfaces, gold CTAs, brown ink.
    ========================================================= */
 
 @theme inline {
@@ -65,103 +65,103 @@
 }
 
 /* ---------------------------------------------------------
-   LIGHT — ivory paper, obsidian ink, brushed gold
+   LIGHT — warm ivory, dark brown ink, brushed gold (DNA)
    --------------------------------------------------------- */
 :root {
   --radius: 1rem;
 
-  --background: oklch(0.981 0.005 84);
-  --foreground: oklch(0.165 0.014 58);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.165 0.014 58);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.165 0.014 58);
-  --primary: oklch(0.225 0.019 56);
-  --primary-foreground: oklch(0.975 0.012 84);
-  --secondary: oklch(0.945 0.011 82);
-  --secondary-foreground: oklch(0.245 0.018 58);
-  --muted: oklch(0.956 0.009 84);
-  --muted-foreground: oklch(0.492 0.021 64);
-  --accent: oklch(0.943 0.036 82);
-  --accent-foreground: oklch(0.412 0.086 68);
-  --destructive: oklch(0.548 0.208 26);
-  --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.565 0.146 152);
-  --success-foreground: oklch(1 0 0);
-  --warning: oklch(0.716 0.152 63);
-  --warning-foreground: oklch(0.185 0.038 55);
-  --border: oklch(0.897 0.013 80);
-  --input: oklch(0.951 0.009 84);
-  --ring: oklch(0.664 0.113 76);
-  --gold: oklch(0.722 0.131 78);
-  --gold-foreground: oklch(0.185 0.024 58);
-  --ink: oklch(0.168 0.015 57);
-  --ink-foreground: oklch(0.962 0.009 84);
+  --background: #faf7ef;
+  --foreground: #24140e;
+  --card: #ffffff;
+  --card-foreground: #24140e;
+  --popover: #ffffff;
+  --popover-foreground: #24140e;
+  --primary: #c99a35;
+  --primary-foreground: #ffffff;
+  --secondary: #f3ecdd;
+  --secondary-foreground: #4a3a2c;
+  --muted: #f5efe2;
+  --muted-foreground: #756d64;
+  --accent: #f7ecd4;
+  --accent-foreground: #8a6414;
+  --destructive: #b94e48;
+  --destructive-foreground: #ffffff;
+  --success: #5c8a58;
+  --success-foreground: #ffffff;
+  --warning: #d9a62e;
+  --warning-foreground: #24140e;
+  --border: #e5dccb;
+  --input: #fffdf8;
+  --ring: #c99a35;
+  --gold: #c99a35;
+  --gold-foreground: #ffffff;
+  --ink: #24140e;
+  --ink-foreground: #faf7ef;
 
-  --gradient-luxe: linear-gradient(135deg, oklch(0.268 0.021 57) 0%, oklch(0.148 0.013 55) 100%);
-  --gradient-night: linear-gradient(160deg, oklch(0.222 0.015 60) 0%, oklch(0.107 0.008 58) 100%);
-  --gradient-gold: linear-gradient(135deg, oklch(0.845 0.114 88) 0%, oklch(0.678 0.137 66) 100%);
-  --gradient-hero: linear-gradient(152deg, oklch(0.268 0.021 57) 0%, oklch(0.158 0.013 56) 46%, oklch(0.302 0.046 71) 100%);
-  --gradient-success: linear-gradient(135deg, oklch(0.615 0.155 152) 0%, oklch(0.512 0.132 168) 100%);
-  --gradient-surface: linear-gradient(180deg, oklch(1 0 0) 0%, oklch(0.972 0.007 84) 100%);
-  --gradient-ink: linear-gradient(150deg, oklch(0.232 0.019 57) 0%, oklch(0.128 0.011 56) 100%);
+  --gradient-luxe: linear-gradient(135deg, #dfa93e 0%, #c99a35 55%, #a87c22 100%);
+  --gradient-night: linear-gradient(160deg, #3a241a 0%, #24140e 100%);
+  --gradient-gold: linear-gradient(135deg, #dfa93e 0%, #c99a35 55%, #a87c22 100%);
+  --gradient-hero: linear-gradient(152deg, #3a241a 0%, #24140e 55%, #4a2c14 100%);
+  --gradient-success: linear-gradient(135deg, #6fa06b 0%, #4e7a4b 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #faf7ef 100%);
+  --gradient-ink: linear-gradient(150deg, #3a241a 0%, #24140e 100%);
 
-  --shadow-luxe: 0 12px 40px -10px oklch(0.225 0.019 56 / 0.3);
-  --shadow-card: 0 1px 2px oklch(0.225 0.02 58 / 0.04), 0 5px 14px -5px oklch(0.225 0.02 58 / 0.08), 0 14px 32px -16px oklch(0.225 0.02 58 / 0.1);
-  --shadow-elevated: 0 2px 5px oklch(0.225 0.02 58 / 0.05), 0 14px 26px -8px oklch(0.225 0.02 58 / 0.11), 0 34px 60px -18px oklch(0.225 0.02 58 / 0.16);
-  --shadow-glow-primary: 0 5px 18px -2px oklch(0.225 0.019 56 / 0.32);
-  --shadow-glow-success: 0 6px 22px -4px oklch(0.565 0.146 152 / 0.32);
-  --shadow-glow-gold: 0 6px 22px -4px oklch(0.722 0.131 78 / 0.38);
-  --shadow-inner-hair: inset 0 1px 0 0 oklch(1 0 0 / 0.7);
+  --shadow-luxe: 0 12px 40px -10px rgb(36 20 14 / 0.3);
+  --shadow-card: 0 1px 2px rgb(36 20 14 / 0.05), 0 5px 14px -5px rgb(36 20 14 / 0.08), 0 14px 32px -16px rgb(36 20 14 / 0.12);
+  --shadow-elevated: 0 2px 5px rgb(36 20 14 / 0.06), 0 14px 26px -8px rgb(36 20 14 / 0.12), 0 34px 60px -18px rgb(36 20 14 / 0.18);
+  --shadow-glow-primary: 0 5px 18px -2px rgb(201 154 53 / 0.45);
+  --shadow-glow-success: 0 6px 22px -4px rgb(92 138 88 / 0.35);
+  --shadow-glow-gold: 0 6px 22px -4px rgb(201 154 53 / 0.5);
+  --shadow-inner-hair: inset 0 1px 0 0 rgb(255 255 255 / 0.7);
 }
 
 /* ---------------------------------------------------------
-   DARK — obsidian lounge, gold leaf, low-glare cream
+   DARK — deep roast brown, gold leaf, warm cream text
    --------------------------------------------------------- */
 .dark {
-  --background: oklch(0.128 0.009 60);
-  --foreground: oklch(0.947 0.009 84);
-  --card: oklch(0.188 0.011 60);
-  --card-foreground: oklch(0.947 0.009 84);
-  --popover: oklch(0.212 0.012 60);
-  --popover-foreground: oklch(0.947 0.009 84);
-  --primary: oklch(0.802 0.124 80);
-  --primary-foreground: oklch(0.168 0.018 58);
-  --secondary: oklch(0.246 0.013 60);
-  --secondary-foreground: oklch(0.935 0.01 82);
-  --muted: oklch(0.228 0.012 60);
-  --muted-foreground: oklch(0.658 0.017 72);
-  --accent: oklch(0.272 0.027 68);
-  --accent-foreground: oklch(0.884 0.101 82);
-  --destructive: oklch(0.628 0.203 25);
-  --destructive-foreground: oklch(0.14 0.012 58);
-  --success: oklch(0.734 0.149 155);
-  --success-foreground: oklch(0.145 0.014 58);
-  --warning: oklch(0.808 0.146 70);
-  --warning-foreground: oklch(0.145 0.014 58);
-  --border: oklch(0.282 0.013 60);
-  --input: oklch(0.246 0.012 60);
-  --ring: oklch(0.802 0.124 80);
-  --gold: oklch(0.842 0.121 82);
-  --gold-foreground: oklch(0.168 0.018 58);
-  --ink: oklch(0.098 0.007 58);
-  --ink-foreground: oklch(0.947 0.009 84);
+  --background: #17100b;
+  --foreground: #f5ecdd;
+  --card: #241811;
+  --card-foreground: #f5ecdd;
+  --popover: #2a1d14;
+  --popover-foreground: #f5ecdd;
+  --primary: #d9ab4a;
+  --primary-foreground: #24140e;
+  --secondary: #2e2117;
+  --secondary-foreground: #ecdfc9;
+  --muted: #2a1e14;
+  --muted-foreground: #a89a87;
+  --accent: #3a2a18;
+  --accent-foreground: #e3b95a;
+  --destructive: #d46960;
+  --destructive-foreground: #1c110b;
+  --success: #82a97e;
+  --success-foreground: #16200f;
+  --warning: #e0b44c;
+  --warning-foreground: #1c110b;
+  --border: #3d2c1e;
+  --input: #2e2117;
+  --ring: #d9ab4a;
+  --gold: #d9ab4a;
+  --gold-foreground: #24140e;
+  --ink: #0f0a06;
+  --ink-foreground: #f5ecdd;
 
-  --gradient-luxe: linear-gradient(135deg, oklch(0.862 0.118 86) 0%, oklch(0.722 0.138 68) 100%);
-  --gradient-night: linear-gradient(160deg, oklch(0.198 0.012 60) 0%, oklch(0.098 0.007 58) 100%);
-  --gradient-gold: linear-gradient(135deg, oklch(0.902 0.108 88) 0%, oklch(0.762 0.131 70) 100%);
-  --gradient-hero: linear-gradient(152deg, oklch(0.238 0.014 60) 0%, oklch(0.118 0.009 58) 46%, oklch(0.322 0.052 72) 100%);
-  --gradient-success: linear-gradient(135deg, oklch(0.762 0.146 155) 0%, oklch(0.634 0.136 170) 100%);
-  --gradient-surface: linear-gradient(180deg, oklch(0.188 0.011 60) 0%, oklch(0.128 0.009 60) 100%);
-  --gradient-ink: linear-gradient(150deg, oklch(0.212 0.012 60) 0%, oklch(0.088 0.006 58) 100%);
+  --gradient-luxe: linear-gradient(135deg, #e3b95a 0%, #c99a35 100%);
+  --gradient-night: linear-gradient(160deg, #241811 0%, #0f0a06 100%);
+  --gradient-gold: linear-gradient(135deg, #e3b95a 0%, #c99a35 100%);
+  --gradient-hero: linear-gradient(152deg, #2e1f13 0%, #17100b 55%, #3d2a14 100%);
+  --gradient-success: linear-gradient(135deg, #82a97e 0%, #5c8a58 100%);
+  --gradient-surface: linear-gradient(180deg, #241811 0%, #17100b 100%);
+  --gradient-ink: linear-gradient(150deg, #2a1d14 0%, #0f0a06 100%);
 
-  --shadow-luxe: 0 16px 48px -14px oklch(0 0 0 / 0.7);
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.4), 0 5px 16px -6px oklch(0 0 0 / 0.45);
-  --shadow-elevated: 0 2px 6px oklch(0 0 0 / 0.45), 0 18px 44px -12px oklch(0 0 0 / 0.62);
-  --shadow-glow-primary: 0 0 20px oklch(0.802 0.124 80 / 0.28), 0 0 52px oklch(0.802 0.124 80 / 0.11);
-  --shadow-glow-success: 0 0 20px oklch(0.734 0.149 155 / 0.26), 0 0 52px oklch(0.734 0.149 155 / 0.1);
-  --shadow-glow-gold: 0 0 22px oklch(0.842 0.121 82 / 0.32), 0 0 56px oklch(0.842 0.121 82 / 0.13);
-  --shadow-inner-hair: inset 0 1px 0 0 oklch(1 0 0 / 0.06);
+  --shadow-luxe: 0 16px 48px -14px rgb(0 0 0 / 0.7);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 5px 16px -6px rgb(0 0 0 / 0.45);
+  --shadow-elevated: 0 2px 6px rgb(0 0 0 / 0.45), 0 18px 44px -12px rgb(0 0 0 / 0.62);
+  --shadow-glow-primary: 0 0 20px rgb(217 171 74 / 0.28), 0 0 52px rgb(217 171 74 / 0.11);
+  --shadow-glow-success: 0 0 20px rgb(130 169 126 / 0.26), 0 0 52px rgb(130 169 126 / 0.1);
+  --shadow-glow-gold: 0 0 22px rgb(217 171 74 / 0.32), 0 0 56px rgb(217 171 74 / 0.13);
+  --shadow-inner-hair: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
 }
 
 @layer base {
@@ -1045,4 +1045,59 @@
   .stat-tile:hover {
     transform: none;
   }
+}
+
+/* =========================================================
+   BRAND PRIMITIVES — shared building blocks (login DNA)
+   ========================================================= */
+
+/* White elevated surface card */
+@utility card-brand {
+  background: var(--card);
+  border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+/* Gold section heading (e.g. "العروض الحالية") */
+@utility section-heading {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+/* Premium brand table (admin) */
+.table-brand {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8rem;
+}
+.table-brand thead th {
+  background: color-mix(in oklab, var(--gold) 12%, var(--card));
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-align: start;
+  padding: 0.65rem 0.8rem;
+  white-space: nowrap;
+}
+.table-brand thead th:first-child {
+  border-start-start-radius: var(--radius-lg);
+}
+.table-brand thead th:last-child {
+  border-start-end-radius: var(--radius-lg);
+}
+.table-brand tbody td {
+  padding: 0.7rem 0.8rem;
+  border-top: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  vertical-align: middle;
+}
+.table-brand tbody tr {
+  transition: background-color 0.15s ease;
+}
+.table-brand tbody tr:hover {
+  background: color-mix(in oklab, var(--gold) 6%, transparent);
 }

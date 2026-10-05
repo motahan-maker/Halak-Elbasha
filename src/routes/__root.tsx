@@ -78,7 +78,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { title: "حلاق الباشا - حجوزات" },
       { name: "description", content: "احجز موعدك مع حلاق الباشا — أفضل خدمة حلاقة في المنطقة" },
-      { name: "theme-color", content: "#d4a857" },
+      { name: "theme-color", content: "#C99A35" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "حلاق الباشا" },

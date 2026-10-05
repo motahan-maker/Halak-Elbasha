@@ -15,6 +15,7 @@ import {
   CustomerBottomNav,
   type CustomerTab as Tab,
 } from "@/components/customer/CustomerBottomNav";
+import { EmptyState } from "@/components/ui/brand";
 import { generateSlots, formatTime, hasRemainingTime, type Slot } from "@/lib/slots";
 import {
   arabicDate,
@@ -1549,9 +1550,7 @@ function SectionTitle({
     <div className="mb-3 flex items-end justify-between gap-3 px-0.5">
       <div className="min-w-0">
         {eyebrow && <div className="eyebrow text-accent-foreground">{eyebrow}</div>}
-        <h2 className="mt-1 font-display text-[1.05rem] font-extrabold tracking-tight text-foreground">
-          {children}
-        </h2>
+        <h2 className="section-heading mt-1">{children}</h2>
       </div>
       {action}
     </div>
@@ -1560,10 +1559,11 @@ function SectionTitle({
 
 function Empty({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-10 text-center">
-      <div className="font-display text-sm font-extrabold text-foreground">{title}</div>
-      <div className="mt-1.5 text-xs font-medium text-muted-foreground">{subtitle}</div>
-    </div>
+    <EmptyState
+      icon={<CalendarDays className="h-5 w-5" strokeWidth={1.8} />}
+      title={title}
+      hint={subtitle}
+    />
   );
 }
 

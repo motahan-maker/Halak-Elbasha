@@ -13,6 +13,7 @@ import {
 import { disablePushNotifications, enablePushNotifications, getPushState, type PushState } from "@/lib/push";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SkeletonStat, SkeletonCard } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/brand";
 import { CurvedWorkingAnimation } from "@/components/ui/curved-working-animation";
 import { arabicDate, isoDate, buildWhatsAppLink } from "@/lib/format";
 import { formatTime } from "@/lib/slots";
@@ -934,10 +935,7 @@ function Stat({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="mb-3 flex items-center gap-2 px-0.5">
-        <span aria-hidden className="h-3.5 w-1 shrink-0 rounded-full gradient-gold" />
-        <span className="font-display text-[1.05rem] font-extrabold tracking-tight text-foreground">{title}</span>
-      </h2>
+      <h2 className="section-heading mb-3 px-0.5 text-[1.05rem]">{title}</h2>
       <div className="space-y-3">{children}</div>
     </section>
   );
@@ -1071,9 +1069,10 @@ function Card({
 
 function Empty({ msg }: { msg: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-secondary/15 p-8 text-center">
-      <div className="font-display text-[0.82rem] font-extrabold text-foreground">{msg}</div>
-      <div className="mt-1 text-[11px] font-medium text-muted-foreground">ستظهر هنا فور وصول حجز جديد</div>
-    </div>
+    <EmptyState
+      icon={<Calendar className="h-5 w-5" strokeWidth={1.8} />}
+      title={msg}
+      hint="ستظهر هنا فور وصول حجز جديد"
+    />
   );
 }
