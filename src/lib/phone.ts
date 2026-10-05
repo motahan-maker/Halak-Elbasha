@@ -13,6 +13,14 @@ function toLatinDigits(input: string): string {
   return input.replace(/[٠-٩]/g, (d) => String(ARABIC_DIGITS.indexOf(d)));
 }
 
+/**
+ * Loose digit extraction (Latin digits only) for legacy/staff accounts
+ * whose phones were stored in arbitrary formats (backend accepts min 6).
+ */
+export function looseDigits(input: string): string {
+  return toLatinDigits(input.trim()).replace(/[^\d]/g, "");
+}
+
 const EGYPTIAN_MOBILE_RE = /^01[0125]\d{8}$/;
 
 /**

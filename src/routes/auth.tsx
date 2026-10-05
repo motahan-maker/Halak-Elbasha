@@ -9,7 +9,7 @@ import {
   ADMIN_EMAIL,
   ADMIN_DEFAULT_PASSWORD,
 } from "@/lib/admin.functions";
-import { normalizeEgyptianPhone, validateFullName, PHONE_ERROR } from "@/lib/phone";
+import { normalizeEgyptianPhone, validateFullName, looseDigits, PHONE_ERROR } from "@/lib/phone";
 import { BrandHeader } from "@/components/auth/BrandHeader";
 import { RoleSelector, type AuthRole } from "@/components/auth/RoleSelector";
 import { AuthField } from "@/components/auth/AuthField";
@@ -95,19 +95,40 @@ function AuthPage() {
 
   const staffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const phone = normalizeEgyptianPhone(sPhone);
-    const phoneError = phone ? null : PHONE_ERROR;
-    setSPhoneError(phoneError);
-    if (phoneError || !phone) return toast.error(PHONE_ERROR);
+    // Staff accounts are created by the admin with any phone format (min 6
+    // digits), so validation stays lenient here — strict Egyptian format
+    // applies to customer registration only.
+    const typed = looseDigits(sPhone);
+    if (typed.length < 6) {
+      setSPhoneError(PHONE_ERROR);
+      return toast.error(PHONE_ERROR);
+    }
+    setSPhoneError(null);
     if (!sPwd) return toast.error("من فضلك أدخل كلمة المرور");
+    // The stored login email was derived from the phone exactly as the admin
+    // typed it at creation time, so try the typed digits first (legacy
+    // behavior), then the normalized Egyptian form as a fallback.
+    const candidates = [typed];
+    const normalized = normalizeEgyptianPhone(sPhone);
+    if (normalized && normalized !== typed) candidates.push(normalized);
     setSLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: staffEmail(phone),
-      password: sPwd,
-    });
-    setSLoading(false);
-    if (error) return toast.error("بيانات الدخول غير صحيحة");
-    navigate({ to: "/", replace: true });
+    try {
+      let signedIn = false;
+      for (const cand of candidates) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: staffEmail(cand),
+          password: sPwd,
+        });
+        if (!error) {
+          signedIn = true;
+          break;
+        }
+      }
+      if (!signedIn) return toast.error("بيانات الدخول غير صحيحة");
+      navigate({ to: "/", replace: true });
+    } finally {
+      setSLoading(false);
+    }
   };
 
   /* ---------------- Admin (server-verified role) ---------------- */
@@ -261,7 +282,10 @@ function AuthPage() {
                   </div>
                   <form onSubmit={adminSubmit} className="space-y-3.5">
                     <div className="flex items-center gap-2 rounded-2xl border border-border bg-secondary/50 px-3.5 py-2.5 text-[0.78rem] font-bold text-foreground">
-                      <ShieldCheck className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2} />
+                      <ShieldCheck
+                        className="h-4 w-4 shrink-0 text-muted-foreground"
+                        strokeWidth={2}
+                      />
                       <span>دخول الإدارة — تحكم كامل</span>
                     </div>
                     <AuthField
